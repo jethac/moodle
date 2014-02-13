@@ -626,6 +626,8 @@ abstract class portfolio_plugin_base {
             $this->userconfig[$userid]->{$key} = $value;
         }
 
+        return true;
+
     }
 
     /**
