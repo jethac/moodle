@@ -1,0 +1,343 @@
+/* Custom CSS
+-------------------------*/
+a.logo {
+    background: url([[setting:logo]]) no-repeat 0 0;
+    display: block;
+    float: left;
+    height: 75px;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.dir-rtl a.logo {
+    background: url([[setting:logo]]) no-repeat 100% 0;
+    display: block;
+    float: right;
+}
+
+
+a#brand {
+    position: absolute;
+    //box-shadow: 1px 3px 5px rgba(0, 0, 0, 0.25);
+    //width: 128px;
+    //height: 95px;
+    width: 56px;
+    height: 41px;
+    background-size: 100%;
+}
+
+.nav-collapse {
+    margin-left: 64px;
+}
+
+#page-header {
+    padding: 0px;
+    overflow: hidden;
+    background: #fff;
+
+    > * {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    h1 {
+        padding-top: 26px;
+        padding-bottom: 8px;
+        margin: 0;
+        position:relative;
+        float:left;
+    }
+    #course-navbar {
+        position: relative;
+        float: right;
+        left: 1px;
+
+        margin: 8px 0px 8px 8px;
+        padding: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+
+        box-shadow: rgba(0, 0, 0, 0.0470588) 1px 0px 1px 0px inset;
+
+        ul {
+            margin: 0;
+            padding: 0px 6px;
+            list-style-type: none;
+
+            li {
+                display: inline-block;
+                margin: 0;
+
+                &.course-nav-item-participants a {
+                    background-image: url([[pix:i/users]]);
+                }
+
+                &.course-nav-item-badges a {
+                    background-image: url([[pix:i/badge]]);
+                }
+
+                &.course-nav-item-grades a {
+                    background-image: url([[pix:i/grades]]);
+                }
+                &.course-nav-item-settings a {
+                    background-image: url([[pix:i/settings]]);
+                }
+
+                a {
+                    display: block;
+
+                    background-size: 20px;
+                    background-repeat: no-repeat;
+                    background-position: center 10px;
+                    padding: 32px 6px 4px 6px;
+
+                    font-weight: bold;
+                    font-size: 0.8em;
+
+                    color: #666;
+                    opacity: 0.75;
+
+                    &:hover {
+                        opacity: 1;
+                    }
+                }
+            }
+        }
+    }
+
+    #page-navbar {
+        padding-top: 8px;
+        padding-bottom: 8px;
+        clear: both;
+        background: #f5f5f5;
+
+        > nav, > div {
+            margin: 0;
+        }
+
+        .breadcrumb {
+            padding: 0;
+            background: transparent;
+
+            li:last-child {
+                font-weight: bold;
+                a {
+                    font-weight:inherit;
+                }
+            }
+        }
+
+        .breadcrumb-button {
+            .singlebutton {
+                margin: 0;
+                div {
+                    margin: 0;
+                    input {
+                        margin: -8px -8px -6px 0px;
+                        font-size: 0.75em;
+                        padding: 0.25em 0.75em;
+                        font-weight: bold;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.course-content {
+    ul.weeks {
+        li {
+
+            .section-title, .summarytext {
+                margin: 0;
+            }
+
+            &#section-0 {
+                border: 0px none;
+            }
+            &.section {
+                border-radius: 4px;
+                border: 1px solid #ddd;
+                .content {
+                    margin-right: 8px;
+                    margin-left: 8px;
+                }
+
+                .side {
+                    width: auto;
+                    a, .section-handle {
+                        display: inline-block;
+                        width: 40px;
+                    }
+                    .section-handle {
+                        img {
+                            position:relative;
+                            top: 4px;
+                        }
+                    }
+                }
+                .activity {
+                    .mod-indent-outer {
+                        padding-left: 0px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+.editing {
+.course-content {
+    ul.weeks {
+        li {
+            &.section {
+                .activity {
+                    .mod-indent-outer {
+                        padding-left: 32px;
+                    }
+                }
+            }
+        }
+    }
+}
+}
+
+
+.navbar .nav > li.dropdown {
+    > a.dropdown-toggle {
+        display: block;
+        position: relative;
+
+        padding: 0 5px;
+        text-decoration: none;
+        line-height: 41px;
+        height: 41px;
+
+        .caret {
+            vertical-align: text-top;
+        }
+        .userpicture {
+            border-radius:2px;
+        }
+    }
+    .dropdown-menu {
+        > li > a {
+            display: block;
+            padding: 3px 10px;
+        }
+        .smallicon {
+            width: 14px;
+            position: relative;
+            top: -1px;
+        }
+        > .divider {
+            margin: 3px 1px;
+        }
+        > li:hover img {
+            -webkit-filter: brightness(300%);
+        }
+    }
+}
+.dir-ltr .dropdown .dropdown-menu .smallicon {
+    margin-right: 4px;
+}
+.dir-rtl .dropdown .dropdown-menu .smallicon {
+    margin-left: 4px;
+}
+
+.block_calendar_month {
+    padding: 0px;
+    .header {
+        display: none;
+    }
+    .content {
+        padding: 0px;
+    }
+}
+
+.block .minicalendar {
+    border-collapse: separate;
+    /* border-spacing: 1px; */
+    max-width: none;
+    margin: 0px;
+
+    .calendar-controls {
+        background:#f5f5f5;
+        a {
+            color:#666;
+            padding:4px 0px;
+            display:inline-block;
+        }
+        .current {
+            font-weight: bold;
+            line-height: 20px;
+            color: #999;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+            text-transform: uppercase;
+        }
+        .arrow_link {
+            &:hover {
+                background:#eee;
+            }
+            .arrow {
+                padding: 0px 8px;
+                display: inline-block;
+            }
+        }
+    }
+    th, td {
+        padding: 4px 2px;
+    }
+    th {
+        text-transform: uppercase;
+        text-decoration: none;
+        background:#eee;
+    }
+    td {
+        &.day {
+            font-size: 0.9em;
+            background: #fff;
+            margin: 2px;
+        }
+        &.weekend {
+            background: rgba(255,255,255,0.5);
+        }
+        &.hasevent {
+            font-weight: bold;
+            font-size: 1em;
+        }
+        &.today {
+            a {
+                color: #fff;
+                padding: 3px 4px;
+                border-radius:10px;
+                background: #0070a8;
+            }
+        }
+    }
+    tr:nth-child(2) {
+        td:first-child {
+            border-top-left-radius: 4px;
+        }
+        td:last-child {
+            border-top-right-radius: 4px;
+        }
+    }
+    tr:last-child {
+        td:first-child {
+            border-bottom-left-radius: 4px;
+        }
+        td:last-child {
+            border-bottom-right-radius: 4px;
+        }
+    }
+
+}
+
+
+
+/* Custom CSS Settings
+-------------------------*/
+//[[setting:customcss]]
