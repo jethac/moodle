@@ -2967,7 +2967,7 @@ function forum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfro
  */
 function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=false, $reply=false, $link=false,
                           $footer="", $highlight="", $postisread=null, $dummyifcantsee=true, $istracked=null, $return=false) {
-    global $USER, $CFG, $OUTPUT;
+    global $USER, $CFG, $OUTPUT, $PAGE;
 
     require_once($CFG->libdir . '/filelib.php');
 
@@ -3073,8 +3073,8 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     $postuserfields = explode(',', user_picture::fields());
     $postuser = username_load_fields_from_object($postuser, $post, null, $postuserfields);
     $postuser->id = $post->userid;
-    $postuser->fullname    = fullname($postuser, $cm->cache->caps['moodle/site:viewfullnames']);
-    $postuser->profilelink = new moodle_url('/user/view.php', array('id'=>$post->userid, 'course'=>$course->id));
+    $postuser->fullname = fullname($postuser, $cm->cache->caps['moodle/site:viewfullnames']);
+    $postuser->profilelink = new moodle_url('/user/view.php', array('id' => $post->userid, 'course' => $course->id));
 
     // Prepare the groups the posting user belongs to
     if (isset($cm->cache->usersgroups)) {
@@ -3090,10 +3090,6 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
     // Prepare the attachements for the post, files then images
     list($attachments, $attachedimages) = forum_print_attachments($post, $cm, 'separateimages');
-
-    // Determine if we need to shorten this post
-    $shortenpost = ($link && (strlen(strip_tags($post->message)) > $CFG->forum_longpost));
-
 
     // Prepare an array of commands
     $commands = array();
@@ -3175,86 +3171,34 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
 
     // Begin output
+    $p = new mod_forum_post($post, $discussion);
+    $p->set_tracked($istracked);
+    $p->set_read($postisread);
 
-    $output  = '';
+    $postuser->post = $post->subject;
+    $postuser->user = $postuser->fullname;
+    $postuser->name = html_writer::link($postuser->profilelink, $postuser->fullname);
+    $postuser->date = userdate($post->modified);
+    $p->set_author($postuser);
 
-    if ($istracked) {
-        if ($postisread) {
-            $forumpostclass = ' read';
-        } else {
-            $forumpostclass = ' unread';
-            $output .= html_writer::tag('a', '', array('name'=>'unread'));
-        }
-    } else {
-        // ignore trackign status if not tracked or tracked param missing
-        $forumpostclass = '';
-    }
-
-    $topicclass = '';
-    if (empty($post->parent)) {
-        $topicclass = ' firstpost starter';
-    }
-
-    $postbyuser = new stdClass;
-    $postbyuser->post = $post->subject;
-    $postbyuser->user = $postuser->fullname;
-    $discussionbyuser = get_string('postbyuser', 'forum', $postbyuser);
-    $output .= html_writer::tag('a', '', array('id'=>'p'.$post->id));
-    $output .= html_writer::start_tag('div', array('class'=>'forumpost clearfix'.$forumpostclass.$topicclass,
-                                                   'role' => 'region',
-                                                   'aria-label' => $discussionbyuser));
-    $output .= html_writer::start_tag('div', array('class'=>'row header clearfix'));
-    $output .= html_writer::start_tag('div', array('class'=>'left picture'));
-    $output .= $OUTPUT->user_picture($postuser, array('courseid'=>$course->id));
-    $output .= html_writer::end_tag('div');
-
-
-    $output .= html_writer::start_tag('div', array('class'=>'topic'.$topicclass));
-
-    $postsubject = $post->subject;
-    if (empty($post->subjectnoformat)) {
-        $postsubject = format_string($postsubject);
-    }
-    $output .= html_writer::tag('div', $postsubject, array('class'=>'subject',
-                                                           'role' => 'heading',
-                                                           'aria-level' => '2'));
-
-    $by = new stdClass();
-    $by->name = html_writer::link($postuser->profilelink, $postuser->fullname);
-    $by->date = userdate($post->modified);
-    $output .= html_writer::tag('div', get_string('bynameondate', 'forum', $by), array('class'=>'author',
-                                                                                       'role' => 'heading',
-                                                                                       'aria-level' => '2'));
-
-    $output .= html_writer::end_tag('div'); //topic
-    $output .= html_writer::end_tag('div'); //row
-
-    $output .= html_writer::start_tag('div', array('class'=>'row maincontent clearfix'));
-    $output .= html_writer::start_tag('div', array('class'=>'left'));
-
-    $groupoutput = '';
     if ($groups) {
         $groupoutput = $OUTPUT->group_picture($groups, $course->id, null, true);
     }
-    if (empty($groupoutput)) {
-        $groupoutput = '&nbsp;';
-    }
-    $output .= html_writer::tag('div', $groupoutput, array('class'=>'grouppictures'));
 
-    $output .= html_writer::end_tag('div'); //left side
-    $output .= html_writer::start_tag('div', array('class'=>'no-overflow'));
-    $output .= html_writer::start_tag('div', array('class'=>'content'));
-    if (!empty($attachments)) {
-        $output .= html_writer::tag('div', $attachments, array('class'=>'attachments'));
-    }
+    // TODO make this it's own renderable/render.
+    $p->attachments = $attachments;
 
     $options = new stdClass;
     $options->para    = false;
     $options->trusted = $post->messagetrust;
     $options->context = $modcontext;
+
+    // Determine if we need to shorten this post
+    $shortenpost = ($link && (strlen(strip_tags($post->message)) > $CFG->forum_longpost));
+
     if ($shortenpost) {
         // Prepare shortened version by filtering the text then shortening it.
-        $postclass    = 'shortenedpost';
+        $p->postclass    = 'shortenedpost';
         $postcontent  = format_text($post->message, $post->messageformat, $options);
         $postcontent  = shorten_text($postcontent, $CFG->forum_shortpost);
         $postcontent .= html_writer::link($discussionlink, get_string('readtherest', 'forum'));
@@ -3262,7 +3206,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
             array('class'=>'post-word-count'));
     } else {
         // Prepare whole post
-        $postclass    = 'fullpost';
+        $p->postclass    = 'fullpost';
         $postcontent  = format_text($post->message, $post->messageformat, $options, $course->id);
         if (!empty($highlight)) {
             $postcontent = highlight($highlight, $postcontent);
@@ -3271,22 +3215,14 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
             $postcontent .= html_writer::tag('div', get_string('numwords', 'moodle', count_words($post->message)),
                 array('class'=>'post-word-count'));
         }
-        $postcontent .= html_writer::tag('div', $attachedimages, array('class'=>'attachedimages'));
+        $postcontent .= html_writer::tag('div', $attachedimages, array('class' => 'attachedimages'));
     }
 
-    // Output the post content
-    $output .= html_writer::tag('div', $postcontent, array('class'=>'posting '.$postclass));
-    $output .= html_writer::end_tag('div'); // Content
-    $output .= html_writer::end_tag('div'); // Content mask
-    $output .= html_writer::end_tag('div'); // Row
-
-    $output .= html_writer::start_tag('div', array('class'=>'row side'));
-    $output .= html_writer::tag('div','&nbsp;', array('class'=>'left'));
-    $output .= html_writer::start_tag('div', array('class'=>'options clearfix'));
+    $p->message = $postcontent;
 
     // Output ratings
     if (!empty($post->rating)) {
-        $output .= html_writer::tag('div', $OUTPUT->render($post->rating), array('class'=>'forum-post-rating'));
+        $p->rating = $post->rating;
     }
 
     // Output the commands
@@ -3298,7 +3234,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
             $commandhtml[] = $command;
         }
     }
-    $output .= html_writer::tag('div', implode(' | ', $commandhtml), array('class'=>'commands'));
+    $p->commands = implode(' | ', $commandhtml);
 
     // Output link to post if required
     if ($link && forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {
@@ -3308,21 +3244,17 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
             $replystring = get_string('repliesmany', 'forum', $post->replies);
         }
 
-        $output .= html_writer::start_tag('div', array('class'=>'link'));
-        $output .= html_writer::link($discussionlink, get_string('discussthistopic', 'forum'));
-        $output .= '&nbsp;('.$replystring.')';
-        $output .= html_writer::end_tag('div'); // link
+        $p->link = html_writer::link($discussionlink, get_string('discussthistopic', 'forum'));
+        $p->replies = $replystring;
     }
 
     // Output footer if required
     if ($footer) {
-        $output .= html_writer::tag('div', $footer, array('class'=>'footer'));
+        $p->footer = $footer;
     }
 
-    // Close remaining open divs
-    $output .= html_writer::end_tag('div'); // content
-    $output .= html_writer::end_tag('div'); // row
-    $output .= html_writer::end_tag('div'); // forumpost
+    $renderer = $PAGE->get_renderer('mod_forum');
+    $output = $renderer->render($p);
 
     // Mark the forum post as read if required
     if ($istracked && !$CFG->forum_usermarksread && !$postisread) {

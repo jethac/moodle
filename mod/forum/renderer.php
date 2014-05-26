@@ -124,5 +124,157 @@ class mod_forum_renderer extends plugin_renderer_base {
         return $output;
     }
 
+    /**
+     * We keept he wrapper separate to the post body to allow themers to
+     * replace basic markup around each post as required.
+     *
+     * @param mod_forum_post $post
+     * @return string
+     */
+    public function render_mod_forum_post(mod_forum_post $post) {
+        $o = '';
+        $o .= "<div
+                id='p{$post->id}'
+                class='forumpost clearfix {$post->postclass} {$post->topicclass}'
+                role='region'
+                data-level='{$post->level}'
+                aria-label='" . get_string('postbyuser', 'forum', $post->author) . "'
+            >";
+
+        $o .= $this->render_mod_forum_post_body($post);
+
+        $o .= '</div>';
+        return $o;
+    }
+
+    private function render_mod_forum_post_body($post) {
+        $o = '';
+        $o .= "<div class='row header clearfix'>";
+        $o .= "<div class='left picture'>";
+        $o .= $this->user_picture($post->author, array('courseid' => $post->courseid));
+        $o .= '</div>';
+        $o .= "<div class='topic{$post->topicclass}'>";
+
+        // Subject
+        $o .= $this->render_mod_forum_post_subject($post);
+
+        // Byline
+        $o .= $this->render_mod_forum_post_byline($post);
+
+        $o .= "</div>";
+        $o .= "</div>";
+
+
+        // The main content.
+        $o .= "<div class='row maincontent clearfix'>";
+
+        // The group picture.
+        $o .= $this->render_mod_forum_post_grouppicture($post);
+
+        $o .= "<div class='no-overflow'>";
+        $o .= "<div class='content'>";
+        // TODO make this it's own renderable/render.
+        $o .= $this->render_mod_forum_post_attachments($post);
+
+        // TODO make this it's own renderable/render.
+        $o .= "<div class='posting {$post->postclass}'>" . $post->message . "</div>";
+        // $o .= $this->render($post->message);
+        $o .= "</div>"; // content.
+        $o .= '</div>'; // no-overflow.
+
+        $o .= '</div>'; // row.
+
+        // The final row.
+        $o .= "<div class='row side'>";
+        $o .= "<div class='left'>&nbsp;</div>";
+        $o .= "<div class='options clearfix'>";
+
+        // Ratings.
+        if (!empty($post->rating)) {
+            $o .= $this->render($post->ratings);
+        }
+
+        // Commands.
+        // TODO make this it's own render.
+        $o .= $this->render_mod_forum_post_commands($post);
+        // $o .= $this->render($post->commands);
+
+        // Links.
+        // TODO Rewrite this abomination.
+        // $o .= $this->render($post->replies);
+        if ($post->link) {
+            $o .="<div class='link'>{$post->link} ({$post->replies})</div>";
+        }
+
+        // Footer.
+        // $o .= $this->render($post->footer);
+        $o .= $this->render_mod_forum_post_footer($post);
+
+        $o .= '</div>'; // content.
+        $o .= '</div>'; // row.
+
+        return $o;
+    }
+
+    private function render_mod_forum_post_subject($post) {
+        $o = '';
+        $o .= "<div class='subject' role='heading' aria-level=2>";
+        $o .= s($post->subject);
+        $o .= "</div>";
+
+        return $o;
+    }
+
+    private function render_mod_forum_post_byline($post) {
+        $o = '';
+        $o .= "<div class='author' role='heading' aria-level='2'>";
+        $o .= get_string('bynameondate', 'forum', $post->author);
+        $o .= "</div>";
+
+        return $o;
+    }
+
+    private function render_mod_forum_post_attachments($post) {
+        $o = '';
+        $o .= "<div class='attachments'>{$post->attachments}</div>";
+
+        return $o;
+    }
+
+    private function render_mod_forum_post_commands($post) {
+        $o = '';
+        $o .= "<div class='commands'>{$post->commands}</div>";
+
+        return $o;
+    }
+
+    private function render_mod_forum_post_grouppicture($post) {
+        $o = '';
+        $o .= "<div class='left'>";
+        $o .= "<div class='grouppictures'>";
+        // TODO Make this a renderer.
+        $o .= $post->grouppicture;
+        $o .= "</div>";
+        $o .= "</div>";
+
+        return $o;
+    }
+
+    public function render_mod_forum_post_author(mod_forum_post_author $author) {
+        $o = '';
+        return $o;
+    }
+
+    public function render_mod_forum_post_message(mod_forum_post_message $message) {
+        $o = '';
+        return $o;
+    }
+
+    private function render_mod_forum_post_footer($post) {
+        $o = '';
+        $o .= "<div class='footer'>{$post->footer}</div>";
+
+        return $o;
+    }
 
 }
