@@ -1,0 +1,53 @@
+a.logo{background:url([[setting:logo]]) no-repeat 0 0;display:block;float:left;height:75px;margin:0;padding:0;width:100%}
+.dir-rtl a.logo{background:url([[setting:logo]]) no-repeat 100% 0;display:block;float:right}
+a#brand{position:absolute;width:56px;height:41px;background-size:100%}
+@media (max-width:979px){}.path-user #page-header .profileheading{display:block;position:relative;margin:12px 0;padding-left:0;padding-top:8px;float:left}.path-user #page-header .profileheading h1{float:none;margin:0;padding-left:0;padding-top:8px;line-height:22px}
+.path-user #page-header .profileheading small.user-meta{display:block;font-size:14px;color:#777}.path-user #page-header .profileheading small.user-meta .user-tags{list-style-type:none;padding:0;margin:0;display:inline-block}.path-user #page-header .profileheading small.user-meta .user-tags li{font-size:.8em;text-transform:lowercase;border-radius:17px;background:#eee;display:inline-block;padding:2px 8px}
+.path-user #page-header .breadcrumb-nav li:nth-child(4) a{color:#f5f5f5;text-shadow:none}.path-user #page-header .breadcrumb-nav li:nth-child(4) a:before{content:'Profile';text-shadow:0 1px 0 #fff;color:#0070a8}
+.path-user #page-content .userprofile h2,.path-user #page-content .userprofile .profilepicture{display:none}
+.path-user #page-content .userprofile .descriptionbox .list dt{width:120px}
+.path-user #page-content .userprofile .descriptionbox .list dd{margin-left:130px}
+.path-user#page-user-editadvanced #region-main h2{display:none}
+#page-header{padding:0;overflow:hidden;background:#fff}#page-header>*{padding-left:12px;padding-right:12px}
+#page-header .profilepicture{position:relative;float:left;margin:12px;box-shadow:0 0 6px rgba(0,0,0,0.25);padding:0;border-radius:6px;overflow:hidden;width:72px}#page-header .profilepicture a{display:block;width:inherit;height:inherit}#page-header .profilepicture a img{display:block;width:inherit;height:inherit}
+#page-header h1{padding-top:26px;padding-bottom:8px;margin:0;position:relative;float:left}
+#page-header #course-navbar{position:relative;float:right;left:1px;margin:8px 0 8px 8px;padding:0;border-top-right-radius:0;border-bottom-right-radius:0;box-shadow:rgba(0,0,0,0.0470588) 1px 0 1px 0 inset}#page-header #course-navbar ul{margin:0;padding:0 6px;list-style-type:none}#page-header #course-navbar ul li{display:inline-block;margin:0}#page-header #course-navbar ul li.course-nav-item-participants a{background-image:url([[pix:i/users]])}
+#page-header #course-navbar ul li.course-nav-item-messagebox a{background-image:url([[pix:t/message]])}
+#page-header #course-navbar ul li.course-nav-item-badges a{background-image:url([[pix:i/badge]])}
+#page-header #course-navbar ul li.course-nav-item-grades a{background-image:url([[pix:i/grades]])}
+#page-header #course-navbar ul li.course-nav-item-settings a{background-image:url([[pix:i/settings]])}
+#page-header #course-navbar ul li a{display:block;background-size:20px;background-repeat:no-repeat;background-position:center 10px;padding:32px 6px 4px 6px;font-weight:bold;font-size:.8em;color:#666;opacity:.75}#page-header #course-navbar ul li a:hover{opacity:1}
+#page-header #page-navbar{padding-top:8px;padding-bottom:8px;clear:both;background:#f5f5f5}#page-header #page-navbar>nav,#page-header #page-navbar>div{margin:0}
+#page-header #page-navbar .breadcrumb{padding:0;background:transparent}#page-header #page-navbar .breadcrumb li:last-child{font-weight:bold}#page-header #page-navbar .breadcrumb li:last-child a{font-weight:inherit}
+#page-header #page-navbar .breadcrumb-button .singlebutton{margin:0}#page-header #page-navbar .breadcrumb-button .singlebutton div{margin:0}#page-header #page-navbar .breadcrumb-button .singlebutton div input{margin:-8px -8px -6px 0;font-size:.75em;padding:.25em .75em;font-weight:bold}
+.course-content ul.weeks li .section-title,.course-content ul.weeks li .summarytext{margin:0}
+.course-content ul.weeks li#section-0{border:0 none}
+.course-content ul.weeks li.section{border-radius:4px;border:1px solid #ddd}.course-content ul.weeks li.section .content{margin-right:8px;margin-left:8px}
+.course-content ul.weeks li.section .side{width:auto}.course-content ul.weeks li.section .side a,.course-content ul.weeks li.section .side .section-handle{display:inline-block;width:40px}
+.course-content ul.weeks li.section .side .section-handle img{position:relative;top:4px}
+.course-content ul.weeks li.section .activity .mod-indent-outer{padding-left:0}
+.editing .course-content ul.weeks li.section .activity .mod-indent-outer{padding-left:32px}
+.navbar .nav>li.dropdown>a.dropdown-toggle{display:block;position:relative;padding:0 5px;text-decoration:none;line-height:41px;height:41px}.navbar .nav>li.dropdown>a.dropdown-toggle .caret{vertical-align:text-top}
+.navbar .nav>li.dropdown>a.dropdown-toggle .userpicture{border-radius:2px}
+.navbar .nav>li.dropdown .dropdown-menu>li>a{display:block;padding:3px 10px}
+.navbar .nav>li.dropdown .dropdown-menu .smallicon{width:14px;position:relative;top:-1px}
+.navbar .nav>li.dropdown .dropdown-menu>.divider{margin:3px 1px}
+.navbar .nav>li.dropdown .dropdown-menu>li:hover img{-webkit-filter:brightness(300%)}
+.dir-ltr .dropdown .dropdown-menu .smallicon{margin-right:4px}
+.dir-rtl .dropdown .dropdown-menu .smallicon{margin-left:4px}
+.block_calendar_month{padding:0}.block_calendar_month .header{display:none}
+.block_calendar_month .content{padding:0}
+.block .minicalendar{border-collapse:separate;max-width:none;margin:0}.block .minicalendar .calendar-controls{background:#f5f5f5}.block .minicalendar .calendar-controls a{color:#666;padding:4px 0;display:inline-block}
+.block .minicalendar .calendar-controls .current{font-weight:bold;line-height:20px;color:#999;text-shadow:0 1px 0 rgba(255,255,255,0.5);text-transform:uppercase}
+.block .minicalendar .calendar-controls .arrow_link:hover{background:#eee}
+.block .minicalendar .calendar-controls .arrow_link .arrow{padding:0 8px;display:inline-block}
+.block .minicalendar th,.block .minicalendar td{padding:4px 2px}
+.block .minicalendar th{text-transform:uppercase;text-decoration:none;background:#eee}
+.block .minicalendar td.day{font-size:.9em;background:#fff;margin:2px}
+.block .minicalendar td.weekend{background:rgba(255,255,255,0.5)}
+.block .minicalendar td.hasevent{font-weight:bold;font-size:1em}
+.block .minicalendar td.today a{color:#fff;padding:3px 4px;border-radius:10px;background:#0070a8}
+.block .minicalendar tr:nth-child(2) td:first-child{border-top-left-radius:4px}
+.block .minicalendar tr:nth-child(2) td:last-child{border-top-right-radius:4px}
+.block .minicalendar tr:last-child td:first-child{border-bottom-left-radius:4px}
+.block .minicalendar tr:last-child td:last-child{border-bottom-right-radius:4px}
