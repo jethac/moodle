@@ -59,13 +59,17 @@ class mod_forum_post implements renderable {
     public $replies = '';
     public $footer = '';
 
+    public $plagiarismlinks = '';
+
+    public $wordcount = false;
+
     public $children = array();
 
     public function __construct($post, $discussion) {
         $this->id = $post->id;
 
         $this->courseid = $discussion->course;
-        // TODO - this shouldl become a user object?
+        // TODO - should this become a user object?
         $this->author = $post->userid;
         $this->parent = $post->parent;
         $this->subject = $post->subject;
@@ -80,6 +84,15 @@ class mod_forum_post implements renderable {
 
         if (empty($this->parent)) {
             $this->topicclass = 'firstpost starter';
+        }
+    }
+
+    public function __set($key, $value) {
+        $methodname = 'set_' . $key;
+        if (method_exists($this, $methodname)) {
+            return $this->$methodname($value);
+        } else {
+            $this->$key = $value;
         }
     }
 
@@ -100,5 +113,22 @@ class mod_forum_post implements renderable {
 
     public function set_author($author) {
         $this->author = $author;
+    }
+
+    public function set_wordcount($display) {
+        if ($display) {
+            $this->wordcount = count_words($this->message);
+        } else {
+            $this->wordcount = $display;
+        }
+    }
+
+    public function set_shortenpost($shorten) {
+        $this->shortenpost = $shorten;
+        if ($shorten) {
+            $this->postclass = 'shortenedpost';
+        } else {
+            $this->postclass = 'fullpost';
+        }
     }
 }

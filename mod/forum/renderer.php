@@ -181,7 +181,15 @@ class mod_forum_renderer extends plugin_renderer_base {
         $o .= $this->render_mod_forum_post_attachments($post);
 
         // TODO make this it's own renderable/render.
-        $o .= "<div class='posting {$post->postclass}'>" . $post->message . "</div>";
+        $o .= "<div class='posting {$post->postclass}'>";
+        $o .= $post->message;
+        $o .= $post->plagiarismlinks;
+        if ($post->wordcount) {
+            $o .= "<div class='post-word-count'>";
+            $o .= get_string('numwords', 'moodle', $p->wordcount);
+            $o .= "</div>";
+        }
+        $o .= "</div>";
         // $o .= $this->render($post->message);
         $o .= "</div>"; // content.
         $o .= '</div>'; // no-overflow.

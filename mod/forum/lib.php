@@ -3055,20 +3055,13 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
     if (!empty($CFG->enableplagiarism)) {
         require_once($CFG->libdir.'/plagiarismlib.php');
         // TODO convert to renderable.
-        $p->plagiarism_links = plagiarism_get_links(array(
+        $p->plagiarismlinks = plagiarism_get_links(array(
             'userid' => $post->userid,
             'content' => $post->message,
             'cmid' => $cm->id,
             'course' => $post->course,
             'forum' => $post->forum,
         ));
-
-        // TODO remove.
-        $post->message .= plagiarism_get_links(array('userid' => $post->userid,
-            'content' => $post->message,
-            'cmid' => $cm->id,
-            'course' => $post->course,
-            'forum' => $post->forum));
     }
 
     // Caching.
@@ -3259,40 +3252,33 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
         $groupoutput = $OUTPUT->group_picture($groups, $course->id, null, true);
     }
 
-    // TODO make this it's own renderable/render.
-    $p->attachments = $attachments;
-
     $textoptions = new stdClass;
     $textoptions->para    = false;
     $textoptions->trusted = $post->messagetrust;
     $textoptions->context = $modcontext;
 
-    // Determine if we need to shorten this post
-    $shortenpost = ($options->link && (strlen(strip_tags($post->message)) > $CFG->forum_longpost));
+    // Determine if we need to shorten this post.
+    $p->shortenpost = ($options->link && (strlen(strip_tags($post->message)) > $CFG->forum_longpost));
 
-    if ($shortenpost) {
-        // Prepare shortened version by filtering the text then shortening it.
-        $p->postclass    = 'shortenedpost';
-        $postcontent  = format_text($post->message, $post->messageformat, $textoptions);
+    $postcontent = format_text($post->message, $post->messageformat, $textoptions, $course->id);
+    if ($p->shortenpost) {
+        // Prepare shortened version.
         $postcontent  = shorten_text($postcontent, $CFG->forum_shortpost);
         $postcontent .= html_writer::link($discussionlink, get_string('readtherest', 'forum'));
-        $postcontent .= html_writer::tag('div', '('.get_string('numwords', 'moodle', count_words($post->message)).')',
-            array('class'=>'post-word-count'));
+        $p->wordcount = true;
     } else {
         // Prepare whole post
-        $p->postclass    = 'fullpost';
-        $postcontent  = format_text($post->message, $post->messageformat, $textoptions, $course->id);
         if (!empty($options->highlight)) {
             $postcontent = highlight($options->highlight, $postcontent);
-        }
-        if (!empty($forum->displaywordcount)) {
-            $postcontent .= html_writer::tag('div', get_string('numwords', 'moodle', count_words($post->message)),
-                array('class'=>'post-word-count'));
         }
         $postcontent .= html_writer::tag('div', $attachedimages, array('class' => 'attachedimages'));
     }
 
     $p->message = $postcontent;
+    if ($p->shortenpost || !empty($forum->displaywordcount)) {
+        $p->wordcount = true;
+    }
+
 
     // Output ratings
     if (!empty($post->rating)) {
