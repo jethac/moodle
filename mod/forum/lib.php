@@ -2988,6 +2988,25 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 }
 
 function forum_display_post($post, $discussion, $forum, &$cm, $course, $options = null) {
+    global $CFG, $PAGE;
+
+    $p = forum_prepare_post($post, $discussion, $forum, $cm, $course, true, $options);
+    $renderer = $PAGE->get_renderer('mod_forum');
+    echo $renderer->render($p);
+
+    // Mark the forum post as read if required.
+    if ($CFG->forum_usermarksread) {
+        if (is_null($options->postisread)) {
+            $options->postisread = forum_tp_is_post_read($USER->id, $post);
+        }
+        // We can safely use istracked and postisread here because they default to null when not set.
+        if ($options->istracked && !$options->postisread) {
+            forum_tp_mark_post_read($USER->id, $post, $forum->id);
+        }
+    }
+}
+
+function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse = true, $options = null) {
     global $USER, $CFG, $OUTPUT, $PAGE;
     require_once($CFG->libdir . '/filelib.php');
 
@@ -2995,7 +3014,7 @@ function forum_display_post($post, $discussion, $forum, &$cm, $course, $options 
         $options = new stdClass();
     }
 
-    // Default options:
+    // Default options.
     $defaults = array(
         'ownpost' => false,
         'reply' => false,
@@ -3015,11 +3034,17 @@ function forum_display_post($post, $discussion, $forum, &$cm, $course, $options 
     }
 
     $p = new mod_forum_post($post, $discussion);
-    $p->set_tracked($options->istracked);
     $p->set_read($options->postisread);
     $p->depth = $options->depth;
 
-    // String cache
+    // Fill in defaults for postisread.
+    if (is_null($options->postisread)) {
+        $options->postisread = forum_tp_is_post_read($USER->id, $post);
+    }
+    $p->set_tracked($options->istracked);
+
+
+    // String cache.
     static $str;
 
     $modcontext = context_module::instance($cm->id);
@@ -3068,16 +3093,16 @@ function forum_display_post($post, $discussion, $forum, &$cm, $course, $options 
         $cm->uservisible = \core_availability\info_module::is_user_visible($cm, 0, false);
     }
 
-    if ($options->istracked && is_null($options->postisread)) {
-        $options->postisread = forum_tp_is_post_read($USER->id, $post);
-    }
-
     if (!forum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
-        $output = '';
         if (!$options->dummyifcantsee) {
-            return $output;
+            return;
         }
-        // TODO make this use the renderable object + renderer.
+
+        $p->hidden = true;
+        return $p;
+
+        // TODO move this into the renderer/renderable.
+        $output = '';
         $output .= html_writer::tag('a', '', array('id'=>'p'.$post->id));
         $output .= html_writer::start_tag('div', array('class'=>'forumpost clearfix',
                                                        'role' => 'region',
@@ -3141,7 +3166,9 @@ function forum_display_post($post, $discussion, $forum, &$cm, $course, $options 
     }
 
     // Prepare the attachments for the post, files then images
+    // TODO make this it's own renderable/render.
     list($attachments, $attachedimages) = forum_print_attachments($post, $cm, 'separateimages');
+    $p->attachments = $attachments;
 
     // Prepare an array of commands
     $commands = array();
@@ -3298,15 +3325,14 @@ function forum_display_post($post, $discussion, $forum, &$cm, $course, $options 
     // Add the footer content.
     $p->footer = $options->footer;
 
-    $renderer = $PAGE->get_renderer('mod_forum');
-    $output = $renderer->render($p);
-
-    // Mark the forum post as read if required
-    if ($options->istracked && !$CFG->forum_usermarksread && !$options->postisread) {
-        forum_tp_mark_post_read($USER->id, $post, $forum->id);
+    if ($traverse && isset($post->children)) {
+        $options->depth++;
+        foreach ($post->children as $child) {
+            $p->children[] = forum_prepare_post($child, $discussion, $forum, $cm, $course, $traverse, $options);
+        }
     }
 
-    return $output;
+    return $p;
 }
 
 /**
@@ -5371,21 +5397,22 @@ function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode,
     $options->reply = $reply;
     $options->postisread = $postread;
     $options->istracked = $forumtracked;
-    echo forum_display_post($post, $discussion, $forum, $cm, $course, $options);
 
     switch ($mode) {
         case FORUM_MODE_FLATOLDEST :
         case FORUM_MODE_FLATNEWEST :
         default:
+            echo forum_display_post($post, $discussion, $forum, $cm, $course, $options);
             forum_print_posts_flat($course, $cm, $forum, $discussion, $post, $mode, $reply, $forumtracked, $posts);
             break;
 
         case FORUM_MODE_THREADED :
+            echo forum_display_post($post, $discussion, $forum, $cm, $course, $options);
             forum_print_posts_threaded($course, $cm, $forum, $discussion, $post, 0, $reply, $forumtracked, $posts);
             break;
 
         case FORUM_MODE_NESTED :
-            forum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $posts);
+            forum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $post);
             break;
     }
 }
@@ -5505,34 +5532,17 @@ function forum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent,
  * @global object
  * @return void
  */
-function forum_print_posts_nested($course, &$cm, $forum, $discussion, $parent, $reply, $forumtracked, $posts, $depth = 1) {
-    global $USER, $CFG;
+function forum_print_posts_nested($course, &$cm, $forum, $discussion, $parent, $reply, $forumtracked, $post) {
+    global $USER, $CFG, $PAGE;
 
-    $link  = false;
+    $options = new stdClass();
+    $options->reply = $reply;
+    $options->dummyifcantsee = true;
+    $options->forumtracked = $forumtracked;
 
-    if (!empty($posts[$parent->id]->children)) {
-        $posts = $posts[$parent->id]->children;
-
-        $options = new stdClass();
-        $options->reply = $reply;
-        $options->dummyifcantsee = true;
-        $options->forumtracked = $forumtracked;
-
-        foreach ($posts as $post) {
-            if (!isloggedin()) {
-                $ownpost = false;
-            } else {
-                $ownpost = ($USER->id == $post->userid);
-            }
-
-            $post->subject = format_string($post->subject);
-            $postread = !empty($post->postread);
-
-            $options->depth = $depth;
-            echo forum_display_post($post, $discussion, $forum, $cm, $course, $options);
-            forum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $posts, $depth + 1);
-        }
-    }
+    $p = forum_prepare_post($post, $discussion, $forum, $cm, $course, true, $options);
+    $renderer = $PAGE->get_renderer('mod_forum');
+    echo $renderer->render($p);
 }
 
 /**

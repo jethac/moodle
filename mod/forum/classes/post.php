@@ -59,6 +59,8 @@ class mod_forum_post implements renderable {
     public $replies = '';
     public $footer = '';
 
+    public $children = array();
+
     public function __construct($post, $discussion) {
         $this->id = $post->id;
 

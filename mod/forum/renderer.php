@@ -143,6 +143,10 @@ class mod_forum_renderer extends plugin_renderer_base {
 
         $o .= $this->render_mod_forum_post_body($post);
 
+        foreach ($post->children as $child) {
+            $o .= $this->render($child);
+        }
+
         $o .= '</div>';
         return $o;
     }
