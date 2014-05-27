@@ -25,7 +25,7 @@
  *             div.footer
  */
 
-.forumpost {display: block;position:relative;margin:0 0 1em 0;padding:0;border:1px solid #000;max-width:100%;}
+.forumpost {display: block;position:relative;padding:0;border:1px solid #000;max-width:100%;}
 .forumpost .row {width:100%;position:relative;}
 .forumpost .row .left {float:left;width: 43px;overflow:hidden;}
 .forumpost .row .left .grouppictures a {text-align:center;display:block;margin:6px 2px 0 2px;}
@@ -111,4 +111,31 @@ span.unread {
 }
 .forumpost.unread .row.header {
     border-bottom: 1px solid #DDD;
+}
+
+
+
+/**
+ * ============================================================================
+ */
+[data-level="1"] {
+    margin-left: 3.33%;
+}
+[data-level="2"] {
+    margin-left: 6.66%;
+}
+[data-level="3"] {
+    margin-left: 9.99%;
+}
+[data-level="4"] {
+    margin-left: 12.32%;
+}
+[data-level="5"] {
+    margin-left: 15.65%;
+}
+[data-level="6"] {
+    margin-left: 18.96%;
+}
+[data-level="7"] {
+    margin-left: 21.99%;
 }

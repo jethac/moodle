@@ -42,7 +42,7 @@ class mod_forum_post implements renderable {
     public $created = null;
     public $modified = null;
 
-    public $level = null;
+    public $depth = 0;
 
     public $istracked = false;
     public $isread = false;
@@ -75,9 +75,6 @@ class mod_forum_post implements renderable {
         $this->messagetrust = $post->messagetrust;
         $this->created = $post->created;
         $this->modified = $post->modified;
-
-        // TODO Determine the post level.
-        $this->level = 1;
 
         if (empty($this->parent)) {
             $this->topicclass = 'firstpost starter';

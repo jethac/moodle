@@ -137,7 +137,7 @@ class mod_forum_renderer extends plugin_renderer_base {
                 id='p{$post->id}'
                 class='forumpost clearfix {$post->postclass} {$post->topicclass}'
                 role='region'
-                data-level='{$post->level}'
+                data-level='{$post->depth}'
                 aria-label='" . get_string('postbyuser', 'forum', $post->author) . "'
             >";
 

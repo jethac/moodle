@@ -2967,9 +2967,54 @@ function forum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfro
  */
 function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=false, $reply=false, $link=false,
                           $footer="", $highlight="", $postisread=null, $dummyifcantsee=true, $istracked=null, $return=false) {
+    $options = new stdClass();
+    $options->reply = $reply;
+    $options->link = $link;
+    $options->footer = $footer;
+    $options->highlight = $highlight;
+    $options->dummyifcantsee = $dummyifcantsee;
+    $options->istracked = $istracked;
+
+    // TODO deprecate
+    $options->postisread = $postisread;
+    $options->ownpost = $ownpost;
+
+    $result = forum_display_post($post, $discussion, $forum, $cm, $course, $options);
+    if ($return) {
+        return $result;
+    } else {
+        echo $result;
+    }
+}
+
+function forum_display_post($post, $discussion, $forum, &$cm, $course, $options) {
     global $USER, $CFG, $OUTPUT, $PAGE;
 
     require_once($CFG->libdir . '/filelib.php');
+
+    // Default options:
+    $defaults = array(
+        'ownpost' => false,
+        'reply' => false,
+        'link' => false,
+        'footer' => '',
+        'highlight' => '',
+        'postisread' => null,
+        'dummyifcantsee' => true,
+        'istracked' => null,
+        'depth' => 0,
+    );
+
+    foreach ($defaults as $key => $value) {
+        if (!isset($options->$key)) {
+            $options->$key = $value;
+        }
+    }
+
+    $p = new mod_forum_post($post, $discussion);
+    $p->set_tracked($options->istracked);
+    $p->set_read($options->postisread);
+    $p->depth = $options->depth;
 
     // String cache
     static $str;
@@ -2981,6 +3026,16 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_forum', 'post', $post->id);
     if (!empty($CFG->enableplagiarism)) {
         require_once($CFG->libdir.'/plagiarismlib.php');
+        // TODO convert to renderable.
+        $p->plagiarism_links = plagiarism_get_links(array(
+            'userid' => $post->userid,
+            'content' => $post->message,
+            'cmid' => $cm->id,
+            'course' => $post->course,
+            'forum' => $post->forum,
+        ));
+
+        // TODO remove.
         $post->message .= plagiarism_get_links(array('userid' => $post->userid,
             'content' => $post->message,
             'cmid' => $cm->id,
@@ -2988,7 +3043,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
             'forum' => $post->forum));
     }
 
-    // caching
+    // Caching.
     if (!isset($cm->cache)) {
         $cm->cache = new stdClass;
     }
@@ -3010,19 +3065,16 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         $cm->uservisible = \core_availability\info_module::is_user_visible($cm, 0, false);
     }
 
-    if ($istracked && is_null($postisread)) {
-        $postisread = forum_tp_is_post_read($USER->id, $post);
+    if ($options->istracked && is_null($options->postisread)) {
+        $options->postisread = forum_tp_is_post_read($USER->id, $post);
     }
 
     if (!forum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
         $output = '';
-        if (!$dummyifcantsee) {
-            if ($return) {
-                return $output;
-            }
-            echo $output;
-            return;
+        if (!$options->dummyifcantsee) {
+            return $output;
         }
+        // TODO make this use the renderable object + renderer.
         $output .= html_writer::tag('a', '', array('id'=>'p'.$post->id));
         $output .= html_writer::start_tag('div', array('class'=>'forumpost clearfix',
                                                        'role' => 'region',
@@ -3046,11 +3098,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         $output .= html_writer::end_tag('div'); // row
         $output .= html_writer::end_tag('div'); // forumpost
 
-        if ($return) {
-            return $output;
-        }
-        echo $output;
-        return;
+        return $output;
     }
 
     if (empty($str)) {
@@ -3061,14 +3109,15 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         $str->parent       = get_string('parent', 'forum');
         $str->pruneheading = get_string('pruneheading', 'forum');
         $str->prune        = get_string('prune', 'forum');
-        $str->displaymode     = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
+        $str->displaymode  = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
         $str->markread     = get_string('markread', 'forum');
         $str->markunread   = get_string('markunread', 'forum');
     }
 
-    $discussionlink = new moodle_url('/mod/forum/discuss.php', array('d'=>$post->discussion));
+    // The discussion link is used in various places - generate it here.
+    $discussionlink = new moodle_url('/mod/forum/discuss.php', array('d' => $post->discussion));
 
-    // Build an object that represents the posting user
+    // Build an object that represents the posting user.
     $postuser = new stdClass;
     $postuserfields = explode(',', user_picture::fields());
     $postuser = username_load_fields_from_object($postuser, $post, null, $postuserfields);
@@ -3076,7 +3125,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     $postuser->fullname = fullname($postuser, $cm->cache->caps['moodle/site:viewfullnames']);
     $postuser->profilelink = new moodle_url('/user/view.php', array('id' => $post->userid, 'course' => $course->id));
 
-    // Prepare the groups the posting user belongs to
+    // Prepare the groups the posting user belongs to.
     if (isset($cm->cache->usersgroups)) {
         $groups = array();
         if (isset($cm->cache->usersgroups[$post->userid])) {
@@ -3088,7 +3137,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         $groups = groups_get_all_groups($course->id, $post->userid, $cm->groupingid);
     }
 
-    // Prepare the attachements for the post, files then images
+    // Prepare the attachments for the post, files then images
     list($attachments, $attachedimages) = forum_print_attachments($post, $cm, 'separateimages');
 
     // Prepare an array of commands
@@ -3096,10 +3145,10 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
     // SPECIAL CASE: The front page can display a news item post to non-logged in users.
     // Don't display the mark read / unread controls in this case.
-    if ($istracked && $CFG->forum_usermarksread && isloggedin()) {
+    if ($options->istracked && $CFG->forum_usermarksread && isloggedin()) {
         $url = new moodle_url($discussionlink, array('postid'=>$post->id, 'mark'=>'unread'));
         $text = $str->markunread;
-        if (!$postisread) {
+        if (!$options->postisread) {
             $url->param('mark', 'read');
             $text = $str->markread;
         }
@@ -3133,7 +3182,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
             // The first post in single simple is the forum description.
             $commands[] = array('url'=>new moodle_url('/course/modedit.php', array('update'=>$cm->id, 'sesskey'=>sesskey(), 'return'=>1)), 'text'=>$str->edit);
         }
-    } else if (($ownpost && $age < $CFG->maxeditingtime) || $cm->cache->caps['mod/forum:editanypost']) {
+    } else if (($options->ownpost && $age < $CFG->maxeditingtime) || $cm->cache->caps['mod/forum:editanypost']) {
         $commands[] = array('url'=>new moodle_url('/mod/forum/post.php', array('edit'=>$post->id)), 'text'=>$str->edit);
     }
 
@@ -3143,16 +3192,15 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
     if ($forum->type == 'single' and $discussion->firstpost == $post->id) {
         // Do not allow deleting of first post in single simple type.
-    } else if (($ownpost && $age < $CFG->maxeditingtime && $cm->cache->caps['mod/forum:deleteownpost']) || $cm->cache->caps['mod/forum:deleteanypost']) {
+    } else if (($options->ownpost && $age < $CFG->maxeditingtime && $cm->cache->caps['mod/forum:deleteownpost']) || $cm->cache->caps['mod/forum:deleteanypost']) {
         $commands[] = array('url'=>new moodle_url('/mod/forum/post.php', array('delete'=>$post->id)), 'text'=>$str->delete);
     }
 
-    if ($reply) {
+    if ($options->reply) {
         $commands[] = array('url'=>new moodle_url('/mod/forum/post.php#mformforum', array('reply'=>$post->id)), 'text'=>$str->reply);
     }
 
-    if ($CFG->enableportfolios && ($cm->cache->caps['mod/forum:exportpost'] || ($ownpost && $cm->cache->caps['mod/forum:exportownpost']))) {
-        $p = array('postid' => $post->id);
+    if ($CFG->enableportfolios && ($cm->cache->caps['mod/forum:exportpost'] || ($options->ownpost && $cm->cache->caps['mod/forum:exportownpost']))) {
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
         $button->set_callback_options('forum_portfolio_caller', array('postid' => $post->id), 'mod_forum');
@@ -3171,10 +3219,6 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
 
     // Begin output
-    $p = new mod_forum_post($post, $discussion);
-    $p->set_tracked($istracked);
-    $p->set_read($postisread);
-
     $postuser->post = $post->subject;
     $postuser->user = $postuser->fullname;
     $postuser->name = html_writer::link($postuser->profilelink, $postuser->fullname);
@@ -3188,18 +3232,18 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     // TODO make this it's own renderable/render.
     $p->attachments = $attachments;
 
-    $options = new stdClass;
-    $options->para    = false;
-    $options->trusted = $post->messagetrust;
-    $options->context = $modcontext;
+    $textoptions = new stdClass;
+    $textoptions->para    = false;
+    $textoptions->trusted = $post->messagetrust;
+    $textoptions->context = $modcontext;
 
     // Determine if we need to shorten this post
-    $shortenpost = ($link && (strlen(strip_tags($post->message)) > $CFG->forum_longpost));
+    $shortenpost = ($options->link && (strlen(strip_tags($post->message)) > $CFG->forum_longpost));
 
     if ($shortenpost) {
         // Prepare shortened version by filtering the text then shortening it.
         $p->postclass    = 'shortenedpost';
-        $postcontent  = format_text($post->message, $post->messageformat, $options);
+        $postcontent  = format_text($post->message, $post->messageformat, $textoptions);
         $postcontent  = shorten_text($postcontent, $CFG->forum_shortpost);
         $postcontent .= html_writer::link($discussionlink, get_string('readtherest', 'forum'));
         $postcontent .= html_writer::tag('div', '('.get_string('numwords', 'moodle', count_words($post->message)).')',
@@ -3207,9 +3251,9 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     } else {
         // Prepare whole post
         $p->postclass    = 'fullpost';
-        $postcontent  = format_text($post->message, $post->messageformat, $options, $course->id);
-        if (!empty($highlight)) {
-            $postcontent = highlight($highlight, $postcontent);
+        $postcontent  = format_text($post->message, $post->messageformat, $textoptions, $course->id);
+        if (!empty($options->highlight)) {
+            $postcontent = highlight($options->highlight, $postcontent);
         }
         if (!empty($forum->displaywordcount)) {
             $postcontent .= html_writer::tag('div', get_string('numwords', 'moodle', count_words($post->message)),
@@ -3237,7 +3281,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     $p->commands = implode(' | ', $commandhtml);
 
     // Output link to post if required
-    if ($link && forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {
+    if ($options->link && forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {
         if ($post->replies == 1) {
             $replystring = get_string('repliesone', 'forum', $post->replies);
         } else {
@@ -3248,24 +3292,18 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         $p->replies = $replystring;
     }
 
-    // Output footer if required
-    if ($footer) {
-        $p->footer = $footer;
-    }
+    // Add the footer content.
+    $p->footer = $options->footer;
 
     $renderer = $PAGE->get_renderer('mod_forum');
     $output = $renderer->render($p);
 
     // Mark the forum post as read if required
-    if ($istracked && !$CFG->forum_usermarksread && !$postisread) {
+    if ($options->istracked && !$CFG->forum_usermarksread && !$options->postisread) {
         forum_tp_mark_post_read($USER->id, $post, $forum->id);
     }
 
-    if ($return) {
-        return $output;
-    }
-    echo $output;
-    return;
+    return $output;
 }
 
 /**
@@ -3733,10 +3771,14 @@ function forum_print_attachments($post, $cm, $type) {
     $imagereturn = '';
     $output = '';
 
-    $canexport = !empty($CFG->enableportfolios) && (has_capability('mod/forum:exportpost', $context) || ($post->userid == $USER->id && has_capability('mod/forum:exportownpost', $context)));
-
-    if ($canexport) {
-        require_once($CFG->libdir.'/portfoliolib.php');
+    $canexport = false;
+    if (!empty($CFG->enableportfolios)) {
+        $canexportanypost = has_capability('mod/forum:exportpost', $context);
+        $canexportownpost = ($post->userid == $USER->id) && has_capability('mod/forum:exportownpost', $context);
+        $canexport = $canexportanypost || $canexportownpost;
+        if ($canexport) {
+            require_once($CFG->libdir . '/portfoliolib.php');
+        }
     }
 
     // We retrieve all files according to the time that they were created.  In the case that several files were uploaded
@@ -5333,7 +5375,7 @@ function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode,
             break;
 
         case FORUM_MODE_NESTED :
-            forum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $posts);
+            forum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $posts, 1);
             break;
     }
 }
@@ -5390,13 +5432,16 @@ function forum_print_posts_flat($course, &$cm, $forum, $discussion, $post, $mode
 function forum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent, $depth, $reply, $forumtracked, $posts) {
     global $USER, $CFG;
 
-    $link  = false;
-
     if (!empty($posts[$parent->id]->children)) {
         $posts = $posts[$parent->id]->children;
 
         $modcontext       = context_module::instance($cm->id);
         $canviewfullnames = has_capability('moodle/site:viewfullnames', $modcontext);
+
+        $options = new stdClass();
+        $options->reply = $reply;
+        $options->dummyifcantsee = true;
+        $options->forumtracked = $forumtracked;
 
         foreach ($posts as $post) {
 
@@ -5407,8 +5452,8 @@ function forum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent,
 
                 $postread = !empty($post->postread);
 
-                forum_print_post($post, $discussion, $forum, $cm, $course, $ownpost, $reply, $link,
-                                     '', '', $postread, true, $forumtracked);
+                $options->depth = $depth;
+                forum_display_post($post, $discussion, $forum, $cm, $course, $options);
             } else {
                 if (!forum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
                     echo "</div>\n";
@@ -5445,7 +5490,7 @@ function forum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent,
  * @global object
  * @return void
  */
-function forum_print_posts_nested($course, &$cm, $forum, $discussion, $parent, $reply, $forumtracked, $posts) {
+function forum_print_posts_nested($course, &$cm, $forum, $discussion, $parent, $reply, $forumtracked, $posts, $depth = 0) {
     global $USER, $CFG;
 
     $link  = false;
@@ -5453,9 +5498,12 @@ function forum_print_posts_nested($course, &$cm, $forum, $discussion, $parent, $
     if (!empty($posts[$parent->id]->children)) {
         $posts = $posts[$parent->id]->children;
 
-        foreach ($posts as $post) {
+        $options = new stdClass();
+        $options->reply = $reply;
+        $options->dummyifcantsee = true;
+        $options->forumtracked = $forumtracked;
 
-            echo '<div class="indent">';
+        foreach ($posts as $post) {
             if (!isloggedin()) {
                 $ownpost = false;
             } else {
@@ -5465,10 +5513,9 @@ function forum_print_posts_nested($course, &$cm, $forum, $discussion, $parent, $
             $post->subject = format_string($post->subject);
             $postread = !empty($post->postread);
 
-            forum_print_post($post, $discussion, $forum, $cm, $course, $ownpost, $reply, $link,
-                                 '', '', $postread, true, $forumtracked);
-            forum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $posts);
-            echo "</div>\n";
+            $options->depth = $depth;
+            echo forum_display_post($post, $discussion, $forum, $cm, $course, $options);
+            forum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $posts, $depth + 1);
         }
     }
 }
