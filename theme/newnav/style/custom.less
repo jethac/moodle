@@ -27,8 +27,61 @@ a#brand {
     background-size: 100%;
 }
 
-.nav-collapse {
-    margin-left: 64px;
+@media (max-width: 979px) {
+.nav-collapse.collapse {
+
+    font-size: 1.25em;
+
+    @common-border-color: #ccc;
+    @common-side-padding: 10px;
+
+    .logininfo {
+        .nav > .dropdown {
+
+            > a.dropdown-toggle {
+                text-indent: 8px;
+                overflow: hidden;
+                padding: 8px @common-side-padding 4px @common-side-padding;
+                border-top: 1px solid @common-border-color;
+                //border-bottom: 1px solid @common-border-color;
+                border-radius: 0px;
+                img {
+                    display: block;
+                    position: relative;
+                    float: left;
+                }
+                .caret {
+                    display: none;
+                }
+            }
+
+            .dropdown-menu {
+                margin: 0;
+                padding: 0;
+                display: block;
+
+                li {
+                    //height: 40px;
+                    border-top: 1px solid @common-border-color;
+                    a {
+                        display: block;
+                        overflow: hidden;
+                        padding: 10px;
+                        img.smallicon {
+                            width: 32px;
+                            top: 0px;
+                        }
+                    }
+                    &.divider {
+                        display: none;
+                    }
+                }
+            }
+        }
+
+    }
+
+}
 }
 
 #page-header {
@@ -336,7 +389,17 @@ a#brand {
 
 }
 
-
+@media (max-width: 979px) {
+    .navbar-fixed-top .navbar-inner {
+        padding: 0px;
+        .brand {
+            margin: 5px 0px 0px 5px;
+        }
+        .btn-navbar {
+            margin: 5px 5px 0px 0px;
+        }
+    }
+}
 
 /* Custom CSS Settings
 -------------------------*/
