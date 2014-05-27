@@ -133,12 +133,14 @@ class mod_forum_renderer extends plugin_renderer_base {
      */
     public function render_mod_forum_post(mod_forum_post $post) {
         $o = '';
-        $o .= "<div
+        $o .= "<article
                 id='p{$post->id}'
                 class='forumpost clearfix {$post->postclass} {$post->topicclass}'
                 role='region'
                 data-level='{$post->depth}'
                 aria-label='" . get_string('postbyuser', 'forum', $post->author) . "'
+                aria-labelledby='p{$post->id}_heading'
+                tabindex='0'
             >";
 
         $o .= $this->render_mod_forum_post_body($post);
@@ -147,7 +149,7 @@ class mod_forum_renderer extends plugin_renderer_base {
             $o .= $this->render($child);
         }
 
-        $o .= '</div>';
+        $o .= '</article>';
         return $o;
     }
 
@@ -230,7 +232,7 @@ class mod_forum_renderer extends plugin_renderer_base {
 
     private function render_mod_forum_post_subject($post) {
         $o = '';
-        $o .= "<div class='subject' role='heading' aria-level=2>";
+        $o .= "<div class='subject' role='heading' aria-level='2' id='p{$post->id}_heading'>";
         $o .= s($post->subject);
         $o .= "</div>";
 
@@ -239,9 +241,9 @@ class mod_forum_renderer extends plugin_renderer_base {
 
     private function render_mod_forum_post_byline($post) {
         $o = '';
-        $o .= "<div class='author' role='heading' aria-level='2'>";
+        $o .= "<address>";
         $o .= get_string('bynameondate', 'forum', $post->author);
-        $o .= "</div>";
+        $o .= "</address>";
 
         return $o;
     }
@@ -284,7 +286,7 @@ class mod_forum_renderer extends plugin_renderer_base {
 
     private function render_mod_forum_post_footer($post) {
         $o = '';
-        $o .= "<div class='footer'>{$post->footer}</div>";
+        $o .= "<footer>{$post->footer}</footer>";
 
         return $o;
     }
