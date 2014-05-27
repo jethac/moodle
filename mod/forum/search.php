@@ -218,6 +218,7 @@ foreach ($searchterms as $key => $searchterm) {
 }
 $strippedsearch = implode(' ', $searchterms);    // Rebuild the string
 
+$postoptions = new stdClass();
 foreach ($posts as $post) {
 
     // Replace the simple subject with the three items forum name -> thread name -> subject
@@ -293,8 +294,9 @@ foreach ($posts as $post) {
     $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "forum")."</a>";
 
     // Now pring the post.
-    forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false,
-            $fulllink, '', -99, false);
+    $postoptions->footer = $fulllink;
+    $postoptions->dummyifcantsee = false;
+    echo forum_display_post($post, $discussion, $forum, $cm, $course, $options);
 }
 
 echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);

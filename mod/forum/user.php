@@ -230,6 +230,8 @@ $rm = new rating_manager();
 $ratingoptions = new stdClass;
 $ratingoptions->component = 'mod_forum';
 $ratingoptions->ratingarea = 'post';
+
+$options = new stdClass();
 foreach ($result->posts as $post) {
     if (!isset($result->forums[$post->forum]) || !isset($discussions[$post->discussion])) {
         // Something very VERY dodgy has happened if we end up here
@@ -297,7 +299,8 @@ foreach ($result->posts as $post) {
     $discussionurl->set_anchor('p'.$post->id);
     $fulllink = html_writer::link($discussionurl, get_string("postincontext", "forum"));
 
-    $postoutput[] = forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false, $fulllink, '', null, true, null, true);
+    $options->footer = $fulllink;
+    $postoutput[] = forum_display_post($post, $discussion, $forum, $cm, $course, $options);
 }
 
 $userfullname = fullname($user);

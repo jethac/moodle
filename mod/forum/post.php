@@ -404,7 +404,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
                          "post.php?delete=$delete&confirm=$delete",
                          $CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.'#p'.$post->id);
 
-            forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
+            echo forum_display_post($post, $disussion, $forum, $cm, $course);
 
             if (empty($post->edit)) {
                 $forumtracked = forum_tp_is_tracked($forum);
@@ -417,7 +417,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
             echo $OUTPUT->confirm(get_string("deletesure", "forum", $replycount),
                          "post.php?delete=$delete&confirm=$delete",
                          $CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.'#p'.$post->id);
-            forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
+            echo forum_display_post($post, $disussion, $forum, $cm, $course);
         }
 
     }
@@ -533,7 +533,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
         include('prune.html');
 
-        forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
+        echo forum_display_post($post, $disussion, $forum, $cm, $course);
         echo '</center>';
     }
     echo $OUTPUT->footer();
@@ -983,7 +983,7 @@ if (!empty($parent)) {
         print_error('notpartofdiscussion', 'forum');
     }
 
-    forum_print_post($parent, $discussion, $forum, $cm, $course, false, false, false);
+    echo forum_display_post($post, $disussion, $forum, $cm, $course);
     if (empty($post->edit)) {
         if ($forum->type != 'qanda' || forum_user_can_see_discussion($forum, $discussion, $modcontext)) {
             $forumtracked = forum_tp_is_tracked($forum);

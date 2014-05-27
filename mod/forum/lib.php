@@ -1351,7 +1351,7 @@ function forum_user_complete($course, $user, $mod, $forum) {
             }
             $discussion = $discussions[$post->discussion];
 
-            forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
+            echo forum_display_post($post, $discussion, $forum, $cm, $course);
         }
     } else {
         echo "<p>".get_string("noposts", "forum")."</p>";
@@ -2955,8 +2955,8 @@ function forum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfro
  * @param boolean $link Just print a shortened version of the post as a link to the full post.
  * @param string $footer Extra stuff to print after the message.
  * @param string $highlight Space-separated list of terms to highlight.
- * @param int $post_read true, false or -99. If we already know whether this user
- *          has read this post, pass that in, otherwise, pass in -99, and this
+ * @param int $post_read true, false or null. If we already know whether this user
+ *          has read this post, pass that in, otherwise, pass in null, and this
  *          function will work it out.
  * @param boolean $dummyifcantsee When forum_user_can_see_post says that
  *          the current user can't see this post, if this argument is true
@@ -2987,10 +2987,13 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     }
 }
 
-function forum_display_post($post, $discussion, $forum, &$cm, $course, $options) {
+function forum_display_post($post, $discussion, $forum, &$cm, $course, $options = null) {
     global $USER, $CFG, $OUTPUT, $PAGE;
-
     require_once($CFG->libdir . '/filelib.php');
+
+    if (!$options) {
+        $options = new stdClass();
+    }
 
     // Default options:
     $defaults = array(
@@ -5238,8 +5241,11 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
 
                 $discussion->forum = $forum->id;
 
-                forum_print_post($discussion, $discussion, $forum, $cm, $course, $ownpost, 0, $link, false,
-                        '', null, true, $forumtracked);
+                $options = new stdClass();
+                $options->ownpost = $ownpost;
+                $options->link = $link;
+                $options->istracked = $forumtracked;
+                forum_display_post($discussion, $discussion, $forum, $cm, $course, $options);
             break;
         }
     }
@@ -5420,8 +5426,13 @@ function forum_print_posts_flat($course, &$cm, $forum, $discussion, $post, $mode
 
         $postread = !empty($post->postread);
 
-        forum_print_post($post, $discussion, $forum, $cm, $course, $ownpost, $reply, $link,
-                             '', '', $postread, true, $forumtracked);
+        $options = new stdClass();
+        $options->ownpost = $ownpost;
+        $options->reply = $reply;
+        $options->link = $link;
+        $options->postisread = $postread;
+        $options->istracked = $forumtracked;
+        echo forum_display_post($discussion, $discussion, $forum, $cm, $course, $options);
     }
 }
 
