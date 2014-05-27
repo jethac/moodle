@@ -90,5 +90,10 @@ include dirname(__FILE__) . '/includes/navbar.php';
     <?php echo $OUTPUT->standard_end_of_body_html() ?>
 
 </div>
+<script>
+YUI().use('node', function(Y) {
+//    Y.all('a').on('click', function(e) { e.preventDefault();});
+});
+</script>
 </body>
 </html>

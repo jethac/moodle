@@ -198,7 +198,7 @@ class theme_newnav_core_renderer extends theme_bootstrapbase_core_renderer {
                                 <li class="divider"></li>
                                 <li><?php echo html_writer::link(new moodle_url('/user/preferences.php'), $this->pix_icon('i/settings', '') . ' Preferences'); ?></li>
                             <?php if ($data->showlogout): ?>
-                                <li><?php echo html_writer::link($data->logouturl, $this->pix_icon('a/logout', '') . ' ' . $data->logouttext); ?></li>
+                                <li class="logout"><?php echo html_writer::link($data->logouturl, $this->pix_icon('a/logout', '') . ' ' . $data->logouttext); ?></li>
                             <?php endif ?>
                         </ul>
                     </li>
