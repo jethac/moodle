@@ -17,17 +17,21 @@
         <?php
         	}
         ?>
-            <a class="btn btn-navbar" data-toggle="workaround-collapse" data-target=".nav-collapse">
+            <a class="btn btn-navbar" data-toggle="workaround-collapse" data-target=".nav-collapse-custom">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </a>
-            <div class="nav-collapse collapse">
+            <a class="btn btn-navbar-user btn-navbar" data-toggle="workaround-collapse" data-target=".nav-collapse-login">
+                <?php echo $this->user_picture($USER, array('link' => false));?>
+            </a>
+            <div class="nav-collapse nav-collapse-custom collapse">
+                <?php echo $OUTPUT->custom_menu(); ?>
+            </div>
+            <div class="nav-collapse nav-collapse-login collapse">
                 <ul class="nav pull-right">
-                    <li><?php echo $OUTPUT->page_heading_menu(); ?></li>
                     <li class="navbar-text"><?php echo $OUTPUT->login_info() ?></li>
                 </ul>
-                <?php echo $OUTPUT->custom_menu(); ?>
             </div>
         </div>
     </nav>
