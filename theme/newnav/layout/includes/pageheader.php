@@ -1,10 +1,13 @@
 <?php
 //echo $this->page->pagetype ;
+//
 $__useUserHeader =
     $this->page->pagetype == 'user-profile' ||
     $this->page->pagetype == 'user-editadvanced';
 
-if ($__useUserHeader) {
+
+if (false){//$__useUserHeader) {
+
 // this is a terrible, terrible hack. this should not be here.
 global $DB;
 $userid = optional_param('id', 0, PARAM_INT);

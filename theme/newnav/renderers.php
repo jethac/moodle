@@ -15,7 +15,7 @@ class theme_newnav_core_renderer extends theme_bootstrapbase_core_renderer {
      * @return string HTML fragment.
      */
     public function login_info($withlinks = null) {
-        global $USER, $CFG, $DB, $SESSION;
+        global $USER, $CFG, $DB, $SESSION, $NAVBAR;
 
         $data = array(
             'withlinks' => null,
@@ -171,11 +171,11 @@ class theme_newnav_core_renderer extends theme_bootstrapbase_core_renderer {
         }
         $data->logintext = get_string('login');
 
+
         ob_start();
         ?>
-        <style type="text/css">
-
-        </style>
+    <ul class="nav pull-right">
+        <li class="navbar-text">
         <div class='logininfo'>
             <?php if ($data->notloggedin || $data->loggedinasguest): ?>
                 <?php echo $data->loginas; ?>
@@ -187,7 +187,7 @@ class theme_newnav_core_renderer extends theme_bootstrapbase_core_renderer {
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown"><?php echo fullname($USER, true); ?>
                             <b class="caret"></b>
-                            <?php echo $this->user_picture($USER, array('link' => false));?>
+                            <?php echo $this->user_picture($USER, array('link' => false)); ?>
                         </a>
                         <ul class="dropdown-menu pull-right">
                             <li><?php echo html_writer::link(new moodle_url('/my/'), $this->pix_icon('i/course', '') . ' My home'); ?></li>
@@ -208,6 +208,8 @@ class theme_newnav_core_renderer extends theme_bootstrapbase_core_renderer {
                 </div>
             <?php endif ?>
         </div>
+        </li>
+    </ul>
         <?php
         $output = ob_get_clean();
         return $output;

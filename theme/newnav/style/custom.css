@@ -1,7 +1,9 @@
 a.logo{background:url([[setting:logo]]) no-repeat 0 0;display:block;float:left;height:75px;margin:0;padding:0;width:100%}
 .dir-rtl a.logo{background:url([[setting:logo]]) no-repeat 100% 0;display:block;float:right}
 a#brand{position:absolute;width:56px;height:41px;background-size:100%}
-@media (max-width:979px){}.path-user #page-header .profileheading{display:block;position:relative;margin:12px 0;padding-left:0;padding-top:8px;float:left}.path-user #page-header .profileheading h1{float:none;margin:0;padding-left:0;padding-top:8px;line-height:22px}
+.nav-collapse:before{content:'';height:0;clear:both;visibility:none}
+.nav-collapse.active{display:block}.nav-collapse.active>.nav{margin-top:4px;background:rgba(0,0,0,0.1)}
+@media (max-width:979px){.navbar.navbar-fixed-top .navbar-inner,.navbar.navbar-fixed-bottom .navbar-inner{padding:0}.navbar.navbar-fixed-top .navbar-inner .container-fluid,.navbar.navbar-fixed-bottom .navbar-inner .container-fluid{padding-left:0;padding-right:0;padding-top:5px}.navbar.navbar-fixed-top .navbar-inner .container-fluid .brand,.navbar.navbar-fixed-bottom .navbar-inner .container-fluid .brand{padding-left:20px} .navbar.navbar-fixed-top .navbar-inner .container-fluid .btn-navbar,.navbar.navbar-fixed-bottom .navbar-inner .container-fluid .btn-navbar{margin-right:20px;margin-left:-15px}}.path-user #page-header .profileheading{display:block;position:relative;margin:12px 0;padding-left:0;padding-top:8px;float:left}.path-user #page-header .profileheading h1{float:none;margin:0;padding-left:0;padding-top:8px;line-height:22px}
 .path-user #page-header .profileheading small.user-meta{display:block;font-size:14px;color:#777}.path-user #page-header .profileheading small.user-meta .user-tags{list-style-type:none;padding:0;margin:0;display:inline-block}.path-user #page-header .profileheading small.user-meta .user-tags li{font-size:.8em;text-transform:lowercase;border-radius:17px;background:#eee;display:inline-block;padding:2px 8px}
 .path-user #page-header .breadcrumb-nav li:nth-child(4) a{color:#f5f5f5;text-shadow:none}.path-user #page-header .breadcrumb-nav li:nth-child(4) a:before{content:'Profile';text-shadow:0 1px 0 #fff;color:#0070a8}
 .path-user #page-content .userprofile h2,.path-user #page-content .userprofile .profilepicture{display:none}
@@ -27,9 +29,13 @@ a#brand{position:absolute;width:56px;height:41px;background-size:100%}
 .course-content ul.weeks li.section .side .section-handle img{position:relative;top:4px}
 .course-content ul.weeks li.section .activity .mod-indent-outer{padding-left:0}
 .editing .course-content ul.weeks li.section .activity .mod-indent-outer{padding-left:32px}
-.navbar .btn-navbar{width:18px;height:18px;padding:8px 10px 6px 10px;margin-top:1px;border-bottom:4px solid #fc0087}.navbar .btn-navbar:hover,.navbar .btn-navbar.active{border-color:#fc0087}.navbar .btn-navbar:hover .icon-bar,.navbar .btn-navbar.active .icon-bar{box-shadow:0 1px 0 #fc0087;background-color:rgba(252,0,135,0.1);border-radius:2px}
-.navbar .btn-navbar.btn-navbar-user{width:38px;height:32px;padding:0;overflow:hidden;margin-top:1px;border-bottom:4px solid #0087fc;}.navbar .btn-navbar.btn-navbar-user:hover,.navbar .btn-navbar.btn-navbar-user.active{border-color:#0087fc}.navbar .btn-navbar.btn-navbar-user:hover .icon-bar,.navbar .btn-navbar.btn-navbar-user.active .icon-bar{box-shadow:0 1px 0 #0087fc;background-color:rgba(0,135,252,0.1);border-radius:2px}
-.navbar .btn-navbar.btn-navbar-user img{display:block;width:38px;margin:0}
+.nav-collapse-default.active{border-top:4px solid #fc0087;position:relative;top:-6px;box-shadow:0 -11px 50px rgba(0,0,0,0.2)}
+.nav-collapse-user.active{border-top:4px solid #0087fc;position:relative;top:-6px;box-shadow:0 -11px 50px rgba(0,0,0,0.2)}
+.navbar .btn-navbar{width:18px;height:18px;padding:8px 10px 6px 10px;position:relative;margin-top:1px;border-bottom:4px solid #fc0087}.navbar .btn-navbar:hover,.navbar .btn-navbar.active{border-color:#fc0087}.navbar .btn-navbar:hover .icon-bar,.navbar .btn-navbar.active .icon-bar{box-shadow:0 1px 0 #fc0087;background-color:rgba(252,0,135,0.1);border-radius:2px}
+.navbar .btn-navbar.active{z-index:1;border-bottom:4px solid transparent !important;border-bottom-left-radius:0;border-bottom-right-radius:0;box-shadow:0 -11px 50px rgba(0,0,0,0.4)}
+.navbar .btn-navbar.btn-navbar-user{width:38px;height:32px;padding:0;overflow:hidden;margin-top:1px;border-bottom:4px solid #0087fc}.navbar .btn-navbar.btn-navbar-user:hover,.navbar .btn-navbar.btn-navbar-user.active{border-color:#0087fc}.navbar .btn-navbar.btn-navbar-user:hover .icon-bar,.navbar .btn-navbar.btn-navbar-user.active .icon-bar{box-shadow:0 1px 0 #0087fc;background-color:rgba(0,135,252,0.1);border-radius:2px}
+.navbar .btn-navbar.btn-navbar-user.active{height:36px;border-bottom:0 none !important}
+.navbar .btn-navbar.btn-navbar-user img{display:block;width:38px;height:38px;margin:0}
 .navbar .nav>li.dropdown>a.dropdown-toggle{display:block;position:relative;padding:0 5px;text-decoration:none;line-height:41px;height:41px}.navbar .nav>li.dropdown>a.dropdown-toggle .caret{vertical-align:text-top}
 .navbar .nav>li.dropdown>a.dropdown-toggle .userpicture{border-radius:2px}
 .navbar .nav>li.dropdown .dropdown-menu>li>a{display:block;padding:3px 10px}

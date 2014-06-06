@@ -173,3 +173,89 @@ function newnav_set_logo() {
 function newnav_set_customcss() {
     throw new coding_exception('Please call theme_'.__FUNCTION__.' instead of '.__FUNCTION__);
 }
+
+global $NAVBAR;
+if(!$NAVBAR)
+    $NAVBAR = new navbar_helper();
+
+class navbar_helper {
+
+    protected $buttons = [];
+    protected $menus = [];
+
+    private $fstr_btn = '<a class="btn btn-navbar btn-navbar-%s" data-toggle="workaround-collapse" data-target=".nav-collapse-%s">%s</a>';
+    private $str_btn_default = '<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>';
+
+    private $fstr_menu = '<div class="nav-collapse nav-collapse-%s collapse">%s</div>';
+    private $str_menu_default = '<span>No menu defined.</span>';
+
+    public function __construct() {
+        global $OUTPUT;
+
+        $buttons = array();
+        $menus = array();
+
+        $this->enqueue_navbar_item('default', $this->str_btn_default, $OUTPUT->custom_menu());
+        //$this->enqueue_navbar_button('user');
+        $this->enqueue_navbar_menu('user', $OUTPUT->login_info());
+    }
+
+    public function enqueue_navbar_button($name, $button_contents = false, $force = false) {
+        //echo('enqueue_navbar_button('.$name.', '.$force.')<br />');
+        if(!($name))
+            return;
+
+        if (array_key_exists($name, $this->buttons) && !$force) {
+            // do nothing
+        } else {
+            $btnstr = sprintf(
+                $this->fstr_btn,
+                $name,
+                $name,
+                ($button_contents)? $button_contents : $this->str_btn_default // use default button contents if none provided
+            );
+            $this->buttons[$name] = $btnstr;
+        }
+
+    }
+
+    public function enqueue_navbar_menu($name, $menu_contents, $force = false) {
+        //echo('enqueue_navbar_menu('.$name.', '.$force.')<br />');
+        if(!($name))
+            return;
+
+        if (array_key_exists($name, $this->menus) && !$force) {
+            // do nothing
+        } else {
+            $menustr = sprintf(
+                $this->fstr_menu,
+                $name,
+                ($menu_contents)? $menu_contents : $this->str_menu_default
+            );
+            $this->menus[$name] = $menustr;
+        }
+
+
+    }
+
+    public function enqueue_navbar_item($name, $button_contents, $menu_contents, $force = false) {
+
+        if(!($name))
+            return;
+
+        $this->enqueue_navbar_button($name, $button_contents, $force);
+        $this->enqueue_navbar_menu($name, $menu_contents, $force);
+    }
+
+    public function render_navbar_items() {
+        foreach ($this->buttons as $key => $value) {
+            echo $value;
+        }
+        foreach ($this->buttons as $key => $value) {
+            echo $this->menus[$key];
+        }
+        ?>
+        <?php
+    }
+
+};
