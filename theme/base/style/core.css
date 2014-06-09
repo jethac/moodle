@@ -188,6 +188,86 @@ a.skip:active {position: static;display: block;}
  */
 .headermain {float:left;margin:15px;font-size:2.3em;}
 .headermenu {float:right;margin:10px;font-size:0.8em;text-align:right;}
+
+/**
+ * User menu
+ */
+.yui3-menu.user-menu {
+    border: 1px solid #333;
+}
+.yui3-menu.user-menu .yui3-menu-content {
+    border: 0px none;
+}
+
+.yui3-menu.user-menu .yui3-menu-label {
+    background: #fff;
+    padding: 4px 6px;
+    font-size: 15px;
+    border: 0px none;
+    margin: 0;
+}
+
+.yui3-menu.user-menu .yui3-menu-label * {
+    vertical-align: middle;
+}
+.dir-ltr .yui3-menu.user-menu .yui3-menu-label .userpicture {
+    margin-right: 6px;
+}
+.dir-ltr .yui3-menu.user-menu .yui3-menu-label .caret {
+    margin-left: 6px;
+}
+
+.dir-rtl .yui3-menu.user-menu .yui3-menu-label .userpicture {
+    margin-left: 6px;
+}
+.dir-rtl .yui3-menu.user-menu .yui3-menu-label .caret {
+    margin-right: 6px;
+}
+
+.yui3-menu.user-menu .custom_menu_submenu {
+    background:#00f;
+}
+
+.yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem {
+    margin: 0;
+}
+
+.yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem .yui3-menuitem-content {
+    display: block; height: 16px; line-height: 16px; font-size: 12px; font-weight: bold; padding:8px; text-align: left; color:#222;
+}
+
+.yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem .yui3-menuitem-content .smallicon {
+    vertical-align: middle;
+}
+
+.dir-ltr .yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem .yui3-menuitem-content .smallicon {
+    margin-right: 6px;
+}
+.dir-rtl .yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem .yui3-menuitem-content {
+    text-align: right;
+}
+.dir-rtl .yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem .yui3-menuitem-content .smallicon {
+    margin-left: 6px;
+}
+
+.yui3-menu > .yui3-menu-content > ul > .yui3-menuitem.divider {
+    overflow:hidden;
+    text-indent:-90px;
+    height:0;
+    border-top: 1px solid #333;
+    width: 100%;
+}
+.yui3-menu.yui3-menu-horizontal > .yui3-menu-content > ul > .yui3-menuitem.divider {
+    border-top: 0px none;
+    border-left: 1px solid #333;
+    width: 0 !important;
+    height: 100%
+}
+.yui3-menuitem-active.divider {
+    background: transparent;
+}
+
+
 #course-header {clear:both;}
 
 /**

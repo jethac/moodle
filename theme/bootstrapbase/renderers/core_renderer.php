@@ -126,6 +126,72 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
         return $content.'</ul>';
     }
 
+    public function render_user_menu(user_menu $menu) {
+        global $CFG;
+
+        $content = '<ul class="nav nav-user">';
+        $idx = 0;
+        foreach ($menu->get_children() as $item) {
+            $content .= $this->render_user_menu_item($item, 1);
+            $idx++;
+        }
+
+        return $content.'</ul>';
+    }
+
+    protected function render_user_menu_item(custom_menu_item $menunode, $level = 0) {
+        static $submenucount = 0;
+
+        if ($menunode->has_children()) {
+
+            if ($level == 1) {
+                $class = 'dropdown';
+            } else {
+                $class = 'dropdown-submenu';
+            }
+
+            if ($menunode === $this->language) {
+                $class .= ' langmenu';
+            }
+            $content = html_writer::start_tag('li', array('class' => $class));
+            // If the child has menus render it as a sub menu.
+            $submenucount++;
+            if ($menunode->get_url() !== null) {
+                $url = $menunode->get_url();
+            } else {
+                $url = '#cm_submenu_'.$submenucount;
+            }
+            $content .= html_writer::start_tag('a', array('href'=>$url, 'class'=>'dropdown-toggle', 'data-toggle'=>'dropdown', 'title'=>$menunode->get_title()));
+            $content .= $menunode->get_text();
+            if ($level == 1) {
+                $content .= '<b class="caret"></b>';
+            }
+            $content .= '</a>';
+            $content .= '<ul class="dropdown-menu">';
+            foreach ($menunode->get_children() as $menunode) {
+                $content .= $this->render_user_menu_item($menunode, 0);
+            }
+            $content .= '</ul>';
+        } else {
+            $content = '<li>';
+            // The node doesn't have children so produce a final menuitem.
+            if ($menunode->get_url() !== null) {
+                $url = $menunode->get_url();
+            } else {
+                $url = '#';
+            }
+            $content .= html_writer::link(
+                $url,
+                $menunode->get_text(),
+                array(
+                    'title'=>$menunode->get_title(),
+                    'class'=>($menunode->get_text() == '-')? 'divider':''
+                )
+            );
+        }
+        return $content;
+    }
+
     /*
      * This code renders the custom menu items for the
      * bootstrap dropdown menu.
@@ -220,6 +286,53 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
             return html_writer::tag('li', $link);
         }
     }
+
+    /**
+     * Layout elements.
+     *
+     * This renderer does not override any existing renderer but provides a way of including
+     * portion of files into your layout pages. Those portions are called 'elements' and are
+     * located in the directory layout/elements of your theme.
+     *
+     * To include one of those elements in your layout (or other elements), use this:
+     *
+     *   <?php echo $OUTPUT->element('elementNameWithoutDotPHP'); ?>
+     *
+     * You can also pass some variables to your elements, by passing an array as the second argument.
+     *
+     *   $myvars = array('var1' => 'Hello', 'var2' => 'World');
+     *   echo $OUTPUT->element('elementNameWithoutDotPHP', $myvars);
+     *
+     * Then, you can simply use the variables in your element, in our example your element could be:
+     *
+     *   <h1><?php echo $var1; ?> <?php echo $var2; ?></h1>
+     *
+     * You do not need to pass $CFG, $OUTPUT or $VARS, they are made available for you.
+     *
+     * @param string $name of the element, without .php.
+     * @param array $vars associative array of variables.
+     * @return string
+     */
+    public function element($name, $vars = array()) {
+        global $CFG, $SITE, $USER;
+        $OUTPUT = $this;
+        $PAGE = $this->page;
+        $COURSE = $this->page->course;
+
+        $element = $name . '.php';
+        $candidate = $this->page->theme->dir . '/layout/elements/' . $element;
+        if (!is_readable($candidate)) {
+            debugging("Could not include element $name.");
+            return '';
+        }
+
+        extract($vars);
+        ob_start();
+        include($candidate);
+        $output = ob_get_clean();
+        return $output;
+    }
+
 }
 
 /**

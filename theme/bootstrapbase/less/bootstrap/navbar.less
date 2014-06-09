@@ -247,8 +247,68 @@
   text-decoration: none;
   text-shadow: 0 1px 0 @navbarBackgroundHighlight;
 }
-.navbar .nav .dropdown-toggle .caret {
-  margin-top: 8px;
+
+.navbar .nav {
+  .dropdown-toggle {
+    .caret {
+      margin: 0px;
+      vertical-align: middle;
+    }
+  }
+  &.nav-user {
+    .dropdown-toggle {
+      padding: 4px 6px;
+    }
+  }
+}
+
+.dir-ltr {
+  .nav {
+    .dropdown-toggle {
+      .caret {
+        margin-left: 6px;
+      }
+    }
+    .dropdown-menu {
+      padding: 3px 20px 3px 8px;
+    }
+    &.nav-user {
+      .dropdown-toggle {
+        .userpicture {
+          margin-right: 6px;
+        }
+      }
+      .dropdown-menu {
+        .smallicon {
+          margin-right: 6px;
+        }
+      }
+    }
+  }
+}
+.dir-rtl {
+  .nav {
+    .dropdown-toggle {
+      .caret {
+        margin-right: 6px;
+      }
+    }
+    .dropdown-menu {
+      padding: 3px 8px 3px 20px;
+    }
+    &.nav-user {
+      .dropdown-toggle {
+        .userpicture {
+          margin-left: 6px;
+        }
+      }
+      .dropdown-menu {
+        .smallicon {
+          margin-left: 6px;
+        }
+      }
+    }
+  }
 }
 
 // Hover/focus

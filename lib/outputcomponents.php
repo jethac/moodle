@@ -3064,7 +3064,7 @@ class tabtree extends tabobject {
 class action_menu implements renderable {
 
     /**
-     * Top right alignment.
+     * Top left alignment.
      */
     const TL = 1;
 
@@ -3074,12 +3074,12 @@ class action_menu implements renderable {
     const TR = 2;
 
     /**
-     * Top right alignment.
+     * Bottom left alignment.
      */
     const BL = 3;
 
     /**
-     * Top right alignment.
+     * Bottom right alignment.
      */
     const BR = 4;
 
@@ -3487,5 +3487,124 @@ class action_menu_link_secondary extends action_menu_link {
      */
     public function __construct(moodle_url $url, pix_icon $icon = null, $text, array $attributes = array()) {
         parent::__construct($url, $icon, $text, false, $attributes);
+    }
+}
+
+
+class navbar_menu {
+    var $name = "";
+    var $button_contents = "";
+    var $menu_contents = "";
+    var $alignment = "left";
+    var $collapses = false;
+
+    public function __construct($name, $button_contents = '', $menu_contents = '', $alignment = 'left', $collapses = true) {
+        $this->name = $name;
+
+        $this->button_contents = $button_contents;
+        $this->menu_contents = $menu_contents;
+        $this->collapses = $collapses;
+        $this->alignment = $alignment;
+    }
+
+    public function name() {
+        return $this->name;
+    }
+}
+
+class navbar_dropdown_collection implements renderable {
+
+    var $dropdowns = array();
+
+    public function __construct() {
+        global $OUTPUT;
+        $this->dropdowns = [];
+    }
+
+    public function enqueue($dropdown) {
+        $this->dropdowns[$dropdown->name()] = $dropdown;
+    }
+
+}
+
+class user_menu extends custom_menu {
+
+    // User variable so renderer can grab user pic and such.
+    var $user;
+
+    var $grouping_lengths = [1, 1];
+
+    public function __construct($user)
+    {
+        global $OUTPUT;
+
+        $data = $OUTPUT->get_flags();
+
+        $this->user = $user;
+        $this->currentlanguage = null;
+
+        $root = new custom_menu_item(
+            $OUTPUT->user_picture($this->user, array('link' => false)) . fullname($this->user, true),
+            null,
+            fullname($this->user, true)
+        );
+
+        $root->add(
+            $OUTPUT->pix_icon('i/course', '') . get_string('mymoodle', 'admin'),
+            new moodle_url('/my/'),
+            get_string('mymoodle', 'admin')
+        );
+
+        $root->add('####', null, null);
+
+        $root->add(
+            $OUTPUT->pix_icon('i/user', '') . get_string('myprofile', 'moodle'),
+            $data->link,
+            get_string('myprofile', 'moodle')
+        );
+
+        $root->add(
+            $OUTPUT->pix_icon('a/logout', '') . $data->logouttext,
+            $data->logouturl,
+            $data->logouttext
+        );
+
+        $this->override_children([
+            $root
+        ]);
+
+    }
+}
+
+// Maybe...
+class nav_bar_item implements renderable {
+
+    var $settings = array(
+        'alignment' => 'left',
+        'collapses' => true,
+        'button' => null,
+        'menu' => null // replace with get_string localized message
+    );
+
+    public function __construct($args) {
+        if(isset($args)) {
+            $settings = array_merge($settings, $args);
+        }
+    }
+}
+class nav_bar implements renderable {
+
+    // Site branding.
+    var $brand;
+
+    var $menus = array();
+
+    public function __construct($brand) {
+        $this->brand = $brand;
+        $this->menus = array();
+    }
+
+    public function enqueue(nav_bar_item $item) {
+        array_push($this->menus, $item);
     }
 }

@@ -574,6 +574,302 @@ class core_renderer extends renderer_base {
         return $output;
     }
 
+    public function navbar_dropdowns($withlinks = true) {
+        global $USER, $CFG, $DB, $SESSION, $OUTPUT;
+
+        $data = $this->get_flags(null);
+
+
+        // Now, actually build the navbars.
+        $navbars = new navbar_dropdown_collection();
+
+        // Enqueue the custom menu.
+        $navbar_custom = new navbar_menu(
+            'custom',
+            '',
+            $OUTPUT->custom_menu()
+        );
+        $navbars->enqueue($navbar_custom);
+
+        // Enqueue the user menu.
+        // If the user isn't logged in, we can just fall back to using the login_info renderer.
+
+        $navbar_user = new navbar_menu(
+            'user',
+            $this->user_picture($USER, array('link' => false)),
+            //'foo'//($data->notloggedin || $data->loggedinasguest)? $OUTPUT->login_info() :
+            $OUTPUT->user_dropdown(),
+            'right'
+        );
+        $navbars->enqueue($navbar_user);
+
+        $refg = new navbar_menu(
+            'foobar',
+            '',
+            'NOW I HAVE A MACHINEGUN.',
+            'right',
+            false
+        );
+        $navbars->enqueue($refg);
+
+
+        // Does the page itself have a headingmenu?
+        // @todo test this properly
+        $pageheading = $this->page_heading_menu();
+        if(strlen($pageheading) > 0) {
+            $navbar_headermenu = new navbar_menu(
+                'headermenu',
+                '',
+                $pageheading,
+                'right',
+                false
+            );
+            $navbars->enqueue($navbar_headermenu);
+        }
+
+        return $this->render($navbars);
+    }
+
+    public function get_flags($withlinks = null) {
+
+        global $USER, $CFG, $DB, $SESSION, $OUTPUT;
+
+        $data = array(
+            'withlinks' => null,
+            'withlinks' => null,
+            'loginpage' => null,
+            'course' => null,
+            'loggedinas' => null,
+            'realuser' => null,
+            'loginasfullname' => null,
+            'realuser' => null,
+            'withlinks' => null,
+            'loginastitle' => null,
+            'loginaslink' => null,
+            'course' => null,
+            'loginurl' => null,
+            'context' => null,
+            'fullname' => null,
+            'loggedinasguest' => null,
+            'withlinks' => null,
+            'link' => null,
+            'linktitle' => null,
+            'from' => null,
+            'fromurl' => null,
+            'loginas' => null,
+            'loginpage' => null,
+            'withlinks' => null,
+            'showloginlink' => null,
+            'role' => null,
+            'loginas' => null,
+            'username' => null,
+            'switchrole' => null,
+            'switchroleurl' => null,
+            'switchroleurl' => null,
+            'switchroleurl' => null,
+            'loginas' => null,
+            'username' => null,
+            'showlogout' => null,
+            'logouttext' => null,
+            'notloggedin' => null,
+            'loginas' => null,
+            'loginpage' => null,
+            'withlinks' => null,
+            'showloginlink' => null,
+            'logintext' => null,
+            'notloggedin' => null,
+            'loginas' => null,
+            'showloginlink' => null,
+            'loginurl' => null,
+            'logintext' => null,
+            'username' => null
+        );
+        $data = (object) $data;
+
+        if (during_initial_install()) {
+            return '';
+        }
+
+        $data->withlinks = $withlinks;
+        if (is_null($withlinks)) {
+            $data->withlinks = empty($this->page->layout_options['nologinlinks']);
+        }
+
+        $data->loginpage = ((string)$this->page->url === get_login_url());
+        $data->course = $this->page->course;
+        $course = $this->page->course;
+        $data->loggedinas = \core\session\manager::is_loggedinas();
+        $data->realuser = \core\session\manager::get_realuser();
+        $data->loginasfullname = fullname($data->realuser, true);
+        if (\core\session\manager::is_loggedinas()) {
+            if ($data->withlinks) {
+                $data->loginastitle = get_string('loginas');
+                $data->loginaslink = new moodle_url('/course/loginas.php', array('id' => $data->course->id, 'sesskey' => sesskey()));
+            }
+        } else {
+            $realuserinfo = '';
+        }
+
+        $loginurl = get_login_url();
+        $data->loginurl = $loginurl;
+
+        if (empty($course->id)) {
+            // $course->id is not defined during installation
+            return '';
+        } else if (isloggedin()) {
+            $context = context_course::instance($course->id);
+            $data->context = $context;
+
+            $fullname = fullname($USER, true);
+            $data->fullname = $fullname;
+            // Since Moodle 2.0 this link always goes to the public profile page (not the course profile page)
+            if ($data->withlinks) {
+                $data->link = new moodle_url('/user/profile.php', array('id' => $USER->id));
+                $data->linktitle = get_string('viewprofile');
+            }
+            if (is_mnet_remote_user($USER) and $idprovider = $DB->get_record('mnet_host', array('id'=>$USER->mnethostid))) {
+                $data->from = $idprovider->name;
+                if ($withlinks) {
+                    $data->fromurl = $idprovider->wwwroot;
+                }
+            }
+            if (isguestuser()) {
+                $loggedinas = $realuserinfo.get_string('loggedinasguest');
+                $data->loggedinasguest = true;
+                $data->loginas = get_string('loggedinasguest');
+                if (!$data->loginpage && $data->withlinks) {
+                    $data->showloginlink = true;
+                }
+            } else if (is_role_switched($course->id)) { // Has switched roles
+                $rolename = '';
+                if ($role = $DB->get_record('role', array('id'=>$USER->access['rsw'][$context->path]))) {
+                    $data->role = role_get_name($role, $context);
+                    $rolename = ': '.role_get_name($role, $context);
+                }
+                $data->loginas = get_string('loggedinas', 'moodle', $data->fullname);
+                if ($withlinks) {
+                    $data->switchrole = get_string('switchrolereturn');
+                    $data->switchroleurl = new moodle_url('/course/switchrole.php', array('id'=>$course->id,'sesskey'=>sesskey(), 'switchrole'=>0, 'returnurl'=>$this->page->url->out_as_local_url(false)));
+                    $data->switchroleurl = $data->switchroleurl->out();
+                }
+            } else {
+                $data->loginas = get_string('loggedinas', 'moodle', $data->fullname);
+                if ($data->withlinks) {
+                    $data->showlogout = true;
+                    $data->logouttext = get_string('logout');
+                    $data->logouturl = new moodle_url('/login/logout.php', array('sesskey' => sesskey()));
+                }
+            }
+        } else {
+            $data->notloggedin = true;
+            $data->loginas = get_string('loggedinnot', 'moodle');
+            if (!$data->loginpage && $data->withlinks) {
+                $data->showloginlink = true;
+            }
+        }
+        $data->logintext = get_string('login');
+
+        return $data;
+    }
+
+    public function user_dropdown() {
+        global $USER, $CFG;
+
+        $data = $this->get_flags();
+        $user_output_inner = '';
+
+        // Enqueue the user menu.
+        // If the user isn't logged in, we can just fall back to using the login_info renderer.
+        if ($data->notloggedin || $data->loggedinasguest) {
+            return $this->login_info();
+        }
+        // If the user *is* logged in, we need to render the user menu.
+        else {
+            // Create the user menu renderable.
+            $user_menu = new user_menu($USER);
+            return $this->render($user_menu);
+        }
+    }
+
+
+    /**
+     * Renders and outputs a collection of navbar_menus, keeping buttons
+     * and menus separate so CSS clear and float rules don't conflict.
+     *
+     * @param  navbar_dropdown_collection $collection The collection to be rendered.
+     * @return string                                 HTML code.
+     */
+    public function render_navbar_dropdown_collection(navbar_dropdown_collection $collection) {
+
+        $render_output = '';
+
+        $render_output_buttons = '';
+        $render_output_menus = '';
+        // Render buttons.
+        foreach ($collection->dropdowns as $key => $dropdown) {
+            //if (strlen($dropdown->menu_contents) > 0) {
+            if ($dropdown->collapses) {
+                $render_output_buttons .= html_writer::tag(
+                    'a',
+                    strlen($dropdown->button_contents) != 0 ? $dropdown->button_contents : '<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>',
+                    array(
+                        'class' => 'btn btn-navbar btn-navbar-' . $dropdown->name,
+                        'data-toggle' => 'workaround-collapse',
+                        'data-target' => '.nav-collapse-' . $dropdown->name
+                    )
+                );
+            }
+            $render_output_menus .= html_writer::tag(
+                'div',
+                $dropdown->menu_contents,
+                array(
+                    'class' => 'pull-' . $dropdown->alignment . (($dropdown->collapses)? ' nav-collapse collapse nav-collapse-' . $dropdown->name:'')
+                )
+            );
+        }
+
+        $render_output = $render_output_buttons . $render_output_menus;
+
+        return $render_output;
+    }
+
+
+    /**
+     * Renders and outputs the user menu, with dividers between groups.
+     *
+     * @param  user_menu $menu      A user_menu object to be rendered.
+     * @return string               HTML code.
+     */
+    public function render_user_menu(user_menu $menu) {
+
+        static $menucount = 0;
+        // If the menu has no children return an empty string
+        if (!$menu->has_children()) {
+            return '';
+        }
+        // Increment the menu count. This is used for ID's that get worked with
+        // in JavaScript as is essential
+        $menucount++;
+        // Initialise this custom menu (the custom menu object is contained in javascript-static
+        $jscode = js_writer::function_call_with_Y('M.core_custom_menu.init', array('custom_menu_'.$menucount));
+        $jscode = "(function(){{$jscode}})";
+        $this->page->requires->yui_module('node-menunav', $jscode);
+        // Build the root nodes as required by YUI
+        $content = html_writer::start_tag('div', array('id'=>'custom_menu_'.$menucount, 'class'=>'yui3-menu yui3-menu-horizontal javascript-disabled user-menu'));
+        $content .= html_writer::start_tag('div', array('class'=>'yui3-menu-content'));
+        $content .= html_writer::start_tag('ul');
+        // Render each child
+        foreach ($menu->get_children() as $item) {
+            $content .= $this->render_custom_menu_item($item);
+        }
+        // Close the open tags
+        $content .= html_writer::end_tag('ul');
+        $content .= html_writer::end_tag('div');
+        $content .= html_writer::end_tag('div');
+        // Return the custom menu
+        return $content;
+    }
+
     /**
      * Return the standard string that says whether you are logged in (and switched
      * roles/logged in as another user).
@@ -3071,13 +3367,20 @@ EOD;
             $content .= html_writer::end_tag('li');
         } else {
             // The node doesn't have children so produce a final menuitem
-            $content = html_writer::start_tag('li', array('class'=>'yui3-menuitem'));
+            $content = html_writer::start_tag(
+                'li',
+                array(
+                    'class'=>(strcmp($menunode->get_text(), "#") === 0)? 'yui3-menuitem divider':'yui3-menuitem'
+                )
+            );
             if ($menunode->get_url() !== null) {
                 $url = $menunode->get_url();
             } else {
                 $url = '#';
             }
-            $content .= html_writer::link($url, $menunode->get_text(), array('class'=>'yui3-menuitem-content', 'title'=>$menunode->get_title()));
+            $content .= html_writer::link($url, $menunode->get_text(), array(
+                'class'=>'yui3-menuitem-content',
+                'title'=>$menunode->get_title()));
             $content .= html_writer::end_tag('li');
         }
         // Return the sub menu
@@ -4015,6 +4318,14 @@ class core_renderer_maintenance extends core_renderer {
     public function lang_menu() {
         // Computer says no lang menu.
         // debugging('Please do not use $OUTPUT->'.__FUNCTION__.'() when performing maintenance tasks.', DEBUG_DEVELOPER);
+        return '';
+    }
+
+    /**
+     * Does nothing. The maintenance renderer does not produce user menus.
+     * @return string
+     */
+    public function navbar_dropdowns($withlinks = true) {
         return '';
     }
 
