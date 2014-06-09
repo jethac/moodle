@@ -220,6 +220,53 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
             return html_writer::tag('li', $link);
         }
     }
+
+    /**
+     * Layout elements.
+     *
+     * This renderer does not override any existing renderer but provides a way of including
+     * portion of files into your layout pages. Those portions are called 'elements' and are
+     * located in the directory layout/elements of your theme.
+     *
+     * To include one of those elements in your layout (or other elements), use this:
+     *
+     *   <?php echo $OUTPUT->element('elementNameWithoutDotPHP'); ?>
+     *
+     * You can also pass some variables to your elements, by passing an array as the second argument.
+     *
+     *   $myvars = array('var1' => 'Hello', 'var2' => 'World');
+     *   echo $OUTPUT->element('elementNameWithoutDotPHP', $myvars);
+     *
+     * Then, you can simply use the variables in your element, in our example your element could be:
+     *
+     *   <h1><?php echo $var1; ?> <?php echo $var2; ?></h1>
+     *
+     * You do not need to pass $CFG, $OUTPUT or $VARS, they are made available for you.
+     *
+     * @param string $name of the element, without .php.
+     * @param array $vars associative array of variables.
+     * @return string
+     */
+    public function element($name, $vars = array()) {
+        global $CFG, $SITE, $USER;
+        $OUTPUT = $this;
+        $PAGE = $this->page;
+        $COURSE = $this->page->course;
+
+        $element = $name . '.php';
+        $candidate = $this->page->theme->dir . '/layout/elements/' . $element;
+        if (!is_readable($candidate)) {
+            debugging("Could not include element $name.");
+            return '';
+        }
+
+        extract($vars);
+        ob_start();
+        include($candidate);
+        $output = ob_get_clean();
+        return $output;
+    }
+
 }
 
 /**

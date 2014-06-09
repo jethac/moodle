@@ -3489,3 +3489,50 @@ class action_menu_link_secondary extends action_menu_link {
         parent::__construct($url, $icon, $text, false, $attributes);
     }
 }
+
+class navbar_dropdown {
+    var $name = "";
+    var $button_contents = "";
+    var $menu_contents = "";
+
+    public function __construct($name, $button_contents = '', $menu_contents = '') {
+        $this->name = $name;
+
+        $this->button_contents = $button_contents;
+        $this->menu_contents = $menu_contents;
+    }
+
+    public function name() {
+        return $this->name;
+    }
+}
+
+class navbar_dropdown_collection implements renderable {
+
+    var $dropdowns = array();
+
+    public function __construct() {
+        global $OUTPUT;
+        $this->dropdowns = [];
+    }
+
+    public function enqueue($dropdown) {
+        $this->dropdowns[$dropdown->name()] = $dropdown;
+    }
+
+}
+
+class user_menu implements renderable {
+
+    var $items = array();
+
+    public function __construct(array $menu_items) {
+        $this->items = [];
+        $this->items = array_merge($this->items, $menu_items);
+    }
+
+    public function enqueue($menu_item) {
+        array_push($this->items, $menu_item);
+    }
+
+}
