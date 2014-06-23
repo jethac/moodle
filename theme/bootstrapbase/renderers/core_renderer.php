@@ -72,14 +72,14 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
      * always shown, even if no menu items are configured in the global
      * theme settings page.
      */
-    public function custom_menu($custommenuitems = '') {
+    public function custom_menu($custommenuitems = '', $omit_list_tag = false) {
         global $CFG;
 
         if (!empty($CFG->custommenuitems)) {
             $custommenuitems .= $CFG->custommenuitems;
         }
         $custommenu = new custom_menu($custommenuitems, current_language());
-        return $this->render_custom_menu($custommenu);
+        return $this->render_custom_menu($custommenu, $omit_list_tag);
     }
 
     /*
@@ -87,7 +87,7 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
      *
      * This renderer is needed to enable the Bootstrap style navigation.
      */
-    protected function render_custom_menu(custom_menu $menu) {
+    protected function render_custom_menu(custom_menu $menu, $omit_list_tag = false) {
         global $CFG;
 
         // TODO: eliminate this duplicated logic, it belongs in core, not
@@ -118,12 +118,99 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
             }
         }
 
-        $content = '<ul class="nav">';
+        $content = '';
+        if ($omit_list_tag != true) {
+            $content .= '<ul class="nav">';
+        }
         foreach ($menu->get_children() as $item) {
             $content .= $this->render_custom_menu_item($item, 1);
         }
 
-        return $content.'</ul>';
+        if ($omit_list_tag != true) {
+            $content .= '</ul>';
+        }
+
+        return $content;
+    }
+
+    protected function render_user_menu(user_menu $menu) {
+        global $CFG;
+
+        $username = $menu->user_node()->get_text();
+
+        // Avatar.
+        $avatar = $this->user_picture($menu->user(), array('link' => false));
+
+        $content = '';
+        if ($menu->guest()) {
+
+            $menu->user_node()->set_text(
+                html_writer::tag(
+                    'span',
+                    $avatar . html_writer::tag(
+                        'span',
+                        $username,
+                        array('class' => 'usertext')
+                    ),
+                    array('class' => 'userbutton')
+                )
+            );
+
+        } else {
+
+            $extratext = '';
+
+            // If the user has switched role or is from an MNet provider, amend text of user node.
+            if (!empty(trim($menu->as_role()))) {
+                $extratext .= html_writer::tag(
+                    'span', 
+                    get_string(
+                        'roleviewas',
+                        'moodle',
+                        html_writer::tag(
+                            'span',
+                            $menu->as_role(),
+                            array('class' => 'value')
+                        )
+                    ),
+                    array('class' => 'role role-' . strtolower(trim(preg_replace('#[ -]+#', '-', $menu->as_role()))))
+                );
+            }
+            if (!empty($menu->mnet_idprovider())) {
+                $extratext .= html_writer::tag(
+                    'span',
+                    get_string(
+                        'loggedinfrom',
+                        'moodle',
+                        html_writer::tag(
+                            'span',
+                            $menu->mnet_idprovider()->name,
+                            array('class' => 'value')
+                        )
+                    ),
+                    array('class' => 'mnet mnet-' . strtolower(trim(preg_replace('#[ -]+#', '-', $menu->mnet_idprovider()->name))))
+                );
+            }
+            $menu->user_node()->set_text(
+                html_writer::tag(
+                    'span',
+                    $avatar . html_writer::tag(
+                        'span',
+                        $username . $extratext,
+                        array('class' => 'usertext')
+                    ),
+                    array('class' => 'userbutton')
+                )
+            );
+        }
+
+        $content = '';
+        foreach ($menu->get_children() as $item) {
+            $content .= $this->render_custom_menu_item($item, 1);
+        }
+
+        return $content;
+
     }
 
     /*
@@ -132,6 +219,11 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
      */
     protected function render_custom_menu_item(custom_menu_item $menunode, $level = 0 ) {
         static $submenucount = 0;
+
+        $classes = '';
+        if (strlen(trim($menunode->get_class_suffix())) > 0) {
+            $classes = 'menuitem-' . trim($menunode->get_class_suffix());
+        }
 
         $content = '';
         if ($menunode->has_children()) {
@@ -145,7 +237,7 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
             if ($menunode === $this->language) {
                 $class .= ' langmenu';
             }
-            $content = html_writer::start_tag('li', array('class' => $class));
+            $content = html_writer::start_tag('li', array('class' => $class . ' ' . $classes));
             // If the child has menus render it as a sub menu.
             $submenucount++;
             if ($menunode->get_url() !== null) {
@@ -171,17 +263,140 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
                 // This is a divider.
                 $content = '<li class="divider">&nbsp;</li>';
             } else {
-                $content = '<li>';
+                $content = html_writer::start_tag('li', array('class' => $classes));
                 if ($menunode->get_url() !== null) {
                     $url = $menunode->get_url();
                 } else {
                     $url = '#';
                 }
                 $content .= html_writer::link($url, $menunode->get_text(), array('title' => $menunode->get_title()));
-                $content .= '</li>';
+                $content .= html_writer::end_tag('li');
             }
         }
         return $content;
+    }
+
+    /**
+     * Constructs and then renders a Bootstrap navbar (not to be confused with our breadcrumbs, which we also call 'navbar').
+     * @return string HTML fragment. 
+     */
+    public function bootstrap_navbar() {
+        global $SITE, $USER;
+
+        $navbar = new bootstrap_navbar($SITE->shortname);
+
+        // Enqueue menus.
+        // - custom menu
+        $navbar->enqueue(new bootstrap_navbar_item(
+            'custom',
+            array(
+                'menu' => $this->custom_menu('', true)
+            )
+        ));
+        // - user menu
+        $navbar->enqueue(new bootstrap_navbar_item(
+            'user',
+            array(
+                'button' => $this->user_picture($USER, array('link' => false)),
+                'menu' => $this->user_dropdown(),
+                'alignment' => 'right'
+            )
+        ));
+        // - page heading menu
+        $pageheading = $this->page_heading_menu();
+        if (strlen($pageheading) > 0) {
+            $navbar->enqueue(new bootstrap_navbar_item(
+                'headermenu',
+                array(
+                    'menu' => $pageheading,
+                    'collapses' => false,
+                    'alignment' => 'right'
+                )
+            ));
+        }
+
+        return $this->render($navbar);
+    }
+
+    /** 
+     * Renders a Bootstrap navbar.
+     * @return string HTML fragment.
+     */
+    protected function render_bootstrap_navbar(bootstrap_navbar $navbar) {
+        global $CFG;
+
+        $innerstr = '';
+
+        // Render brand.
+        $innerstr .= html_writer::tag(
+            'a',
+            $navbar->brand(),
+            array('class' => 'brand', 'href' => $CFG->wwwroot)
+        );
+
+        // Render menus.
+        $buttonstr = '';
+        $menustr = '';
+        foreach ($navbar->menus() as $key => $menu) {
+            $name = $menu->name();
+            $opts = $menu->settings();
+            $nav_classes = 'nav pull-' . $opts['alignment'];
+            $menu_classes = '';
+            if ($opts['collapses']) {
+
+                if (strlen($opts['button']) != 0) {
+                    $buttonstr .= html_writer::tag(
+                        'a',
+                        $opts['button'],
+                        array(
+                            'class' => 'btn btn-navbar btn-navbar-' . $name,
+                            'data-toggle' => 'workaround-collapse',
+                            'data-target' => '.nav-collapse-' . $name
+                        )
+                    );
+                } else {
+                    $buttonstr .= html_writer::tag(
+                        'a',
+                        bootstrap_navbar_item::DEFAULT_BUTTON,
+                        array(
+                            'class' => 'btn btn-navbar default btn-navbar-' . $name,
+                            'data-toggle' => 'workaround-collapse',
+                            'data-target' => '.nav-collapse-' . $name
+                        )
+                    );
+
+                }
+
+                $menu_classes = 'nav-collapse nav-collapse-' . $name;
+            }
+            $menustr .= html_writer::tag(
+                'div',
+                html_writer::tag(
+                    'ul',
+                    $opts['menu'],
+                    array('class' => $nav_classes)
+                ),
+                array('class' => $menu_classes)
+            );
+        }
+        $innerstr .= $buttonstr . $menustr;
+
+        // Wrap output in a <header />.
+        $outputstr = html_writer::tag(
+            'header',
+            html_writer::tag(
+                'nav',
+                html_writer::tag(
+                    'div',
+                    $innerstr,
+                    array('class' => 'container-fluid')
+                ),
+                array('class' => 'navbar-inner', 'role' => 'navigation')
+            ),
+            array('class' => 'navbar navbar-fixed-top moodle-has-zindex', 'role' => 'banner')
+        );
+        
+        return $outputstr;
     }
 
     /**
@@ -272,5 +487,60 @@ class theme_bootstrapbase_core_renderer_maintenance extends core_renderer_mainte
             $type = 'alert alert-block alert-info';
         }
         return "<div class=\"$type\">$message</div>";
+    }
+}
+
+/**
+ * A menu for enqueueing in a Bootstrap-compliant navbar; not renderable by
+ * itself.
+ */
+class bootstrap_navbar_item {
+
+    const DEFAULT_BUTTON = '<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>';
+
+    var $name = '';
+    public function name() {
+        return $this->name;
+    }
+
+    var $settings;
+    var $default_settings = array(
+        'alignment' => 'left',
+        'collapses' => true,
+        'button' => '',
+        'menu' => '' // replace with get_string localized message
+    );
+    public function settings() {
+        return $this->settings;
+    }
+    public function __construct($name, array $settings) {
+        $this->name = $name;
+        $this->settings = array_merge($this->default_settings, $settings);
+    }
+}
+
+/** 
+ * A Bootstrap-compliant navbar, comprising a site "brand" and a list of menus,
+ * each of which is a bootstrap_navbar_item object.
+ */
+class bootstrap_navbar implements renderable {
+
+    var $brand;
+    public function brand() {
+        return $this->brand;
+    }
+
+    var $menus;
+    public function menus() {
+        return $this->menus;
+    }
+
+    public function __construct($brand) {
+        $this->brand = $brand;
+        $this->menus = array();
+    }
+
+    public function enqueue(bootstrap_navbar_item $item) {
+        $this->menus[$item->name()] = $item;
     }
 }

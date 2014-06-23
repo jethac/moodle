@@ -2592,6 +2592,12 @@ class custom_menu_item implements renderable {
     protected $children = array();
 
     /**
+     * @var string A CSS class suffix to apply to this item for renderers to
+     * hook onto.
+     */
+    protected $class_suffix = '';
+
+    /**
      * @var int A reference to the sort var of the last child that was added
      */
     protected $lastsort = 0;
@@ -2605,13 +2611,25 @@ class custom_menu_item implements renderable {
      * @param int $sort A sort or to use if we need to sort differently [Optional]
      * @param custom_menu_item $parent A reference to the parent custom_menu_item this child
      *        belongs to, only if the child has a parent. [Optional]
+     * @param string $class_suffix A CSS class suffix to apply to this item when rendered.
+     *        [Optional]
      */
-    public function __construct($text, moodle_url $url=null, $title=null, $sort = null, custom_menu_item $parent = null) {
+    public function __construct(
+        $text,
+        moodle_url $url = null,
+        $title = null,
+        $sort = null,
+        custom_menu_item $parent = null,
+        $class_suffix = ''
+    ) {
         $this->text = $text;
         $this->url = $url;
         $this->title = $title;
         $this->sort = (int)$sort;
         $this->parent = $parent;
+        if (is_string($class_suffix)) {
+            $this->class_suffix = $class_suffix;
+        }
     }
 
     /**
@@ -2621,16 +2639,25 @@ class custom_menu_item implements renderable {
      * @param moodle_url $url
      * @param string $title
      * @param int $sort
+     * @param string $class_suffix
      * @return custom_menu_item
      */
-    public function add($text, moodle_url $url = null, $title = null, $sort = null) {
+    public function add($text, moodle_url $url = null, $title = null, $sort = null, $class_suffix = '') {
         $key = count($this->children);
         if (empty($sort)) {
             $sort = $this->lastsort + 1;
         }
-        $this->children[$key] = new custom_menu_item($text, $url, $title, $sort, $this);
+        $this->children[$key] = new custom_menu_item($text, $url, $title, $sort, $this, $class_suffix);
         $this->lastsort = (int)$sort;
         return $this->children[$key];
+    }
+
+    /**
+     * Adds a divider as a child of this node.
+     * @return custom_menu_item
+     */
+    public function add_divider() {
+        return $this->add('####', null, null);
     }
 
     /**
@@ -2647,6 +2674,14 @@ class custom_menu_item implements renderable {
      */
     public function get_url() {
         return $this->url;
+    }
+
+    /**
+     * Returns the class suffix for this item
+     * @return string
+     */    
+    public function get_class_suffix() {
+        return $this->class_suffix;
     }
 
     /**
@@ -2995,6 +3030,181 @@ class tabobject implements renderable {
         }
     }
 }
+
+/**
+ * User dropdown menu
+ *
+ * Given a user id, this class generates a dropdown menu that can be rendered, being
+ * a special permutation of the custom_menu.
+ *
+ * @copyright 2014 Jetha Chan
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @since Moodle 2.8
+ * @package core
+ * @category output
+ */
+class user_menu extends custom_menu {
+
+    /**
+     * @var int The id of the user this menu is for.
+     */
+    protected $user;
+
+    /**
+     * @var bool Whether the user is currently logged in as a guest.
+     */
+    protected $guest = false;
+
+
+    protected $flags = array();
+    private $default_flags = array(
+        'guest' => false,
+        'as_role' => null,
+        'mnet_idprovider' => null
+    );
+
+    public function user() {
+        return $this->user;
+    }
+    public function guest() {
+        return $this->flags['guest'];
+    }
+    public function as_role() {
+        return $this->flags['as_role'];
+    }
+    public function mnet_idprovider() {
+        return $this->flags['mnet_idprovider'];
+    }
+
+    /**
+     * @var custom_menu_item The user node.
+     */
+    protected $node_user = null;
+    public function user_node() {
+        return $this->node_user;
+    }
+
+    /**
+     * Creates the user dropdown menu.
+     */
+    public function __construct($user, $course, $page, $flags = array()) {
+        global $OUTPUT;
+
+        // Mash flags array together with default flags array.
+        $this->flags = array_merge($this->default_flags, $flags);
+
+        if(!$flags['guest']) {
+            $this->construct_as_user($user, $course, $page);
+        } else {
+            $this->construct_as_guest($user, $course, $page);
+        }
+
+    }
+
+    private function construct_as_guest($user, $course, $page) {
+        global $OUTPUT;
+
+        $this->user = $user;
+        $this->flags['guest'] = true;
+        $this->currentlanguage = null;
+
+        // Create root node.
+        $this->node_user = new custom_menu_item(
+            fullname($this->user, true),
+            null,
+            fullname($this->user, true)
+        );
+
+        $this->override_children(array($this->node_user));
+    }
+
+    private function construct_as_user($user, $course, $page) {
+        global $OUTPUT, $DB, $USER;
+
+        $this->user = $user;
+        $this->flags['guest'] = false;
+        $this->currentlanguage = null;
+
+        $context = context_course::instance($course->id);
+
+        // Get login flags.
+        $profile_link = new moodle_url('/user/profile.php', array('id' => $this->user->id));
+        $logout_link = new moodle_url('login/logout.php', array('sesskey' => sesskey()));
+        $logout_text = get_string('logout');
+
+        // Store a reference to the MNet ID provider if there is one.
+        $is_mnet_user = is_mnet_remote_user($this->user);
+        //print_r()
+        $mnet_idprovider = $idprovider = $DB->get_record('mnet_host', array('id' => $this->user->mnethostid));
+        if ($is_mnet_user && $mnet_idprovider) {
+            $this['mnet_idprovider'] = $idprovider;
+        }
+
+        // Create root node.
+        $this->node_user = new custom_menu_item(
+            fullname($this->user, true),
+            null,
+            fullname($this->user, true)
+        );
+
+        // Build out children.
+        // my home
+        $this->node_user->add(
+            get_string('mymoodle', 'admin'),
+            new moodle_url('/my/'),
+            get_string('mymoodle', 'admin'),
+            null,
+            'admin'
+        );
+        $this->node_user->add_divider();
+
+        // body items (profile, grades, etc.)
+        $this->node_user->add(
+            get_string('myprofile', 'moodle'),
+            $profile_link,
+            get_string('myprofile', 'moodle'),
+            null,
+            'profile'
+        );
+        $this->node_user->add_divider();
+
+        // login/out stuff (switch role, logout)
+        // - store role descriptor name, and provide a way to return to previous role
+        $has_switched_role = is_role_switched($course->id);
+        
+        if ($has_switched_role && $role = $DB->get_record('role', array('id' => $this->user->access['rsw'][$context->path]))) {
+            $this->flags['as_role'] = role_get_name($role, $context);
+            
+
+            $this->node_user->add(
+                get_string('switchrolereturn'),
+                new moodle_url(
+                    '/course/switchrole.php',
+                    array(
+                        'id'=>$course->id,
+                        'sesskey'=>sesskey(),
+                        'switchrole'=>0,
+                        'returnurl'=>$page->url->out_as_local_url(false)
+                    )
+                ),
+                get_string('switchrolereturn'),
+                null,
+                'switchrolereturn'
+            );
+        }
+
+        $this->node_user->add(
+            $logout_text,
+            $logout_link,
+            $logout_text,
+            null,
+            'logout'
+        );
+
+        $this->override_children(array($this->node_user));
+    }
+}
+
 
 /**
  * Stores tabs list

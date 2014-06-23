@@ -575,6 +575,166 @@ class core_renderer extends renderer_base {
     }
 
     /**
+     * Return a string that either contains a message saying that you
+     * are not logged in, or a user dropdown (with information if you're
+     * logged in as another user).
+     * @return string HTML fragment.
+     */
+    public function user_dropdown() {
+        global $USER, $CFG, $DB, $SESSION;
+        
+        $returnstr = '';
+
+        if (during_initial_install()) {
+            return $returnstr;
+        }
+
+        // Get information about current environment.
+        $loginpage = ((string)$this->page->url === get_login_url());
+        $course = $this->page->course;
+        if (\core\session\manager::is_loggedinas()) {
+            $realuser = \core\session\manager::get_realuser();
+            $fullname = fullname($realuser, true);
+            if ($withlinks) {
+                $loginastitle = get_string('loginas');
+                $realuserinfo = " [<a href=\"$CFG->wwwroot/course/loginas.php?id=$course->id&amp;sesskey=".sesskey()."\"";
+                $realuserinfo .= "title =\"".$loginastitle."\">$fullname</a>] ";
+            } else {
+                $realuserinfo = " [$fullname] ";
+            }
+        } else {
+            $realuserinfo = '';
+        }
+        $loginurl = get_login_url();
+
+        if (empty($course->id)) {
+            // $course->id is not defined during installation; don't show dropdown.
+            return $returnstr;
+        } else if (isloggedin()) {
+            // User is logged in; display the dropdown.
+            $userdropdown = new user_menu($USER, $course, $this->page, array('guest' => isguestuser()));
+            $returnstr = $this->render($userdropdown);
+        } else {
+            // User is not logged in; display a message to that effect.
+            $returnstr = get_string('loggedinnot', 'moodle');
+            if (!$loginpage) {
+                $returnstr .= " (<a href=\"$loginurl\">".get_string('login').'</a>)';
+            }
+        }
+
+
+        return $returnstr;//"NOW I HAVE A MACHINEGUN.";
+    }
+
+    /**
+     * Renders and outputs the user menu, with dividers between groups.
+     *
+     * @return string HTML fragment.
+     */
+    protected function render_user_menu(user_menu $menu) {
+
+        static $menucount = 0;        
+
+        $username = $menu->user_node()->get_text();
+
+        // Avatar.
+        $avatar = $this->user_picture($menu->user(), array('link' => false));
+
+        $content = '';
+        if ($menu->guest()) {
+
+            $menu->user_node()->set_text(
+                html_writer::tag(
+                    'span',
+                    $avatar . html_writer::tag(
+                        'span',
+                        $username,
+                        array('class' => 'usertext')
+                    ),
+                    array('class' => 'userbutton')
+                )
+            );
+
+        } else {
+
+            $extratext = '';
+
+            // If the user has switched role or is from an MNet provider, amend text of user node.
+            if (!empty(trim($menu->as_role()))) {
+                $extratext .= html_writer::tag(
+                    'span', 
+                    get_string(
+                        'roleviewas',
+                        'moodle',
+                        html_writer::tag(
+                            'span',
+                            $menu->as_role(),
+                            array('class' => 'value')
+                        )
+                    ),
+                    array('class' => 'role role-' . strtolower(trim(preg_replace('#[ -]+#', '-', $menu->as_role()))))
+                );
+            }
+            if (!empty($menu->mnet_idprovider())) {
+                $extratext .= html_writer::tag(
+                    'span',
+                    get_string(
+                        'loggedinfrom',
+                        'moodle',
+                        html_writer::tag(
+                            'span',
+                            $menu->mnet_idprovider()->name,
+                            array('class' => 'value')
+                        )
+                    ),
+                    array('class' => 'mnet mnet-' . strtolower(trim(preg_replace('#[ -]+#', '-', $menu->mnet_idprovider()->name))))
+                );
+            }
+            $menu->user_node()->set_text(
+                html_writer::tag(
+                    'span',
+                    $avatar . html_writer::tag(
+                        'span',
+                        $username . $extratext,
+                        array('class' => 'usertext')
+                    ) . html_writer::tag(
+                        'b',
+                        '',
+                        array('class' => 'caret')
+                    ),
+                    array('class' => 'userbutton')
+                )
+            );
+        }
+
+        // If the menu has no children return an empty string.
+        if (!$menu->has_children()) {
+            return '';
+        }
+        // Increment the menu count. This is used for ID's that get worked with
+        // in JavaScript as is essential.
+        $menucount++;
+        // Initialise this custom menu (the custom menu object is contained in javascript-static
+        $jscode = js_writer::function_call_with_Y('M.core_custom_menu.init', array('user_menu_'.$menucount));
+        $jscode = "(function(){{$jscode}})";
+        $this->page->requires->yui_module('node-menunav', $jscode);
+        // Build the root nodes as required by YUI
+        $content = html_writer::start_tag('div', array('id'=>'user_menu_'.$menucount, 'class'=>'yui3-menu yui3-menu-horizontal javascript-disabled user-menu'));
+        $content .= html_writer::start_tag('div', array('class'=>'yui3-menu-content'));
+        $content .= html_writer::start_tag('ul');
+        // Render each child
+        foreach ($menu->get_children() as $item) {
+            $content .= $this->render_custom_menu_item($item);
+        }
+        // Close the open tags
+        $content .= html_writer::end_tag('ul');
+        $content .= html_writer::end_tag('div');
+        $content .= html_writer::end_tag('div');
+
+        return $content;
+    }
+
+    /**
      * Return the standard string that says whether you are logged in (and switched
      * roles/logged in as another user).
      * @param bool $withlinks if false, then don't include any links in the HTML produced.
@@ -3049,10 +3209,16 @@ EOD;
     protected function render_custom_menu_item(custom_menu_item $menunode) {
         // Required to ensure we get unique trackable id's
         static $submenucount = 0;
+
+        $classes = '';
+        if (strlen(trim($menunode->get_class_suffix())) > 0) {
+            $classes = 'menuitem-' . trim($menunode->get_class_suffix());
+        }
+
         if ($menunode->has_children()) {
             // If the child has menus render it as a sub menu
             $submenucount++;
-            $content = html_writer::start_tag('li');
+            $content = html_writer::start_tag('li', array('class' => $classes));
             if ($menunode->get_url() !== null) {
                 $url = $menunode->get_url();
             } else {
@@ -3078,12 +3244,7 @@ EOD;
                 // This is a divider.
                 $content = html_writer::start_tag('li', array('class' => 'yui3-menuitem divider'));
             } else {
-                $content = html_writer::start_tag(
-                    'li',
-                    array(
-                        'class' => 'yui3-menuitem'
-                    )
-                );
+                $content = html_writer::start_tag('li', array('class' => 'yui3-menuitem ' . $classes));
                 if ($menunode->get_url() !== null) {
                     $url = $menunode->get_url();
                 } else {

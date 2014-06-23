@@ -458,6 +458,184 @@
             }
         }
     }
+
+    .navbar-fixed-top .navbar-inner,
+    .navbar-fixed-bottom .navbar-inner {
+        padding: 0px;
+    }
+    .navbar {
+        .nav-collapse.active {
+            border-top: 1px solid #ccc;
+            box-shadow: 0px -8px 24px rgba(0, 0, 0, 0.125);
+            &.pull-left,
+            &.pull-right {
+                // Only one collapsed menu active at a time, so floats are less than useless.
+                float: none;
+            }
+            > .nav {
+                margin: 0;
+
+                a:hover {
+                    background-color: #ddd;
+                }
+                // Add padding to first-level links.
+                > li > a {
+                    padding-left: 20px;
+                    border-radius: 0px;
+                }
+                .dropdown-menu {
+                    margin: 0px 0px 0px 15px;
+                    li > a {
+                        border-radius: 0px;
+                    }
+                }
+            }
+
+
+            // Completely override non-responsive dividers because there are no horizontal dividers here.
+            .nav, .nav .dropdown-menu {
+                .divider {
+                    width: auto;
+                    display: block;
+                    height: 0px;
+                    margin: 4px 1px;
+                    border-left: 0px none;
+                    border-right: 0px none;
+                    border-top: 1px solid #e5e5e5;
+                    border-bottom: 1px solid #fff;
+                }
+            }
+
+            .dropdown-submenu {
+                .dropdown-toggle {
+                    &:after {
+                        display: inline-block;
+                        float: none;
+                        .caret();
+
+                        border-top-color: #555;
+                        margin-left: 4px;
+                        margin-top: 8px;
+                    }
+                }
+
+                &.open {
+                    > a {
+                        background-color: #e5e5e5;
+                    }
+                }
+
+                // Suppress showing of submenu menu content on hover.
+                &:hover {
+                    .dropdown-menu {
+                        display: none;
+                    }
+                    &.open {
+                        > a {
+                            background: #e5e5e5;
+                        }
+                        .dropdown-menu {
+                            display: block;
+                        }
+                    }
+                }
+            }
+
+            &.nav-collapse-user {
+                .caret {
+                    display: none;
+                }
+                .nav > .dropdown {
+                    > .dropdown-toggle {
+                        padding: 6px 6px 6px 20px;
+                        border-radius: 0px;
+                        border-bottom: 1px solid #ddd;
+
+                        .userpicture {
+                            margin-right: 6px;
+                            border: 1px solid #aaa;
+                            border-radius: 2px;
+                            box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+                        }
+                    }
+                    > .dropdown-menu {
+                        display: block;
+                        margin: 0px;
+                        li a {
+                            padding: 9px 15px 9px 62px;
+                            background-position: 26px 8px;
+                            background-size: 24px;
+                        }
+                    }
+                }
+            }
+        }
+        .container-fluid {   
+            // Remove padding from container_fluid and leave it up to child elements.
+            padding-right: 0px;
+            padding-left: 0px;
+            .brand {
+                margin-left: 10px;
+            }
+            .btn-navbar:nth-child(2) {
+                margin-right: 10px;
+            }
+        }   
+    }
+    .dir-rtl .navbar {
+        .container-fluid {
+            .brand {
+                margin-left: 0px;
+                margin-right: 10px;
+            }
+            .btn-navbar:nth-child(2) {
+                margin-left: 10px;
+                margin-right: 0px;
+            }
+        }
+
+        .nav-collapse.active {
+            // Add padding to first-level links.
+            > .nav > li > a {
+                padding-left: 0px;
+                padding-right: 20px;
+            }
+            .dropdown-submenu {
+                .dropdown-toggle {
+                    &:after {
+                        margin-left: 0px;
+                        margin-right: 4px;
+                    }
+                }
+            }
+            .nav {
+                .dropdown-menu {
+                    margin: 0px 15px 0px 0px;
+                    > li > a {
+                        padding: 9px 15px;
+                    }
+                }
+            }
+            &.nav-collapse-user {
+                .nav > .dropdown {
+                    > .dropdown-toggle {
+                        padding: 6px 20px 6px 6px;
+
+                        .userpicture {
+                            margin-right: 0px;
+                            margin-left: 6px;
+                        }
+                    }
+                    > .dropdown-menu {
+                        li a {
+                            padding: 9px 62px 9px 15px;
+                            background-position: right 26px top 8px;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @media (max-width: 767px) {

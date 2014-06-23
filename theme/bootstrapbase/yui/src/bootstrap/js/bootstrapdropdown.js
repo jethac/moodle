@@ -103,7 +103,8 @@ NS.dropdown_delegation = function() {
         var target = e.currentTarget;
         e.preventDefault();
 
-        if ( typeof e.target.dropdown === 'undefined' ) {
+        // Check e.currentTarget, not e.target - prevent strange behaviour when bubbling up.
+        if ( typeof target.dropdown === 'undefined' ) {
             target.plug( DropdownPlugin );
             target.dropdown.toggle();
         }

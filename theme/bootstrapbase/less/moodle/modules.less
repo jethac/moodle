@@ -202,6 +202,9 @@ select {
 .container-fluid {
     max-width: 1680px;
     margin: 0 auto;
+
+    padding-right: 20px;
+    padding-left: 20px;
 }
 // contributed by Paul Hibbitts, see http://msdn.microsoft.com/en-us/library/ie/jj583807(v=vs.85).aspx
 canvas {
@@ -309,7 +312,154 @@ div#dock {
     .divider {
         width: auto;
         height: 1px;
+        margin: 4px 1px;
         border-left: 0px none;
         border-right: 0px none;
     }
 }
+
+// navbar
+.navbar {
+
+    .brand {
+    }
+
+    .nav {
+        position: relative;
+        left: 0;
+        display: block;
+        float: left;
+        margin: 0 10px 0 0;
+        > li {
+            float: left;
+            > a {
+                float: none;
+                // Vertically center the text given @navbarHeight
+                padding: ((@navbarHeight - @baseLineHeight) / 2) 15px ((@navbarHeight - @baseLineHeight) / 2);
+                color: @navbarLinkColor;
+                text-decoration: none;
+                text-shadow: 0 1px 0 @navbarBackgroundHighlight;
+            }
+        }
+
+        &.pull-right {
+          float: right; // redeclare due to specificity
+          margin-right: 0; // remove margin on float right nav
+        }
+    }
+
+    .btn-navbar {
+
+        @defaultHeight: 18px;
+        @defaultPaddingY: 7px;
+        @defaultPaddingX: 10px;
+
+        @unpaddedHeight: @defaultHeight + 2 * @defaultPaddingY;
+        @unpaddedWidth: @unpaddedHeight + 2 * (@defaultPaddingX - @defaultPaddingY);
+
+        margin: 3px 3px 2px 0px;
+        overflow: hidden;
+
+        width: @unpaddedWidth;
+        height: @unpaddedHeight;
+        padding: 0px;
+        opacity: 0.75;
+
+        &.default {
+            width: @defaultHeight;
+            height: @defaultHeight;
+            padding: @defaultPaddingY @defaultPaddingX;
+        }
+
+        &.btn-navbar-user {
+            img {
+                // Truncate the image a little to maintain pixel aspect ratio.
+                display: block;
+                width: @unpaddedWidth;
+                height: @unpaddedWidth;
+            }
+        }
+
+        &.active {
+            position: relative;
+            right: -1px;
+            top: -1px;
+            border: 2px solid #aaa;
+            opacity: 1.0;
+            box-shadow: 0px 0px 8px rgba(0,0,0,0.25);
+        }
+    }
+
+    .nav-collapse-user {
+        .nav > .dropdown {
+            > .dropdown-toggle {
+                padding: 2px 6px 2px 2px;
+
+                .userbutton {
+                    vertical-align: middle;
+                    .userpicture {
+                        margin-right: 6px;
+                    }
+                    .usertext {
+                        display: inline-block;
+                        line-height: 1em;
+                        vertical-align: middle;
+                        .role,
+                        .mnet {
+                            display: block;
+                            font-size: 12px;
+                            .value {
+                                font-weight: bold;
+                            }
+                        }
+                    } 
+                }
+                .caret {
+                    vertical-align: middle;
+                    margin-top: 0px;
+                }
+            }
+            > .dropdown-menu li {
+                a {
+                    padding: 3px 3px 3px 30px;
+                    background-position: 8px 4px;
+                    background-repeat: no-repeat;
+                    background-size: 16px;
+                    background-image: url([[pix:t/edit]]);
+                }
+
+                &.menuitem-admin a { background-image: url([[pix:i/course]]); }
+                &.menuitem-profile a { background-image: url([[pix:i/user]]); }
+                &.menuitem-logout a { background-image: url([[pix:a/logout]]); }
+            }
+        }
+    }
+}
+
+.dir-rtl {
+    .navbar {
+        .nav-collapse-user {
+            .nav > .dropdown {
+                > .dropdown-toggle {
+                    .userbutton {
+                        .userpicture {
+                            margin-left: 6px;
+                            margin-right: 0px;
+                        }
+                    }
+                }
+                > .dropdown-menu li {
+                    a {
+                        padding: 3px 30px 3px 3px;
+                        background-position: top 4px right 8px;
+                    }
+                }
+            }
+        }
+
+        .btn-navbar {
+            margin: 3px 0px 2px 3px;
+        }
+    }
+}
+

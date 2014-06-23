@@ -191,6 +191,120 @@ a.skip:active {position: static;display: block;}
 #course-header {clear:both;}
 
 /**
+ * User menu
+ */
+.yui3-menu.user-menu {
+    border: 1px solid #333;
+}
+.yui3-menu.user-menu .yui3-menu-content {
+    border: 0px none;
+}
+
+.yui3-menu.user-menu .yui3-menu-label,
+.yui3-menu.user-menu .yui3-menuitem-content {
+    padding: 0;
+}
+
+.yui3-menu.user-menu .userbutton
+ {
+    display: block;
+    background: #fff;
+    padding: 4px 6px;
+    font-size: 15px;
+    border: 0px none;
+    margin: 0;
+}
+.yui3-menu.user-menu .userbutton * {
+    vertical-align: middle;
+}
+.yui3-menu.user-menu .userbutton .usertext {
+    display: inline-block;
+    line-height: 1em;
+}
+.yui3-menu.user-menu .userbutton .usertext .role,
+.yui3-menu.user-menu .userbutton .usertext .mnet {
+    display: block;
+    font-size: 12px;
+}
+.yui3-menu.user-menu .userbutton .usertext .role .value,
+.yui3-menu.user-menu .userbutton .usertext .mnet .value {
+    font-weight: bold;
+}
+
+
+.dir-ltr .yui3-menu.user-menu .userbutton .userpicture {
+    margin-right: 6px;
+}
+.dir-ltr .yui3-menu.user-menu .userbutton .caret {
+    margin-left: 6px;
+}
+
+.dir-rtl .yui3-menu.user-menu .userbutton .userpicture {
+    margin-left: 6px;
+}
+.dir-rtl .yui3-menu.user-menu .userbutton .caret {
+    margin-right: 6px;
+}
+
+.yui3-menu.user-menu .custom_menu_submenu { 
+}
+
+.yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem {
+    margin: 0;
+}
+
+.yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem .yui3-menuitem-content {
+    display: block; height: 16px; line-height: 16px; font-size: 12px; font-weight: bold; padding:8px 8px 8px 32px; text-align: left; color:#222;
+    background-position: 8px 8px; background-repeat: no-repeat;
+    background-size: 16px;
+    background-image: url([[pix:t/edit]]);
+}
+
+.yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem.menuitem-admin .yui3-menuitem-content {
+    background-image: url([[pix:i/course]]);
+}
+.yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem.menuitem-profile .yui3-menuitem-content {
+    background-image: url([[pix:i/user]]);
+}
+.yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem.menuitem-switchrolereturn .yui3-menuitem-content {
+}
+.yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem.menuitem-logout .yui3-menuitem-content {
+    background-image: url([[pix:a/logout]]);
+}
+
+.yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem .yui3-menuitem-content .smallicon {
+    vertical-align: middle;
+}
+
+.dir-ltr .yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem .yui3-menuitem-content .smallicon {
+    margin-right: 6px;
+}
+.dir-rtl .yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem .yui3-menuitem-content {
+    text-align: right;
+}
+.dir-rtl .yui3-menu.user-menu .custom_menu_submenu .yui3-menuitem .yui3-menuitem-content .smallicon {
+    margin-left: 6px;
+}
+
+.yui3-menu > .yui3-menu-content > ul > .yui3-menuitem.divider {
+    overflow:hidden;
+    text-indent:-90px;
+    height:0;
+    border-top: 1px solid #333;
+    width: 100%;
+}
+.yui3-menu.yui3-menu-horizontal > .yui3-menu-content > ul > .yui3-menuitem.divider {
+    border-top: 0px none;
+    border-left: 1px solid #333;
+    width: 0 !important;
+    height: 100%
+}
+.yui3-menuitem-active.divider {
+    background: transparent;
+}
+
+
+/**
  * Navbar
  */
 .navbar {clear:both;overflow:hidden;}
