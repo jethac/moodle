@@ -71,28 +71,24 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
     }
 
     /*
+     * Helper function for constructing a custom_menu object.
+     *
      * Overriding the custom_menu function ensures the custom menu is
      * always shown, even if no menu items are configured in the global
      * theme settings page.
+     *
+     * @return HTML fragment.
      */
     public function custom_menu($custommenuitems = '') {
         global $CFG;
 
+        // Construct the custom menu based off the parameter given + admin settings if present.
         if (empty($custommenuitems) && !empty($CFG->custommenuitems)) {
             $custommenuitems = $CFG->custommenuitems;
         }
-        $custommenu = new custom_menu($custommenuitems, current_language());
-        return $this->render_custom_menu($custommenu);
-    }
+        $menu = new custom_menu($custommenuitems, current_language());
 
-    /*
-     * This renders the bootstrap top menu.
-     *
-     * This renderer is needed to enable the Bootstrap style navigation.
-     */
-    protected function render_custom_menu(custom_menu $menu) {
-        global $CFG;
-
+        // Add the language menu if necessary.
         // TODO: eliminate this duplicated logic, it belongs in core, not
         // here. See MDL-39565.
         $addlangmenu = true;
@@ -121,20 +117,52 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
             }
         }
 
-        $content = '<ul class="nav">';
+        return $this->render_custom_menu($menu);
+    }
+
+    /**
+     * This renders the bootstrap top menu, and is needed to enable the Bootstrap style navigation.
+     *
+     * Language menu logic has moved to the helper, custom_menu(), to 1) satisfy best practices and 2) to allow us to re-use
+     * this renderer for the user_menu.
+     *
+     * The wrapping ul.nav is no longer emitted; when used as part of a {@link bootstrap_navbar_item} the navbar item needs to be
+     * able to control alignment on that element (see MDL-45893).
+     *
+     * @param custom_menu $menu The menu to render.
+     * @return string HTML fragment.
+     */
+    protected function render_custom_menu(custom_menu $menu) {
+        $content = '';
         foreach ($menu->get_children() as $item) {
             $content .= $this->render_custom_menu_item($item, 1);
         }
 
-        return $content.'</ul>';
+        return $content;
     }
 
-    /*
-     * This code renders the custom menu items for the
-     * bootstrap dropdown menu.
+    /**
+     * Renders a given user_menu using the custom_menu renderer.
+     * @param user_menu $menu The menu to render.
+     * @return string HTML fragment.
+     */
+    protected function render_user_menu(user_menu $menu) {
+        return $this->render_custom_menu($menu);
+    }
+
+    /**
+     * This code renders the custom menu items for the bootstrap dropdown menu.
+     * @param custom_menu_item $menunode A node to render.
+     * @param int $level The nesting level of the node in question.
+     * @return string HTML fragment.
      */
     protected function render_custom_menu_item(custom_menu_item $menunode, $level = 0 ) {
         static $submenucount = 0;
+
+        $classes = '';
+        if (strlen(trim($menunode->get_class_suffix())) > 0) {
+            $classes = 'menuitem-' . trim($menunode->get_class_suffix());
+        }
 
         $content = '';
         if ($menunode->has_children()) {
@@ -148,20 +176,29 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
             if ($menunode === $this->language) {
                 $class .= ' langmenu';
             }
-            $content = html_writer::start_tag('li', array('class' => $class));
+            $content = html_writer::start_tag('li', array('class' => $class . ' ' . $classes));
             // If the child has menus render it as a sub menu.
             $submenucount++;
+            $dropdowntoggletag = 'a';
+            $dropdowntoggleattrs = array(
+                'class' => 'dropdown-toggle',
+                'data-toggle' => 'dropdown',
+                'title' => $menunode->get_title()
+            );
             if ($menunode->get_url() !== null) {
-                $url = $menunode->get_url();
+                $dropdowntoggleattrs['url'] = $menunode->get_url();
             } else {
-                $url = '#cm_submenu_'.$submenucount;
+                $dropdowntoggletag = 'div';
             }
-            $content .= html_writer::start_tag('a', array('href'=>$url, 'class'=>'dropdown-toggle', 'data-toggle'=>'dropdown', 'title'=>$menunode->get_title()));
+            $content .= html_writer::start_tag(
+                $dropdowntoggletag,
+                $dropdowntoggleattrs
+            );
             $content .= $menunode->get_text();
             if ($level == 1) {
                 $content .= '<b class="caret"></b>';
             }
-            $content .= '</a>';
+            $content .= html_writer::end_tag($dropdowntoggletag);
             $content .= '<ul class="dropdown-menu">';
             foreach ($menunode->get_children() as $menunode) {
                 $content .= $this->render_custom_menu_item($menunode, 0);
@@ -174,17 +211,162 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
                 // This is a divider.
                 $content = '<li class="divider">&nbsp;</li>';
             } else {
-                $content = '<li>';
+                $content = html_writer::start_tag('li', array('class' => $classes));
                 if ($menunode->get_url() !== null) {
                     $url = $menunode->get_url();
                 } else {
                     $url = '#';
                 }
-                $content .= html_writer::link($url, $menunode->get_text(), array('title' => $menunode->get_title()));
-                $content .= '</li>';
+                $content .= html_writer::link($url, $menunode->get_text(), array('title' => $menunode->get_title(), 'class' => 'nochildren'));
+                $content .= html_writer::end_tag('li');
             }
         }
         return $content;
+    }
+
+    /**
+     * Constructs and then renders a Bootstrap navbar (not to be confused with our breadcrumbs, which we also call 'navbar').
+     * @return string HTML fragment.
+     */
+    public function bootstrap_header($extraclasses = null) {
+        global $SITE, $USER;
+
+        $navbar = new bootstrap_navbar($SITE->shortname);
+        $navbar->extraclasses($extraclasses);
+
+        // Enqueue custom menu (only if one's actually defined!)
+        $custommenu = $this->custom_menu('', true);
+        if (strlen(trim($custommenu)) > 0) {
+            $navbar->enqueue(new bootstrap_navbar_item(
+                'custom',
+                array(
+                    'menu' => $custommenu
+                )
+            ));
+        }
+
+        // Enqueue user menu.
+        // Get the bare minimum flags relating to user pictures and then retrieve the pictures themselves.
+        $userflags = array(
+            'loggedin' => isloggedin(),
+            'as_otheruser' => \core\session\manager::is_loggedinas()
+        );
+        if ($userflags['loggedin']) {
+            if ($userflags['as_otheruser']) {
+                $realuser = \core\session\manager::get_realuser();
+                $userflags['otheruser_avatar'] = $this->user_picture($USER, array('link' => false));
+                $userflags['avatar'] = $this->user_picture($realuser, array('link' => false));
+            } else {
+                $userflags['avatar'] = $this->user_picture($USER, array('link' => false));
+            }
+        }
+        $navbar->enqueue(new bootstrap_navbar_item(
+            'user',
+            array(
+                'button' => $userflags['loggedin'] ? $userflags['avatar'] : null,
+                'menu' => $this->user_dropdown(null, true),
+                'alignment' => 'right',
+                'collapses' => $userflags['loggedin']
+            )
+        ));
+
+        // Enqueue page heading menu (again, only if one's defined).
+        $pageheading = $this->page_heading_menu();
+        if (strlen($pageheading) > 0) {
+            $navbar->enqueue(new bootstrap_navbar_item(
+                'headermenu',
+                array(
+                    'menu' => $pageheading,
+                    'collapses' => false,
+                    'alignment' => 'right'
+                )
+            ));
+        }
+
+        return $this->render($navbar);
+    }
+
+    /**
+     * Renders a Bootstrap navbar.
+     *
+     * @param bootstrap_navbar $navbar The navbar to render.
+     * @return string HTML fragment.
+     */
+    protected function render_bootstrap_navbar(bootstrap_navbar $navbar) {
+        global $CFG;
+
+        $innerstr = '';
+
+        // Render brand.
+        $innerstr .= html_writer::tag(
+            'a',
+            $navbar->brand(),
+            array('class' => 'brand', 'href' => $CFG->wwwroot)
+        );
+
+        // Render menus.
+        $buttonstr = '';
+        $menustr = '';
+        foreach ($navbar->menus() as $key => $menu) {
+            $name = $menu->name();
+            $opts = $menu->settings();
+            $navclasses = 'nav pull-' . $opts['alignment'];
+            $menuclasses = '';
+            if ($opts['collapses']) {
+
+                if (strlen($opts['button']) != 0) {
+                    $buttonstr .= html_writer::tag(
+                        'a',
+                        $opts['button'],
+                        array(
+                            'class' => 'btn btn-navbar btn-navbar-' . $name,
+                            'data-toggle' => 'workaround-collapse',
+                            'data-target' => '.nav-collapse-' . $name
+                        )
+                    );
+                } else {
+                    $buttonstr .= html_writer::tag(
+                        'a',
+                        bootstrap_navbar_item::DEFAULT_BUTTON,
+                        array(
+                            'class' => 'btn btn-navbar default btn-navbar-' . $name,
+                            'data-toggle' => 'workaround-collapse',
+                            'data-target' => '.nav-collapse-' . $name
+                        )
+                    );
+
+                }
+
+                $menuclasses = 'nav-collapse nav-collapse-' . $name;
+            }
+            $menustr .= html_writer::tag(
+                'div',
+                html_writer::tag(
+                    'ul',
+                    $opts['menu'],
+                    array('class' => $navclasses)
+                ),
+                array('class' => $menuclasses)
+            );
+        }
+        $innerstr .= $buttonstr . $menustr;
+
+        // Wrap output in a <header />.
+        $outputstr = html_writer::tag(
+            'header',
+            html_writer::tag(
+                'nav',
+                html_writer::tag(
+                    'div',
+                    $innerstr,
+                    array('class' => 'container-fluid')
+                ),
+                array('class' => 'navbar-inner', 'role' => 'navigation')
+            ),
+            array('class' => 'navbar navbar-fixed-top moodle-has-zindex' . $navbar->extraclasses(), 'role' => 'banner')
+        );
+
+        return $outputstr;
     }
 
     /**
@@ -275,5 +457,148 @@ class theme_bootstrapbase_core_renderer_maintenance extends core_renderer_mainte
             $type = 'alert alert-block alert-info';
         }
         return "<div class=\"$type\">$message</div>";
+    }
+}
+
+/**
+ * A menu for enqueueing in a {@link bootstrap_navbar}; not renderable by itself.
+ *
+ * @copyright 2014 Jetha Chan
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @since Moodle 2.8
+ * @category output
+ */
+class bootstrap_navbar_item {
+
+    /**
+     * This is a HTML fragment used for navbar items that have an undefined button.
+     */
+    const DEFAULT_BUTTON = '<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>';
+
+    /** @var string An internal name for this menu, used to enqueue it and also for CSS. */
+    protected $name = '';
+    /** @var array An array of strings and HTML fragments that control the behaviour of this menu. */
+    protected $settings;
+    /** @var array Default strings and HTML fragments. */
+    static protected $defaultsettings = array(
+        'alignment' => 'left',
+        'collapses' => true,
+        'button' => '',
+        'menu' => ''
+    );
+
+    /**
+     * Returns the name of this menu.
+     * @return string The name of this menu.
+     */
+    public function name() {
+        return $this->name;
+    }
+
+    /**
+     * Returns (and optionally sets) the settings currently associated with this menu.
+     * @param array $settings An optionally-incomplete settings array to merge into and displace the existing settings object.
+     * @return array The settings currently associated with the menu.
+     */
+    public function settings(array $settings = null) {
+        if (!empty($settings)) {
+            $this->settings = array_merge(self::$defaultsettings, $settings);
+        }
+
+        return $this->settings;
+    }
+
+    /**
+     * Constructs a menu.
+     * @param string $name The name this menu should go by.
+     * @param array $settings (optional) An array of settings.
+     */
+    public function __construct($name, $settings = null) {
+        $this->name = $name;
+        if (empty($settings)) {
+            $this->settings = self::$defaultsettings;
+        } else {
+            $this->settings = array_merge(self::$defaultsettings, $settings);
+        }
+    }
+}
+
+/**
+ * A Bootstrap-compliant navbar, comprising a site "brand" and a list of {@link bootstrap_navbar_item} objects.
+ *
+ * @copyright 2014 Jetha Chan
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @since Moodle 2.8
+ * @category output
+ */
+class bootstrap_navbar implements renderable {
+
+    /** @var string The "brand" associated with this navbar (and by extension the site). */
+    protected $brand;
+    /** @var array An array of {@link bootstrap_navbar_item} objects for rendering. */
+    protected $menus;
+    /** @var string A string of extra CSS classes to be applied. */
+    protected $extraclasses;
+
+    /**
+     * Gets and sets the "brand" (if a new one is provided) associated with this navbar.
+     * @param string $brand The new brand to use (optional).
+     * @return string The current brand.
+     */
+    public function brand($brand = null) {
+        if (!empty($brand)) {
+            $this->brand = $brand;
+        }
+        return $this->brand;
+    }
+
+    /**
+     * Gets and sets the menus (if a new array of menus is provided) associated with this navbar.
+     * @param array $menus The new menus to use (optional).
+     * @return array $menus The current menus.
+     */
+    public function menus($menus = null) {
+        if (!empty($menus)) {
+            $this->menus = $menus;
+        }
+        return $this->menus;
+    }
+
+    /**
+     * Gets and sets the extra CSS classes (if a new string of extra classes is provided) associated with this navbar.
+     * @param string $extraclasses The new classes to use (optional).
+     * @return string The current classes.
+     */
+    public function extraclasses($extraclasses = null) {
+        if (!empty($extraclasses)) {
+            $this->extraclasses = $extraclasses;
+        }
+        return $this->extraclasses;
+    }
+
+    /**
+     * Constructs the navbar given a specified brand.
+     * @param string $brand The new brand to use (optional).
+     */
+    public function __construct($brand = null) {
+        if (empty($brand)) {
+            $this->brand = 'bootstrap_navbar';
+        } else {
+            $this->brand = $brand;
+        }
+        $this->menus = array();
+        $this->extraclasses = '';
+    }
+
+    /**
+     * Enqueue a {@link bootstrap_navbar_item} in this navbar.
+     * @param bootstrap_navbar_item $item The item to enqueue.
+     * @return void
+     */
+    public function enqueue(bootstrap_navbar_item $item) {
+        if (empty($item)) {
+            return;
+        }
+        $this->menus[$item->name()] = $item;
     }
 }

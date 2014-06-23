@@ -606,6 +606,248 @@ class core_renderer extends renderer_base {
     }
 
     /**
+     * Return a string that either contains a message saying that you
+     * are not logged in, or a user dropdown (with information if you're
+     * logged in as another user).
+     * @return string HTML fragment.
+     */
+    public function user_dropdown($withlinks = null, $bootstrapmarkup = false, array $userflags = null) {
+        global $USER, $CFG, $DB, $SESSION;
+
+        $returnstr = '';
+
+        if (during_initial_install()) {
+            return $returnstr;
+        }
+        if (is_null($withlinks)) {
+            $withlinks = empty($this->page->layout_options['nologinlinks']);
+        }
+        if (is_null($userflags)) {
+            $userflags = array(
+                'loggedin' => isloggedin()
+            );
+        }
+
+        // Get information about current environment.
+        $loginpage = ((string)$this->page->url === get_login_url());
+        $course = $this->page->course;
+
+        // Session key.
+        $userflags['sesskey'] = sesskey();
+
+        $loginurl = get_login_url();
+
+        if (empty($course->id)) {
+            // Don't show dropdown during installation.
+            return $returnstr;
+        } else if ($userflags['loggedin']) {
+
+            // User is logged in; display the dropdown.
+            $context = context_course::instance($course->id);
+
+            // Get user information to pass to the dropdown renderable.
+            // User id.
+            if (!array_key_exists('userid', $userflags)) {
+                $userflags['userid'] = $USER->id;
+            }
+            // Full name.
+            if (!array_key_exists('fullname', $userflags)) {
+                $userflags['fullname'] = fullname($USER, true);
+            }
+            // Links: My Profile.
+            if (!array_key_exists('profileurl', $userflags)) {
+                $userflags['profileurl'] = new moodle_url(
+                    '/user/profile.php',
+                    array(
+                        'id' => $userflags['userid']
+                    )
+                );
+                $userflags['titleprofile'] = get_string('myprofile', 'moodle');
+            }
+            // Links: My Home.
+            if (!array_key_exists('urlhome', $userflags)) {
+                $userflags['urlhome'] = new moodle_url(
+                    '/my/'
+                );
+                $userflags['titlehome'] = get_string('mymoodle', 'admin');
+            }
+            // Avatar.
+            if (!array_key_exists('avatar', $userflags)) {
+                $userflags['avatar'] = $this->user_picture($USER, array('link' => false));
+            }
+            // Guest status.
+            if (!array_key_exists('isguest', $userflags)) {
+                $userflags['isguest'] = isguestuser();
+                $userflags['loginurl'] = $loginurl;
+                $userflags['logintext'] = get_string('login');
+            }
+            // Role status (if changed).
+            if (!array_key_exists('asrole', $userflags)) {
+
+                if (is_role_switched($course->id)) {
+                    if ($role = $DB->get_record('role', array('id' => $USER->access['rsw'][$context->path]))) {
+                        $userflags['asrole'] = role_get_name($role, $context);
+                        $userflags['urlswitchrolereturn'] = new moodle_url(
+                            '/course/switchrole.php',
+                            array(
+                                'id' => $course->id,
+                                'sesskey' => sesskey(),
+                                'switchrole' => 0,
+                                'returnurl' => $this->page->url->out_as_local_url(false)
+                            )
+                        );
+                    } else {
+                        $userflags['asrole'] = false;
+                    }
+                } else {
+                    $userflags['asrole'] = false;
+                }
+            }
+            // MNet provider (if present).
+            if (!array_key_exists('mnetisremoteuser', $userflags)) {
+                if ($userflags['mnetisremoteuser'] = is_mnet_remote_user($USER)) {
+                    $mnetidprovider = $DB->get_record('mnet_host', array('id' => $USER->mnethostid));
+                    $userflags['mnetidprovidername'] = $mnetidprovider->name;
+                    $userflags['mnetidproviderwwwroot'] = $mnetidprovider->wwwroot;
+                }
+            }
+
+            // Is the user currently logged in as another user? If so, switch things around.
+            if (!array_key_exists('asotheruser', $userflags)) {
+                $userflags['asotheruser'] = \core\session\manager::is_loggedinas();
+            }
+            if ($userflags['asotheruser']) {
+                $realuser = \core\session\manager::get_realuser();
+
+                // Save values for the user that the real user is logged in as.
+                $userflags['otheruseruserid'] = $USER->id;
+                $userflags['otheruserfullname'] = $userflags['fullname'];
+                $userflags['otheruserprofileurl'] = $userflags['profileurl'];
+                if (!array_key_exists('otheruseravatar', $userflags)) {
+                    $userflags['otheruseravatar'] = $userflags['avatar'];
+                    $userflags['avatar'] = $this->user_picture($realuser, array('link' => false));
+                }
+
+                // Set values for the real user.
+                $userflags['userid'] = $realuser->id;
+                $userflags['fullname'] = fullname($realuser, true);
+                $userflags['profileurl'] = new moodle_url(
+                    '/user/profile.php',
+                    array(
+                        'id' => $userflags['userid']
+                    )
+                );
+                $userflags['userreverturl'] = new moodle_url(
+                    '/course/loginas.php',
+                    array(
+                        'id' => $course->id,
+                        'sesskey' => $userflags['sesskey']
+                    )
+                );
+            }
+
+            // Login failures.
+            if (isset($SESSION->justloggedin)) {
+                unset($SESSION->justloggedin);
+                if (!empty($CFG->displayloginfailures)) {
+                    if (!isguestuser()) {
+                        // Include this file only when required.
+                        require_once($CFG->dirroot . '/user/lib.php');
+                        if ($count = user_count_login_failures($USER)) {
+
+                            // Get login failures string.
+                            $a = new stdClass();
+                            $a->attempts = html_writer::tag('span', $count, array('class' => 'value'));
+                            $userflags['loginfailures'] = get_string('failedloginattempts', '', $a);
+
+                            $reportlogindex = file_exists("$CFG->dirroot/report/log/index.php");
+                            if ($reportlogindex and has_capability('report/log:view', context_system::instance())) {
+                                $userflags['loginfailures'] .= html_writer::link(
+                                    new moodle_url(
+                                        '/report/log/index.php',
+                                        array(
+                                            'chooselog' => 1,
+                                            'id' => 0 ,
+                                            'modid' => 'site_errors'
+                                        )
+                                    ),
+                                    '(' . get_string('logs') . ')'
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Finally construct and render the dropdown.
+            $userdropdown = new user_menu($withlinks, $userflags);
+            $returnstr = $this->render($userdropdown);
+
+        } else {
+            // User is not logged in; display a message to that effect.
+            $returnstr = get_string('loggedinnot', 'moodle');
+            if (!$loginpage) {
+                $returnstr .= " (<a href=\"$loginurl\">" . get_string('login') . '</a>)';
+            }
+            $returnstr = html_writer::tag(
+                'span',
+                $returnstr
+            );
+            // Wrap this not-logged-in message in a <li /> on Bootstrap.
+            if ($bootstrapmarkup) {
+                $returnstr = html_writer::tag(
+                    'li',
+                    $returnstr
+                );
+            }
+        }
+
+        return $returnstr;
+    }
+
+    /**
+     * Renders and outputs the user menu, with dividers between groups.
+     *
+     * @param user_menu $menu The menu to render.
+     * @return string HTML fragment.
+     */
+    protected function render_user_menu(user_menu $menu) {
+
+        static $menucount = 0;
+
+        // If the menu has no children return an empty string.
+        if (!$menu->has_children()) {
+            return '';
+        }
+        // Increment the menu count. This is used for ID's that get worked with in JavaScript and is essential.
+        $menucount++;
+        // Initialise this custom menu (the custom menu object is contained in javascript-static).
+        $jscode = js_writer::function_call_with_Y('M.core_custom_menu.init', array('user_menu_'.$menucount));
+        $jscode = "(function(){{$jscode}})";
+        $this->page->requires->yui_module('node-menunav', $jscode);
+        // Build the root nodes as required by YUI.
+        $content = html_writer::start_tag(
+            'div',
+            array(
+                'id' => 'user_menu_' . $menucount,
+                'class' => 'yui3-menu yui3-menu-horizontal javascript-disabled user-menu'
+            )
+        );
+        $content .= html_writer::start_tag('div', array('class' => 'yui3-menu-content'));
+        $content .= html_writer::start_tag('ul');
+        // Render each child.
+        foreach ($menu->get_children() as $item) {
+            $content .= $this->render_custom_menu_item($item);
+        }
+        // Close the open tags.
+        $content .= html_writer::end_tag('ul');
+        $content .= html_writer::end_tag('div');
+        $content .= html_writer::end_tag('div');
+
+        return $content;
+    }
+
+    /**
      * Return the standard string that says whether you are logged in (and switched
      * roles/logged in as another user).
      * @param bool $withlinks if false, then don't include any links in the HTML produced.
@@ -825,6 +1067,9 @@ class core_renderer extends renderer_base {
 
         if (\core\session\manager::is_loggedinas()) {
             $this->page->add_body_class('userloggedinas');
+        }
+        if (is_role_switched($this->page->course->id)) {
+            $this->page->add_body_class('viewingasrole');
         }
 
         // Give themes a chance to init/alter the page object.
@@ -3080,16 +3325,30 @@ EOD;
     protected function render_custom_menu_item(custom_menu_item $menunode) {
         // Required to ensure we get unique trackable id's
         static $submenucount = 0;
+
+        $classes = '';
+        $class_suffix = $menunode->get_class_suffix();
+        if ($class_suffix) {
+            $classes = 'menuitem-' . trim($class_suffix);
+        }
+
         if ($menunode->has_children()) {
             // If the child has menus render it as a sub menu
             $submenucount++;
-            $content = html_writer::start_tag('li');
+            $content = html_writer::start_tag('li', array('class' => $classes));
             if ($menunode->get_url() !== null) {
                 $url = $menunode->get_url();
             } else {
                 $url = '#cm_submenu_'.$submenucount;
             }
-            $content .= html_writer::link($url, $menunode->get_text(), array('class'=>'yui3-menu-label', 'title'=>$menunode->get_title()));
+            $content .= html_writer::tag(
+                'div',
+                $menunode->get_text(),
+                array(
+                    'class' => 'yui3-menu-label',
+                    'title' => $menunode->get_title()
+                )
+            );
             $content .= html_writer::start_tag('div', array('id'=>'cm_submenu_'.$submenucount, 'class'=>'yui3-menu custom_menu_submenu'));
             $content .= html_writer::start_tag('div', array('class'=>'yui3-menu-content'));
             $content .= html_writer::start_tag('ul');
@@ -3109,21 +3368,22 @@ EOD;
                 // This is a divider.
                 $content = html_writer::start_tag('li', array('class' => 'yui3-menuitem divider'));
             } else {
-                $content = html_writer::start_tag(
-                    'li',
-                    array(
-                        'class' => 'yui3-menuitem'
-                    )
+                $content = html_writer::start_tag('li', array('class' => 'yui3-menuitem ' . $classes));
+
+                $menunodetagname = 'a';
+                $menunodetagattrs = array(
+                    'class' => 'yui3-menuitem-content',
+                    'title' => $menunode->get_title()
                 );
                 if ($menunode->get_url() !== null) {
-                    $url = $menunode->get_url();
+                    $menunodetagattrs['href'] = $menunode->get_url();
                 } else {
-                    $url = '#';
+                    $menunodetagname = 'div';
                 }
-                $content .= html_writer::link(
-                    $url,
+                $content .= html_writer::tag(
+                    $menunodetagname,
                     $menunode->get_text(),
-                    array('class' => 'yui3-menuitem-content', 'title' => $menunode->get_title())
+                    $menunodetagattrs
                 );
             }
             $content .= html_writer::end_tag('li');

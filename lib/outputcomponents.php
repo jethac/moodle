@@ -2592,6 +2592,12 @@ class custom_menu_item implements renderable {
     protected $children = array();
 
     /**
+     * @var string A CSS class suffix to apply to this item for renderers to
+     * hook onto.
+     */
+    protected $classsuffix = '';
+
+    /**
      * @var int A reference to the sort var of the last child that was added
      */
     protected $lastsort = 0;
@@ -2605,13 +2611,23 @@ class custom_menu_item implements renderable {
      * @param int $sort A sort or to use if we need to sort differently [Optional]
      * @param custom_menu_item $parent A reference to the parent custom_menu_item this child
      *        belongs to, only if the child has a parent. [Optional]
+     * @param string $classsuffix A CSS class suffix to apply to this item when rendered.
+     *        [Optional]
      */
-    public function __construct($text, moodle_url $url=null, $title=null, $sort = null, custom_menu_item $parent = null) {
+    public function __construct(
+        $text,
+        moodle_url $url = null,
+        $title = null,
+        $sort = null,
+        custom_menu_item $parent = null,
+        $classsuffix = ''
+    ) {
         $this->text = $text;
         $this->url = $url;
         $this->title = $title;
         $this->sort = (int)$sort;
         $this->parent = $parent;
+        $this->classsuffix = $classsuffix;
     }
 
     /**
@@ -2621,16 +2637,25 @@ class custom_menu_item implements renderable {
      * @param moodle_url $url
      * @param string $title
      * @param int $sort
+     * @param string $classsuffix
      * @return custom_menu_item
      */
-    public function add($text, moodle_url $url = null, $title = null, $sort = null) {
+    public function add($text, moodle_url $url = null, $title = null, $sort = null, $classsuffix = '') {
         $key = count($this->children);
         if (empty($sort)) {
             $sort = $this->lastsort + 1;
         }
-        $this->children[$key] = new custom_menu_item($text, $url, $title, $sort, $this);
+        $this->children[$key] = new custom_menu_item($text, $url, $title, $sort, $this, $classsuffix);
         $this->lastsort = (int)$sort;
         return $this->children[$key];
+    }
+
+    /**
+     * Adds a divider as a child of this node.
+     * @return custom_menu_item
+     */
+    public function add_divider() {
+        return $this->add('####', null, null);
     }
 
     /**
@@ -2647,6 +2672,14 @@ class custom_menu_item implements renderable {
      */
     public function get_url() {
         return $this->url;
+    }
+
+    /**
+     * Returns the class suffix for this item
+     * @return string
+     */
+    public function get_class_suffix() {
+        return $this->classsuffix;
     }
 
     /**
@@ -2995,6 +3028,238 @@ class tabobject implements renderable {
         }
     }
 }
+
+/**
+ * User dropdown menu
+ *
+ * Given a user id, this class generates a dropdown menu that can be rendered, being
+ * a special permutation of the custom_menu.
+ *
+ * @copyright 2014 Jetha Chan
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @since Moodle 2.8
+ * @package core
+ * @category output
+ */
+class user_menu extends custom_menu {
+
+    /**
+     * Creates the user dropdown menu.
+     * @param bool $withlinks Whether to display any links. When true (as in quiz attempts and other pages with
+     *             $PAGE->layout_options['nologinlinks'] turned on), the generated user_menu just shows information and no menu.
+     * @param array $flags An array of construction options.
+     */
+    public function __construct($withlinks, array $flags) {
+        global $OUTPUT;
+
+        $flags['withlinks'] = $withlinks;
+
+        if (!$flags['isguest']) {
+            $this->construct_as_user($flags);
+        } else {
+            $this->construct_as_guest($flags);
+        }
+
+    }
+
+    /**
+     * Constructs this user_menu as a menu for a guest.
+     * @param array $flags An array of strings to be used when constructing this menu.
+     */
+    protected function construct_as_guest(array $flags) {
+        // Root element.
+        // Build the root element's HTML contents.
+        $rootcontents = html_writer::start_tag('span', array('class' => 'userbutton'));
+        $rootcontents .= $flags['avatar'];
+        $rootcontents .= html_writer::start_tag('span', array('class' => 'usertext'));
+        $rootcontents .= $flags['fullname'];
+        $rootcontents .= html_writer::end_tag('span');
+        $rootcontents .= html_writer::end_tag('span');
+        $rootnode = new custom_menu_item(
+            $rootcontents,
+            null,
+            $flags['fullname']
+        );
+
+        // Children.
+        $rootnode->add(
+            $flags['logintext'],
+            new moodle_url($flags['loginurl']),
+            $flags['logintext']
+        );
+
+        // Tell the class about its new structure.
+        $this->override_children(array($rootnode));
+        $this->currentlanguage = null;
+    }
+
+    /**
+     * Constructs this user_menu as a menu for a given use.
+     * @param array $flags An array of data (flags and/or strings) to be used when constructing this menu.
+     */
+    protected function construct_as_user($flags) {
+        global $PAGE;
+
+        // Root element.
+        // Build the root element's HTML contents.
+        $rootcontents = html_writer::start_tag('span', array('class' => 'userbutton'));
+        $rootcontents .= html_writer::start_tag('span', array('class' => 'avatars'));
+        $rootcontents .= html_writer::tag('span', $flags['avatar'], array('class' => 'avatar current'));
+
+        // Are we signed in as another user?
+        if ($flags['asotheruser']) {
+            // Append the other user's avatar.
+            $rootcontents .= html_writer::tag('span', $flags['otheruseravatar'], array('class' => 'avatar viewingas'));
+        }
+        $rootcontents .= html_writer::end_tag('span');
+        $rootcontents .= html_writer::start_tag('span', array('class' => 'usertext'));
+
+
+        // Retrieve the 'viewing as other user' string if necessary.
+        $otheruserstr = '';
+        if ($flags['asotheruser']) {
+            $otheruserstr = html_writer::start_tag('span', array('class' => 'meta viewingas'));
+            $namecontents = $flags['fullname'];
+            if ($flags['withlinks']) {
+                $namecontents = html_writer::tag(
+                    'a',
+                    $flags['otheruserfullname'],
+                    array('class' => 'value', 'href' => $flags['otheruserprofileurl'])
+                );
+            }
+            $otheruserstr .= get_string(
+                'loggedinas',
+                'moodle',
+                $namecontents
+            );
+        }
+
+        // Render the user's full name.
+        if ($flags['withlinks']) {
+            $rootcontents .= html_writer::start_tag(
+                'a',
+                array('title' => get_string('viewprofile'), 'href' => $flags['profileurl'])
+            );
+            $rootcontents .= $flags['fullname'];
+            $rootcontents .= html_writer::end_tag('a');
+        } else {
+            $rootcontents .= $flags['fullname'];
+        }
+
+        if ($flags['asotheruser']) {
+            $rootcontents .= $otheruserstr;
+        }
+
+        // Role.
+        if ($flags['asrole']) {
+            $rootcontents .= html_writer::start_tag(
+                'span',
+                array('class' => 'meta role role-' . strtolower(preg_replace('#[ ]+#', '-', trim($flags['asrole']))))
+            );
+            $rootcontents .= get_string(
+                'roleviewas',
+                'moodle',
+                html_writer::tag(
+                    'span',
+                    $flags['asrole'],
+                    array('class' => 'value')
+                )
+            );
+            $rootcontents .= html_writer::end_tag('span');
+        }
+
+        // MNet.
+        if ($flags['mnetisremoteuser']) {
+            $rootcontents .= html_writer::start_tag(
+                'span',
+                array('class' => 'meta mnet mnet-' . strtolower(preg_replace('#[ ]+#', '-', trim($flags['mnetidprovidername']))))
+            );
+
+            $mnetstring = html_writer::tag('span', $flags['mnetidprovidername'], array('class' => 'value'));
+            if ($flags['withlinks']) {
+                $mnetstring = html_writer::tag(
+                    'a',
+                    $flags['mnetidprovidername'],
+                    array(
+                        'class' => 'value',
+                        'href' => $flags['mnetidproviderwwwroot']
+                    )
+                );
+            }
+            $rootcontents .= get_string(
+                'loggedinfrom',
+                'moodle',
+                $mnetstring
+            );
+            $rootcontents .= html_writer::end_tag('span');
+        }
+
+        // Login failures.
+        if (isset($flags['loginfailures'])) {
+            $rootcontents .= html_writer::tag(
+                'span',
+                $flags['loginfailures'],
+                array('class' => 'meta loginfailures')
+            );
+        }
+
+        $rootcontents .= html_writer::end_tag('span');
+        $rootcontents .= html_writer::end_tag('span');
+
+        $rootnode = new custom_menu_item(
+            $rootcontents,
+            null,
+            $flags['fullname'],
+            null,
+            null,
+            'userroot'
+        );
+
+        // Build out children.
+        if ($flags['withlinks']) {
+            $rootnode->add($flags['titlehome'], $flags['urlhome'], $flags['titlehome'], null, 'admin');
+            $rootnode->add_divider();
+            $rootnode->add($flags['titleprofile'], $flags['profileurl'], $flags['titleprofile'], null, 'profile');
+            $rootnode->add_divider();
+
+            // Logout link, or switch back to previous role / switch out of user link.
+            if ($flags['asrole']) {
+                $switchroletext = get_string('switchrolereturn');
+                $rootnode->add(
+                    $switchroletext,
+                    $flags['urlswitchrolereturn'],
+                    $switchroletext,
+                    null,
+                    'switchrolereturn'
+                );
+            } else if ($flags['asotheruser']) {
+                $returntext = get_string('userrevert');
+                $rootnode->add(
+                    $returntext,
+                    $flags['userreverturl'],
+                    $returntext,
+                    null,
+                    'userrevert'
+                );
+            } else {
+                $logoutlink = new moodle_url('/login/logout.php', array('sesskey' => $flags['sesskey']));
+                $logouttext = get_string('logout');
+                $rootnode->add(
+                    $logouttext,
+                    $logoutlink,
+                    $logouttext,
+                    null,
+                    'logout'
+                );
+            }
+        }
+
+        // Tell the class about its new structure.
+        $this->override_children(array($rootnode));
+        $this->currentlanguage = null;
+    }
+}
+
 
 /**
  * Stores tabs list

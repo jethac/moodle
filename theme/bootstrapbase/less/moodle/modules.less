@@ -232,6 +232,9 @@ select {
 .container-fluid {
     max-width: 1680px;
     margin: 0 auto;
+
+    padding-right: 20px;
+    padding-left: 20px;
 }
 // contributed by Paul Hibbitts, see http://msdn.microsoft.com/en-us/library/ie/jj583807(v=vs.85).aspx
 canvas {
@@ -331,16 +334,245 @@ div#dock {
         overflow: hidden;
         width: 0;
         height: 40px;
-        border-left: 1px solid #e5e5e5;
-        border-right: 1px solid #fff;
+        border-left: 1px solid @navbarBorder;
+        border-right: 1px solid @navbarBackgroundHighlight;
+    }
+    a {
+        color: @navbarLinkColor;
+        &:hover {
+            color: @navbarLinkColorHover
+        }
+        &:active {
+            color: @navbarLinkColorActive
+        }
+    }
+    span {
+        color: @navbarText;
+    }
+}
+.navbar-inverse {
+    .nav .divider {
+        border-left-color: @navbarInverseBackground;
+        border-right-color: @navbarInverseBorder;
+
+    }
+    a {
+        color: @navbarInverseLinkColor;
+        &:hover {
+            color: @navbarInverseLinkColorHover
+        }
+        &:active {
+            color: @navbarInverseLinkColorActive
+        }
+    }
+    span {
+        color: @navbarInverseText;
     }
 }
 
-.dropdown-menu {
-    .divider {
+.userloggedinas.viewingasrole .navbar .nav,
+.navbar .nav {
+    .dropdown-menu .divider {
         width: auto;
         height: 1px;
+        margin: 4px 1px;
         border-left: 0px none;
         border-right: 0px none;
+    }
+}
+
+// navbar
+.userloggedinas.viewingasrole .navbar {
+    .nav {
+        .divider {
+            height: 46px;
+        }
+        > li {
+            > a,
+            > span {
+                @vertOffset: ((@navbarHeight - @baseLineHeight) / 2) + 3;
+                padding: @vertOffset 15px;
+            }
+        }
+    }
+}
+.navbar {
+
+    .nav {
+        position: relative;
+        left: 0;
+        display: block;
+        float: left;
+        margin: 0 10px 0 0;
+        > li {
+            float: left;
+            > a,
+            > span {
+                display: block;
+                float: none;
+                // Vertically center the text given @navbarHeight
+                padding: ((@navbarHeight - @baseLineHeight) / 2) 15px;
+                text-decoration: none;
+                cursor: pointer;
+            }
+        }
+
+        &.pull-right {
+          float: right; // redeclare due to specificity
+          margin-right: 0; // remove margin on float right nav
+        }
+    }
+
+    .btn-navbar {
+
+        @defaultHeight: 18px;
+        @defaultPaddingY: 7px;
+        @defaultPaddingX: 10px;
+
+        @unpaddedHeight: @defaultHeight + 2 * @defaultPaddingY;
+        @unpaddedWidth: @unpaddedHeight + 2 * (@defaultPaddingX - @defaultPaddingY);
+
+        margin: 3px 3px 2px 0px;
+        overflow: hidden;
+
+        width: @unpaddedWidth;
+        height: @unpaddedHeight;
+        padding: 0px;
+        opacity: 0.75;
+
+        &.default {
+            width: @defaultHeight;
+            height: @defaultHeight;
+            padding: @defaultPaddingY @defaultPaddingX;
+        }
+
+        &.btn-navbar-user {
+            img {
+                // Truncate the image a little to maintain pixel aspect ratio.
+                display: block;
+                width: @unpaddedWidth;
+                height: @unpaddedWidth;
+            }
+        }
+
+        &.active {
+            position: relative;
+            right: -1px;
+            top: -1px;
+            border: 2px solid #aaa;
+            opacity: 1.0;
+            box-shadow: 0px 0px 8px rgba(0,0,0,0.25);
+        }
+    }
+
+    .nav-collapse-user {
+        .nav > .menuitem-userroot {
+            > .dropdown-toggle,
+            > a {
+                padding: 2px 6px 2px 2px;
+
+                .userbutton {
+                    vertical-align: middle;
+                    .avatars {
+                        display: inline-block;
+                        margin-right: 6px;
+                        vertical-align: middle;
+                        @avatarsize: 35px;
+                        height: @avatarsize;
+                        .avatar {
+                            display: inline-block;
+                            overflow: hidden;
+                            width: @avatarsize;
+                            height: @avatarsize;
+                            img {
+                                width: inherit;
+                                height: inherit;
+                            }
+                            &.current {
+
+                            }
+                            &.viewingas {
+                                @va_width: 20px;
+                                @va_borderwidth: 1px;
+                                position: relative;
+                                margin-left: -1 * (@va_width + 2 * @va_borderwidth);
+                                margin-top: (@va_width + 2 * @va_borderwidth) / 2;
+                                width: @va_width;
+                                height: @va_width;
+                                border-radius: @va_width / 2;
+                                border: @va_borderwidth solid #fff;
+                                box-shadow: -2px -2px 16px rgba(0, 0, 0, 0.5);
+                                top: 4px;
+                                left: 4px;
+                            }
+                        }
+                    }
+                    .usertext {
+                        display: inline-block;
+                        line-height: 1em;
+                        vertical-align: middle;
+                        .meta {
+                            display: block;
+                            font-size: 12px;
+                            .value {
+                                font-weight: bold;
+                            }
+                        }
+                    }
+                }
+                .caret {
+                    vertical-align: middle;
+                    margin-top: 0px;
+                }
+            }
+            > .dropdown-menu li {
+                a {
+                    padding: 3px 8px 3px 30px;
+                    background-position: 8px 4px;
+                    background-repeat: no-repeat;
+                    background-size: 16px;
+                    background-image: url([[pix:t/edit]]);
+                }
+
+                &.menuitem-admin a { background-image: url([[pix:i/course]]); }
+                &.menuitem-profile a { background-image: url([[pix:i/user]]); }
+                &.menuitem-logout a { background-image: url([[pix:a/logout]]); }
+            }
+        }
+    }
+}
+
+.dir-rtl {
+    .navbar {
+        .nav-collapse-user {
+            .nav > .menuitem-userroot {
+                > .dropdown-toggle,
+                > a {
+                    .userbutton {
+                        .avatars {
+                            margin-left: 6px;
+                            margin-right: 0px;
+
+                            .avatar {
+                                &.viewingas {
+                                    margin-left: 0;
+                                    margin-right: -35px;
+                                }
+                            }
+                        }
+                    }
+                }
+                > .dropdown-menu li {
+                    a {
+                        padding: 3px 30px 3px 8px;
+                        background-position: top 4px right 8px;
+                    }
+                }
+            }
+        }
+
+        .btn-navbar {
+            margin: 3px 0px 2px 3px;
+        }
     }
 }
