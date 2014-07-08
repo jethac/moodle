@@ -983,7 +983,7 @@ if (!empty($parent)) {
         print_error('notpartofdiscussion', 'forum');
     }
 
-    echo forum_display_post($post, $disussion, $forum, $cm, $course);
+    echo forum_display_post($post, $discussion, $forum, $cm, $course);
     if (empty($post->edit)) {
         if ($forum->type != 'qanda' || forum_user_can_see_discussion($forum, $discussion, $modcontext)) {
             $forumtracked = forum_tp_is_tracked($forum);

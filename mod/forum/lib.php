@@ -3033,36 +3033,23 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
         }
     }
 
-    $p = new mod_forum_post($post, $discussion);
-    $p->set_read($options->postisread);
-    $p->depth = $options->depth;
-
-    // Fill in defaults for postisread.
-    if (is_null($options->postisread)) {
-        $options->postisread = forum_tp_is_post_read($USER->id, $post);
-    }
-    $p->set_tracked($options->istracked);
-
-
     // String cache.
     static $str;
-
-    $modcontext = context_module::instance($cm->id);
-
-    $post->course = $course->id;
-    $post->forum  = $forum->id;
-    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_forum', 'post', $post->id);
-    if (!empty($CFG->enableplagiarism)) {
-        require_once($CFG->libdir.'/plagiarismlib.php');
-        // TODO convert to renderable.
-        $p->plagiarismlinks = plagiarism_get_links(array(
-            'userid' => $post->userid,
-            'content' => $post->message,
-            'cmid' => $cm->id,
-            'course' => $post->course,
-            'forum' => $post->forum,
-        ));
+    if (empty($str)) {
+        $str = new stdClass;
+        $str->edit         = get_string('edit', 'forum');
+        $str->delete       = get_string('delete', 'forum');
+        $str->reply        = get_string('reply', 'forum');
+        $str->parent       = get_string('parent', 'forum');
+        $str->pruneheading = get_string('pruneheading', 'forum');
+        $str->prune        = get_string('prune', 'forum');
+        $str->displaymode  = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
+        $str->markread     = get_string('markread', 'forum');
+        $str->markunread   = get_string('markunread', 'forum');
     }
+
+    // Get the module context.
+    $modcontext = context_module::instance($cm->id);
 
     // Caching.
     if (!isset($cm->cache)) {
@@ -3086,6 +3073,39 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
         $cm->uservisible = \core_availability\info_module::is_user_visible($cm, 0, false);
     }
 
+
+    // Initialize post course, forum and message fields.
+    $post->course = $course->id;
+    $post->forum  = $forum->id;
+    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_forum', 'post', $post->id);
+
+    // ----------------------------------------------
+    // Create a mod_forum_post renderable.
+    $p = new mod_forum_post($post, $discussion);
+    // Set the set_read flag.
+    $p->set_read($options->postisread);
+    // Set the depth of discussion.
+    $p->depth = $options->depth;
+
+    // Fill in defaults for postisread.
+    if (is_null($options->postisread)) {
+        $options->postisread = forum_tp_is_post_read($USER->id, $post);
+    }
+    $p->set_tracked($options->istracked);
+
+    // If plagiarism detection is enabled, include plagiarismlib and add appropriate links.
+    if (!empty($CFG->enableplagiarism)) {
+        require_once($CFG->libdir.'/plagiarismlib.php');
+        // TODO convert to renderable.
+        $p->plagiarismlinks = plagiarism_get_links(array(
+            'userid' => $post->userid,
+            'content' => $post->message,
+            'cmid' => $cm->id,
+            'course' => $post->course,
+            'forum' => $post->forum,
+        ));
+    }
+
     if (!forum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
         if (!$options->dummyifcantsee) {
             return;
@@ -3093,46 +3113,6 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
 
         $p->hidden = true;
         return $p;
-
-        // TODO move this into the renderer/renderable.
-        $output = '';
-        $output .= html_writer::tag('a', '', array('id'=>'p'.$post->id));
-        $output .= html_writer::start_tag('div', array('class'=>'forumpost clearfix',
-                                                       'role' => 'region',
-                                                       'aria-label' => get_string('hiddenforumpost', 'forum')));
-        $output .= html_writer::start_tag('div', array('class'=>'row header'));
-        $output .= html_writer::tag('div', '', array('class'=>'left picture')); // Picture
-        if ($post->parent) {
-            $output .= html_writer::start_tag('div', array('class'=>'topic'));
-        } else {
-            $output .= html_writer::start_tag('div', array('class'=>'topic starter'));
-        }
-        $output .= html_writer::tag('div', get_string('forumsubjecthidden','forum'), array('class' => 'subject',
-                                                                                           'role' => 'header')); // Subject.
-        $output .= html_writer::tag('div', get_string('forumauthorhidden', 'forum'), array('class' => 'author',
-                                                                                           'role' => 'header')); // Author.
-        $output .= html_writer::end_tag('div');
-        $output .= html_writer::end_tag('div'); // row
-        $output .= html_writer::start_tag('div', array('class'=>'row'));
-        $output .= html_writer::tag('div', '&nbsp;', array('class'=>'left side')); // Groups
-        $output .= html_writer::tag('div', get_string('forumbodyhidden','forum'), array('class'=>'content')); // Content
-        $output .= html_writer::end_tag('div'); // row
-        $output .= html_writer::end_tag('div'); // forumpost
-
-        return $output;
-    }
-
-    if (empty($str)) {
-        $str = new stdClass;
-        $str->edit         = get_string('edit', 'forum');
-        $str->delete       = get_string('delete', 'forum');
-        $str->reply        = get_string('reply', 'forum');
-        $str->parent       = get_string('parent', 'forum');
-        $str->pruneheading = get_string('pruneheading', 'forum');
-        $str->prune        = get_string('prune', 'forum');
-        $str->displaymode  = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
-        $str->markread     = get_string('markread', 'forum');
-        $str->markunread   = get_string('markunread', 'forum');
     }
 
     // The discussion link is used in various places - generate it here.
@@ -3160,8 +3140,9 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
 
     // Prepare the attachments for the post, files then images
     // TODO make this it's own renderable/render.
-    list($attachments, $attachedimages) = forum_print_attachments($post, $cm, 'separateimages');
+    list($attachments, $attachedimages) = forum_print_attachments($post, $cm, 'separateimages', true);
     $p->attachments = $attachments;
+    $p->attachedimages = $attachedimages;
 
     // Prepare an array of commands
     $commands = array();
@@ -3248,8 +3229,12 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
     $postuser->date = userdate($post->modified);
     $p->set_author($postuser);
 
+    // Add group icons.
     if ($groups) {
-        $groupoutput = $OUTPUT->group_picture($groups, $course->id, null, true);
+        $p->grouppictures = array();
+        foreach ($groups as $group) {
+             array_push($p->grouppictures, new group_picture($group, $course->id, null, true));
+        }
     }
 
     $textoptions = new stdClass;
@@ -3271,7 +3256,6 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
         if (!empty($options->highlight)) {
             $postcontent = highlight($options->highlight, $postcontent);
         }
-        $postcontent .= html_writer::tag('div', $attachedimages, array('class' => 'attachedimages'));
     }
 
     $p->message = $postcontent;
@@ -3763,9 +3747,10 @@ function forum_move_attachments($discussion, $forumfrom, $forumto) {
  * @param object $post
  * @param object $cm
  * @param string $type html/text/separateimages
+ * @param bool $wrapwithlisttags
  * @return mixed string or array of (html text withouth images and image HTML)
  */
-function forum_print_attachments($post, $cm, $type) {
+function forum_print_attachments($post, $cm, $type, $wrapwithlisttags = false) {
     global $CFG, $DB, $USER, $OUTPUT;
 
     if (empty($post->attachment)) {
@@ -3810,14 +3795,21 @@ function forum_print_attachments($post, $cm, $type) {
             $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$context->id.'/mod_forum/attachment/'.$post->id.'/'.$filename);
 
             if ($type == 'html') {
-                $output .= "<a href=\"$path\">$iconimage</a> ";
-                $output .= "<a href=\"$path\">".s($filename)."</a>";
+                if ($wrapwithlisttags) {
+                    $output .= '<li class="attachment">';
+                }
+                $output .= "FOO";
+                $output .= "<a href=\"$path\">" . $iconimage . s($filename)."</a>";
                 if ($canexport) {
                     $button->set_callback_options('forum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_forum');
                     $button->set_format_by_file($file);
                     $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                 }
-                $output .= "<br />";
+                if ($wrapwithlisttags) {
+                    $output .= '</li>';
+                } else {
+                    $output .= "<br />";
+                }
 
             } else if ($type == 'text') {
                 $output .= "$strattachment ".s($filename).":\n$path\n";
@@ -3825,21 +3817,37 @@ function forum_print_attachments($post, $cm, $type) {
             } else { //'returnimages'
                 if (in_array($mimetype, array('image/gif', 'image/jpeg', 'image/png'))) {
                     // Image attachments don't get printed as links
-                    $imagereturn .= "<br /><img src=\"$path\" alt=\"\" />";
+                    if ($wrapwithlisttags) {
+                        $imagereturn .= '<li class="attachment image">';
+                    } else {
+                        $imagereturn .= "<br />";
+                    }
+                    $imagereturn .= "<img src=\"$path\" alt=\"\" />";
                     if ($canexport) {
                         $button->set_callback_options('forum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_forum');
                         $button->set_format_by_file($file);
                         $imagereturn .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                     }
+                    if ($wrapwithlisttags) {
+                        $imagereturn .= '</li>';
+                    }
                 } else {
-                    $output .= "<a href=\"$path\">$iconimage</a> ";
-                    $output .= format_text("<a href=\"$path\">".s($filename)."</a>", FORMAT_HTML, array('context'=>$context));
+                    if ($wrapwithlisttags) {
+                        $output .= '<li class="attachment">';
+                    }
+                    $output .= format_text(
+                        "<a href=\"$path\">" . $iconimage . s($filename) . "</a>", FORMAT_HTML, array('context' => $context)
+                    );
                     if ($canexport) {
                         $button->set_callback_options('forum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_forum');
                         $button->set_format_by_file($file);
                         $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                     }
-                    $output .= '<br />';
+                    if ($wrapwithlisttags) {
+                        $output .= '</li>';
+                    } else {
+                        $output .= "<br />";
+                    }
                 }
             }
 

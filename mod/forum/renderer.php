@@ -125,29 +125,43 @@ class mod_forum_renderer extends plugin_renderer_base {
     }
 
     /**
-     * We keept he wrapper separate to the post body to allow themers to
+     * We keep the wrapper separate to the post body to allow themers to
      * replace basic markup around each post as required.
      *
      * @param mod_forum_post $post
      * @return string
      */
     public function render_mod_forum_post(mod_forum_post $post) {
+
+        $arialabel = get_string('postbyuser', 'forum', $post->author);
+
+        // Is the post hidden?
+        if (!empty($post->hidden)) {
+            $arialabel = get_string('hiddenforumpost', 'forum');
+        }
+
+
         $o = '';
-        $o .= "<article
-                id='p{$post->id}'
-                class='forumpost clearfix {$post->postclass} {$post->topicclass}'
-                role='region'
-                data-level='{$post->depth}'
-                aria-label='" . get_string('postbyuser', 'forum', $post->author) . "'
-                aria-labelledby='p{$post->id}_heading'
-                tabindex='0'
-            >";
-
+        $o .= html_writer::start_tag(
+            'article',
+            array(
+                'id' => 'p' . $post->id,
+                'class' => 'forumpost clearfix '. $post->postclass . ' ' . $post->topicclass,
+                'role' => 'region',
+                'data-level' => $post->depth,
+                'aria-label' => $arialabel,
+                'aria-labelledby' => 'p' . $post->id . '_heading'
+            )
+        );
+        $o .= '<section class="postbody">';
         $o .= $this->render_mod_forum_post_body($post);
+        $o .= '</section>';
 
+        $o .= '<section class="children">';
         foreach ($post->children as $child) {
             $o .= $this->render($child);
         }
+        $o .= '</section>';
 
         $o .= '</article>';
         return $o;
@@ -155,48 +169,67 @@ class mod_forum_renderer extends plugin_renderer_base {
 
     private function render_mod_forum_post_body($post) {
         $o = '';
-        $o .= "<div class='row header clearfix'>";
-        $o .= "<div class='left picture'>";
-        $o .= $this->user_picture($post->author, array('courseid' => $post->courseid));
+
+        $o .= '<header>';
+        $o .= "<div class='picture'>";
+        $o .= $this->user_picture(
+            $post->author, array(
+                'courseid' => $post->courseid,
+                'visibletoscreenreaders' => false
+            )
+        );
         $o .= '</div>';
-        $o .= "<div class='topic{$post->topicclass}'>";
 
-        // Subject
+        // Add classes to the topic div if necessary.
+        $topicclass = "topic";
+        if (empty($post->parent)) {
+            $topicclass .= " firstpost starter";
+        }
+        $o .= html_writer::start_tag('div', array('class' => $topicclass));
         $o .= $this->render_mod_forum_post_subject($post);
-
-        // Byline
         $o .= $this->render_mod_forum_post_byline($post);
+        $o .= html_writer::end_tag('div');
 
-        $o .= "</div>";
-        $o .= "</div>";
+        //$o .= "<div class='row header clearfix'>";
+        $o .= '</header>';
+
+
+
+
+
+        //$o .= "<div class='topic{$post->topicclass}'>";
+
+
+        //$o .= "</div>";
+        //$o .= "</div>";
 
 
         // The main content.
-        $o .= "<div class='row maincontent clearfix'>";
+        //$o .= "<div class='row maincontent clearfix'>";
 
-        // The group picture.
-        $o .= $this->render_mod_forum_post_grouppicture($post);
+        // The group pictures.
+        $o .= $this->render_mod_forum_post_grouppictures($post->grouppictures);
 
-        $o .= "<div class='no-overflow'>";
-        $o .= "<div class='content'>";
-        // TODO make this it's own renderable/render.
-        $o .= $this->render_mod_forum_post_attachments($post);
+        $o .= "<div class='no-overflow content'>";
 
         // TODO make this it's own renderable/render.
         $o .= "<div class='posting {$post->postclass}'>";
-        $o .= $post->message;
-        $o .= $post->plagiarismlinks;
-        if ($post->wordcount) {
-            $o .= "<div class='post-word-count'>";
-            $o .= get_string('numwords', 'moodle', $p->wordcount);
-            $o .= "</div>";
+        if (!empty($post->hidden)) {
+            $o .= get_string('forumbodyhidden','forum');
+        } else {
+            $o .= $post->message;
+            $o .= $post->plagiarismlinks;
+            if ($post->wordcount) {
+                $o .= "<div class='post-word-count'>";
+                $o .= get_string('numwords', 'moodle', $p->wordcount);
+                $o .= "</div>";
+            }
         }
         $o .= "</div>";
-        // $o .= $this->render($post->message);
-        $o .= "</div>"; // content.
-        $o .= '</div>'; // no-overflow.
+        $o .= $this->render_mod_forum_post_attachments($post);
+        $o .= "</div>"; // content, no-overflow.
 
-        $o .= '</div>'; // row.
+        //$o .= '</div>'; // row.
 
         // The final row.
         $o .= "<div class='row side'>";
@@ -230,19 +263,54 @@ class mod_forum_renderer extends plugin_renderer_base {
         return $o;
     }
 
+    /**
+     * Render the subject of a given forum post.
+     * @param mod_forum_post $post The post whose header should be rendered.
+     * @return string HTML fragment.
+     */
     private function render_mod_forum_post_subject($post) {
+        $postsubject = $post->subject;
+        if (!empty($post->hidden)) {
+            $postsubject = get_string('forumsubjecthidden', 'forum');
+        }
+        if (empty($post->subjectnoformat)) {
+            $postsubject = format_string($postsubject);
+        }
+
+        // Output.
         $o = '';
-        $o .= "<div class='subject' role='heading' aria-level='2' id='p{$post->id}_heading'>";
-        $o .= s($post->subject);
-        $o .= "</div>";
+        $o .= "<span class='subject' role='heading' aria-level='2' id='p{$post->id}_heading'>";
+        $o .= $postsubject;
+        $o .= "</span>";
 
         return $o;
     }
 
+    /**
+     * Render the byline of a given forum post.
+     * @param mod_forum_post $post The post whose byline should be rendered.
+     * @return string HTML fragment.
+     */
     private function render_mod_forum_post_byline($post) {
+
         $o = '';
         $o .= "<address>";
-        $o .= get_string('bynameondate', 'forum', $post->author);
+
+        if (!empty($post->hidden)) {
+            $o = get_string('forumauthorhidden', 'forum');
+        } else {
+            $dummy = new stdclass();
+            $dummy->name = $post->author->name;
+            $date = $post->author->date;
+            $dummy->date = html_writer::tag(
+                'time',
+                $date,
+                array(
+                    'datetime' => $date
+                )
+            );
+            $o .= get_string('bynameondate', 'forum', $dummy);
+        }
         $o .= "</address>";
 
         return $o;
@@ -250,7 +318,24 @@ class mod_forum_renderer extends plugin_renderer_base {
 
     private function render_mod_forum_post_attachments($post) {
         $o = '';
-        $o .= "<div class='attachments'>{$post->attachments}</div>";
+        $isarray1 = is_array($post->attachments);
+        $isarray2 = is_array($post->attachedimages);
+        $dorenderattachments = !empty($post->attachments) && !$isarray1 || $isarray1 && count($post->attachments) > 0;
+        $dorenderattachedimages = !empty($post->attachedimages) && !$isarray2 || $isarray2 && count($post->attachedimages) > 0;
+
+
+        if ($dorenderattachments) {
+            $o .= '<aside class="attachments">';
+            $o .= '<header>' . get_string('attachments') . '</header>';
+            $o .= "<ul>{$post->attachments}</ul>";
+            $o .= '</aside>';
+        }
+        if ($dorenderattachedimages) {
+            $o .= '<aside class="attachments images">';
+            $o .= '<header>' . get_string('attachedimages') . '</header>';
+            $o .= "<ul>{$post->attachedimages}</ul>";
+            $o .= '</aside>';
+        }
 
         return $o;
     }
@@ -262,14 +347,23 @@ class mod_forum_renderer extends plugin_renderer_base {
         return $o;
     }
 
-    private function render_mod_forum_post_grouppicture($post) {
+    /**
+     * Render the group picture(s) of a given forum post.
+     * @param array $grouppictures An array of group_pictures to be rendered.
+     * @return string HTML fragment.
+     */
+    public function render_mod_forum_post_grouppictures(array $grouppictures) {
         $o = '';
-        $o .= "<div class='left'>";
-        $o .= "<div class='grouppictures'>";
-        // TODO Make this a renderer.
-        $o .= $post->grouppicture;
-        $o .= "</div>";
-        $o .= "</div>";
+        $o .= "<aside class='grouppictures'>";
+        if(count($grouppictures) > 0) {
+            $o .= "<header>".get_string('groups', 'group')."</header>";
+            $o .= "<ul>";
+            foreach ($grouppictures as $picture) {
+                $o .= $this->render($picture);
+            }
+            $o .= "</ul>";
+        }
+        $o .= "</aside>";
 
         return $o;
     }

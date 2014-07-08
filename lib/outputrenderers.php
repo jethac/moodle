@@ -2455,10 +2455,9 @@ class core_renderer extends renderer_base {
         $src = $userpicture->get_url($this->page, $this);
 
         $attributes = array('src'=>$src, 'alt'=>$alt, 'title'=>$alt, 'class'=>$class, 'width'=>$size, 'height'=>$size);
-        if ($userpicture->visibletoscreenreaders) {
+        if (!$userpicture->visibletoscreenreaders) {
             $attributes['role'] = 'presentation';
         }
-
 
         // get the image html output fisrt
         $output = html_writer::empty_tag('img', $attributes);
@@ -2481,7 +2480,7 @@ class core_renderer extends renderer_base {
         }
 
         $attributes = array('href'=>$url);
-        if ($userpicture->visibletoscreenreaders) {
+        if (!$userpicture->visibletoscreenreaders) {
             $attributes['role'] = 'presentation';
             $attributes['tabindex'] = '-1';
             $attributes['aria-hidden'] = 'true';

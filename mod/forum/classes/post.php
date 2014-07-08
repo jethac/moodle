@@ -49,7 +49,8 @@ class mod_forum_post implements renderable {
     public $postclass = '';
     public $topicclass = '';
 
-    public $grouppicture = '&nbsp;';
+    public $grouppictures = array();
+
     public $attachments = '';
 
     public $rating = null;
@@ -67,6 +68,8 @@ class mod_forum_post implements renderable {
 
     public function __construct($post, $discussion) {
         $this->id = $post->id;
+
+        $this->grouppictures = array();
 
         $this->courseid = $discussion->course;
         // TODO - should this become a user object?
