@@ -177,7 +177,7 @@ foreach ($members as $gpgid=>$groupdata) {
             continue;
         }
         $line = array();
-        $name = print_group_picture($groups[$gpid], $course->id, false, true, false) . format_string($groups[$gpid]->name);
+        $name = $OUTPUT->group_picture($groups[$gpid], $course->id, null, false) . format_string($groups[$gpid]->name);
         $description = file_rewrite_pluginfile_urls($groups[$gpid]->description, 'pluginfile.php', $context->id, 'group', 'description', $gpid);
         $options = new stdClass;
         $options->noclean = true;

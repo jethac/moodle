@@ -308,7 +308,7 @@ if ($currentgroup and (!$isseparategroups or has_capability('moodle/site:accessa
             $groupinfotable->attributes['class'] = 'groupinfobox';
             $picturecell = new html_table_cell();
             $picturecell->attributes['class'] = 'left side picture';
-            $picturecell->text = print_group_picture($group, $course->id, true, true, false);
+            $picturecell->text = $OUTPUT->group_picture($group, $course->id, 100, false);
 
             $contentcell = new html_table_cell();
             $contentcell->attributes['class'] = 'content';

@@ -4401,3 +4401,36 @@ function coursemodule_visible_for_user($cm, $userid=0) {
             'Replace with \core_availability\info_module::is_user_visible().');
     return \core_availability\info_module::is_user_visible($cm, $userid, false);
 }
+
+/**
+ * Print a specified group's avatar.
+ *
+ * @deprecated Since Moodle 2.8
+ *
+ * @param array|stdClass $group A single {@link group} object OR array of groups.
+ * @param int $courseid The course ID.
+ * @param boolean $large Default small picture, or large.
+ * @param boolean $return If false print picture, otherwise return the output as string
+ * @param boolean $link Enclose image in a link to view specified course?
+ * @return string|void Depending on the setting of $return
+ */
+function print_group_picture($group, $courseid, $large=false, $return=false, $link=true) {
+    global $CFG, $OUTPUT;
+
+    debugging('print_group_picture() is deprecated, please use core_renderer::group_picture() instead.', DEBUG_DEVELOPER);
+
+    // If the image isn't large, pass $size as null. This will tell the renderer to 1) use the smaller image (i.e. f2, not f1) and
+    // 2) to not use inline CSS to pull the size of the image up/down to whatever's desired, allowing extant styles for output to
+    // still be in effect.
+    $size = null;
+    if ($large) {
+        $size = 100;
+    }
+
+    $output = $OUTPUT->group_picture($group, $courseid, $size, $link);
+    if ($return) {
+        return $output;
+    } else {
+        echo $output;
+    }
+}

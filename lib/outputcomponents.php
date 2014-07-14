@@ -547,6 +547,155 @@ class pix_emoticon extends pix_icon implements renderable {
 }
 
 /**
+ * Data structure representing a picture for a given group.
+ *
+ * @copyright 2014 Jetha Chan
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @since Moodle 2.8
+ * @package core
+ * @category output
+ */
+class group_picture implements renderable {
+    /**
+     * @var string The URL of the group in question.
+     */
+    protected $urllink = '';
+    /**
+     * @var int The ID of the course context the group exists within.
+     */
+    protected $contextid = 0;
+    /**
+     * @var int The ID of the course the group exists within.
+     */
+    protected $courseid = 0;
+    /**
+     * @var int The ID of the group.
+     */
+    protected $groupid = 0;
+    /**
+     * @var string The name of the group.
+     */
+    protected $groupname = '';
+    /**
+     * @var bool Whether the group in question hides its picture.
+     */
+    protected $grouphidepicture = false;
+    /**
+     * @var bool Whether the group in question has a picture.
+     */
+    protected $grouphaspicture = false;
+    /**
+     * @var bool Whether the resulting markup should be visible to screen readers.
+     */
+    public $visibletoscreenreaders = true;
+    /**
+     * @var int Image size in pixels.
+     */
+    public $size = 35;
+    /**
+     * Constructor
+     *
+     * @param stdClass $group The group this picture is for.
+     * @param int $courseid The id of the course.
+     * @param int $defaultsize The default size for this picture.
+     */
+    public function __construct(stdClass $group, $courseid, $defaultsize = 35) {
+        global $CFG;
+
+        // Get course context.
+        $context = context_course::instance($courseid);
+        $this->courseid = $courseid;
+        $this->contextid = $context->id;
+
+        if ($group->picture) {
+            $this->grouphaspicture = true;
+            // Build the link URL.
+            $this->urllink = new moodle_url(
+                $CFG->wwwroot . '/user/index.php',
+                array(
+                    'id' => $courseid,
+                    'group' => $group->id
+                )
+            );
+        }
+
+        $this->groupid = $group->id;
+        $this->groupname = $group->name;
+        $this->grouphidepicture = $group->hidepicture;
+        if (empty($defaultsize)) {
+            $defaultsize = 0;
+        }
+        $this->size = $defaultsize;
+    }
+    /**
+     * Returns whether this group has a picture to render.
+     *
+     * @return bool Renderable or not
+     */
+    public function can_render() {
+        return $this->grouphaspicture;
+    }
+    /**
+     * Returns the course context ID for the group in question.
+     *
+     * @return string Context id
+     */
+    public function get_course() {
+        return $this->courseid;
+    }
+    /**
+     * Returns the name of the group this image is for.
+     *
+     * @return string The name.
+     */
+    public function get_groupname() {
+        return $this->groupname;
+    }
+    /**
+     * Returns the URL of the group this image is for.
+     *
+     * @return string The URL in question.
+     */
+    public function get_groupurl() {
+        return $this->urllink;
+    }
+    /**
+     * Returns the location of the image to use.
+     *
+     * @param int $size The size of the image to be rendered, in pixels.
+     * @return string The URL of the image.
+     */
+    public function get_imagesrc($size) {
+        if (!empty($size)) {
+            $size = $this->size;
+        }
+
+        $sizesuffix = "f2";
+        if ($size > 35) {
+            $sizesuffix = "f1";
+        }
+
+        $src = moodle_url::make_pluginfile_url(
+            $this->contextid,
+            'group',
+            'icon',
+            $this->groupid,
+            '/',
+            $sizesuffix
+        );
+        return $src;
+    }
+    /**
+     * Returns whether this group's pictures are hidden.
+     *
+     * @return bool Hidden or not.
+     */
+    public function is_hidden() {
+        return $this->grouphidepicture;
+    }
+}
+
+/**
  * Data structure representing a simple form with only one button.
  *
  * @copyright 2009 Petr Skoda

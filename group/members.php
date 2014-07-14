@@ -106,7 +106,7 @@ $groupinforow = array();
 if (!empty($group->picture)) {
     $picturecell = new html_table_cell();
     $picturecell->attributes['class'] = 'left side picture';
-    $picturecell->text = print_group_picture($group, $course->id, true, true, false);
+    $picturecell->text = $OUTPUT->group_picture($group, $course->id, 100, false);
     $groupinforow[] = $picturecell;
 }
 

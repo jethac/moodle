@@ -2006,6 +2006,122 @@ class core_renderer extends renderer_base {
     }
 
     /**
+     * Constructs and returns HTML for one or more group_pictures.
+     *
+     * @param array|stdClass $group The group(s) this picture is for.
+     * @param int $courseid The id of the course.
+     * @param int $size The default size for this picture, in pixels (optional).
+     * @param boolean $link Whether to wrap the picture in a link to the group.
+     * @param boolean $visibletoscreenreaders Whether the picture should be visible to screenreaders or not.
+     * @param string|void $listtype The list type, if any, to render the list of group_pictures in. When set to null, no list
+     *        container / item tags are output.
+     * @return string HTML fragment
+     */
+    public function group_picture($group, $courseid, $size = 35, $link = true, $visibletoscreenreaders = true, $listtype = null) {
+        if (is_array($group)) {
+            $output = '';
+            $renderlist = !is_null($listtype);
+            if ($renderlist && !(strcmp($listtype, 'ul') == 0 || strcmp($listtype, 'ol') == 0)) {
+                $listtype = 'ul';
+            }
+
+            foreach ($group as $g) {
+                $picture = $this->group_picture($g, $courseid, $size, $link, $visibletoscreenreaders);
+
+                if ($renderlist) {
+                    $picture = html_writer::tag(
+                        'li',
+                        $picture
+                    );
+                }
+                $output .= $picture;
+            }
+            if ($renderlist) {
+                $output = html_writer::tag(
+                    $listtype,
+                    $output
+                );
+            }
+
+            return $output;
+        } else {
+            $picture = new group_picture($group, $courseid, $size);
+            $picture->visibletoscreenreaders = $visibletoscreenreaders;
+
+            return $this->render($picture, $size, $link);
+        }
+    }
+
+    /**
+     * Renders a given group_picture renderable and returns the HTML to display it.
+     *
+     * @param group_picture $picture
+     * @param int $size The size to display the picture at, in pixels (optional).
+     * @param bool $renderlink Whether to wrap the picture in a link to the group.
+     * @return string HTML fragment
+     */
+    protected function render_group_picture(group_picture $picture, $size = null, $renderlink = false) {
+        $output = '';
+        $context = context_course::instance($picture->get_course());
+
+        // If the picture is hidden, only show to those with course:managegroups.
+        $renderableoverride = $picture->is_hidden() && !has_capability('moodle/course:managegroups', $context);
+
+        // Is this picture even renderable at all?
+        $renderable = $picture->can_render();
+
+        // Ignore $renderlink when the user can access all groups.
+        $renderlink |= has_capability('moodle/site:accessallgroups', $context);
+
+        if (!$renderable || $renderableoverride) {
+            // Nothing to render.
+            return '';
+        }
+
+        $groupname = $picture->get_groupname();
+
+        $imgattr = array(
+                'src' => $picture->get_imagesrc($size),
+                'alt' => s(get_string('group') . ' ' . $groupname),
+                'title' => s($groupname),
+                'class' => 'grouppicture'
+        );
+        if (empty($size)) {
+            $size = $picture->size;
+            if (!empty($size)) {
+                $imgattr['style'] = 'width: ' . $size . 'px; height: ' . $size . 'px;';
+            }
+        }
+        if (!$picture->visibletoscreenreaders) {
+            $imgattr['role'] = 'presentation';
+        }
+        $output = html_writer::empty_tag(
+            'img',
+            $imgattr
+        );
+
+        // Build link if necessary.
+        if ($renderlink) {
+            $aattr = array(
+                'href' => $picture->get_groupurl()
+            );
+            if (!$picture->visibletoscreenreaders) {
+                $aattr['role'] = 'presentation';
+                $aattr['aria-hide'] = 'true';
+                $aattr['tabindex'] = '-1';
+            }
+            $output = html_writer::tag(
+                'a',
+                $output,
+                $aattr
+            );
+        }
+
+        return $output;
+    }
+
+
+    /**
      * Produces the html that represents this rating in the UI
      *
      * @param rating $rating the page object on which this rating will appear

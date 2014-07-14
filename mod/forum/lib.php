@@ -2885,7 +2885,7 @@ function forum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfro
     }
 
     if ($groups) {
-        $output .= print_group_picture($groups, $course->id, false, true, true);
+        $output .= $OUTPUT->group_picture($groups, $course->id, null, true);
     } else {
         $output .= '&nbsp;';
     }
@@ -3234,7 +3234,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
     $groupoutput = '';
     if ($groups) {
-        $groupoutput = print_group_picture($groups, $course->id, false, true, true);
+        $groupoutput = $OUTPUT->group_picture($groups, $course->id, null, true);
     }
     if (empty($groupoutput)) {
         $groupoutput = '&nbsp;';
@@ -3525,7 +3525,7 @@ function forum_print_discussion_header(&$post, $forum, $group=-1, $datestring=""
     if ($group !== -1) {  // Groups are active - group is a group data object or NULL
         echo '<td class="picture group">';
         if (!empty($group->picture) and empty($group->hidepicture)) {
-            print_group_picture($group, $forum->course, false, false, true);
+            echo $OUTPUT->group_picture($group, $forum->course, null, true);
         } else if (isset($group->id)) {
             if($canviewparticipants) {
                 echo '<a href="'.$CFG->wwwroot.'/user/index.php?id='.$forum->course.'&amp;group='.$group->id.'">'.$group->name.'</a>';

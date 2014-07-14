@@ -132,7 +132,7 @@ $PAGE->navbar->add($strheading);
 echo $OUTPUT->header();
 echo '<div id="grouppicture">';
 if ($id) {
-    print_group_picture($group, $course->id);
+    echo $OUTPUT->group_picture($group, $course->id);
 }
 echo '</div>';
 $editform->display();
