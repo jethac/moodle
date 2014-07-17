@@ -9,7 +9,7 @@
   width: auto;
   padding: 10px;
   border-color: #ddd;
-  font-size: 14px;
+  font-size: 12px;
   -webkit-box-shadow: #999999 2px 2px 3px;
   -moz-box-shadow: #999999 2px 2px 3px;
   box-shadow: #999999 2px 2px 3px;
@@ -23,13 +23,14 @@
   border-top: 22px solid #f1c32a;
 }
 .path-grade-report-grader .graderreportoverlay.overriden:before {
+  font-size: 12px;
   content: "Overridden grade";
   color: black;
   height: 0px;
   width: 100%;
   display: inline-block;
   text-align: center;
-  top: -28px;
+  top: -32px;
   float: left;
   position: relative;
 }
@@ -118,7 +119,7 @@ table#user-grades tr.odd td.grade.vmarked {
 }
 table#user-grades tr.odd td.grade.vmarked.overridden {
   background-color: #f39a00;
-  border-color: #dc691a;
+  /*border-color: $grade-report-color-overriden-border;*/
 }
 table#user-grades tr.odd td.grade.hmarked {
   background-color: #f5cd00;
@@ -133,12 +134,11 @@ table#user-grades tr.odd td.grade.vmarked.hmarked {
 }
 table#user-grades tr.odd td.grade.vmarked.hmarked.overridden {
   background-color: #f1b900;
-  border-color: #dc691a;
+  /*border-color: $grade-report-color-overriden-border;*/
 }
 table#user-grades tr.odd td.grade.overridden {
   background-color: #fff;
-  /*border: 0;*/
-  background: url([[pix:theme|corner-fold]]) no-repeat;
+  background: url([[pix:gradereport_grader|corner-fold]]) no-repeat;
   width: 16px;
   height: 16px;
   background-color: #efefef;
@@ -149,7 +149,7 @@ table#user-grades tr.even td.grade.vmarked {
 }
 table#user-grades tr.even td.grade.vmarked.overridden {
   background-color: #f4a400;
-  border-color: #dc691a;
+  /*border-color: $grade-report-color-overriden-border;*/
 }
 table#user-grades tr.even td.grade.hmarked {
   background-color: #f5cf2c;
@@ -164,7 +164,7 @@ table#user-grades tr.even td.grade.vmarked.hmarked {
 }
 table#user-grades tr.even td.grade.vmarked.hmarked.overridden {
   background-color: #f1be00;
-  border-color: #dc691a;
+  /*border-color: $grade-report-color-overriden-border;*/
 }
 table#user-grades tr.even td.grade.overridden {
   background-color: #efefef;

@@ -30,18 +30,16 @@ M.gradereport_grader = M.gradereport_grader || {};
 // Create a gradebook module
 M.gradereport_grader.gradereporttable = {
     // Resuable nodes
-    
     node_student_header_cell: {},
     node_student_cell: {},
     node_footer_row: {},
-
-    test: function() {
-        console.log('testing');
+    scrollevent: function() {
+        console.log('scrolll event');
     },
     // Init module
     init: function() {
-        Y.log('Starting...', 'debug', LOGNS);
-        
+        Y.log('Loading grader report floating headers and columns.', 'debug', LOGNS);
+
         // Set up some reusable nodes.
         this.node_student_header_cell = Y.one('#studentheader');
         // First student cell.
@@ -49,101 +47,104 @@ M.gradereport_grader.gradereporttable = {
         // Averages row.
         this.node_footer_row = Y.one('#user-grades .avg');
 
-        // Check if there are any students.
+        // Check if there are any students -- otherwise no need to do anything.
         if (this.node_student_cell) {
             // Generate floating elements.
             this.float_user_column();
             this.float_assignment_header();
             this.float_user_header();
 
-            // Check if 'averages' is allowed.
-            if (this.node_footer_row) {
-                this.float_assignment_footer();
-                this.update_assignment_footer_position();
-            }
-
-            // Set floating element initial positions.
-            this.update_assignment_header_position();
-            this.update_user_column_position();
-
-            Y.all('#user-grades .overridden').setAttribute('aria-label', 'Overriden grade');
-               
-            Y.log('Setting onscroll event', 'debug', LOGNS);
-
-            // Use native DOM scroll & resize events instead of YUI synthetic event.
-            window.onscroll = function() {
-                console.log('foobar');
+            // Onscroll event updates all the floating header/column positions.
+            var onscroll = function() {
 
                 // Get better performance by preventing layout thrashing.  This occurs
                 // when the DOM is repeatedly updated and queried for updated values.
                 // 
-                // To prevent, group all reads to happen before your writes
+                // To fix this, group reads and writes
 
-
+                //
                 // First get all the readable values needed.
-                
+
+                // Header row
                 var headercontainer = document.getElementById('gradebook-header-container');
                 var userheadercell = document.getElementById('studentheader');
 
-                var user_column_header = document.getElementById('gradebook-user-header-container');
+                var usercolumnheader = document.getElementById('gradebook-user-header-container');
 
                 var headercelltop = userheadercell.offsetTop + userheadercell.offsetParent.offsetTop;
 
-                // Next do all the writing.
-                headercontainer.style.left = userheadercell.offsetLeft + userheadercell.offsetParent.offsetLeft + 'px';
-                if (window.pageYOffset > headercelltop) {
-                    headercontainer.style.top = window.pageYOffset + 40 + 'px';
-                    user_column_header.style.top = window.pageYOffset + 40 + 'px';
-                } else {
-                    headercontainer.style.top = headercelltop + 'px';
-                    user_column_header.style.top = headercelltop + 'px';
-                }
-                    
-                
+                // User column
                 var pageleftcutoff = window.pageXOffset;
                 var firstusercell = document.querySelectorAll("#user-grades .user.cell")[0];
                 var firstusercellpos = firstusercell.offsetLeft + firstusercell.offsetParent.offsetLeft;
 
-                var user_column = document.getElementById('gradebook-user-container');
-//                var user_column_header = document.getElementById('gradebook-user-header-container');
+                var usercolumn = document.getElementById('gradebook-user-container');
 
-                    if (pageleftcutoff > firstusercellpos) {
-                        user_column.style.left = pageleftcutoff + 'px';
-                        user_column_header.style.left = pageleftcutoff + 'px';
-                    } else {
-                        user_column.style.left = firstusercellpos + 'px';
-                        user_column_header.style.left = firstusercellpos + 'px';
-                    }
-                
+                // Footer row
                 var lastrow = document.querySelectorAll('#user-grades .avg')[0];
-                var footer;
-                
+                var footer, lastrowpos;
+
                 // Check that Average footer is available.
                 if (lastrow !== undefined) {
                     footer = document.getElementById('gradebook-footer-container');
-                    var lastrowpos = lastrow.offsetTop + lastrow.offsetParent.offsetTop;
+                    lastrowpos = lastrow.offsetTop + lastrow.offsetParent.offsetTop;
                 }
 
-                
+                // Viewport values
+                var pageYOffset = window.pageYOffset;
+                var windowInnerHeight = window.innerHeight;
+
+                // 
+                // Next do all the writing.
+
+                // Header position
+                headercontainer.style.left = userheadercell.offsetLeft + userheadercell.offsetParent.offsetLeft + 'px';
+                if (pageYOffset > headercelltop) {
+                    headercontainer.style.top = pageYOffset + 40 + 'px';
+                    usercolumnheader.style.top = pageYOffset + 40 + 'px';
+                } else {
+                    headercontainer.style.top = headercelltop + 'px';
+                    usercolumnheader.style.top = headercelltop + 'px';
+                }
+
+                // User column position
+                if (pageleftcutoff > firstusercellpos) {
+                    usercolumn.style.left = pageleftcutoff + 'px';
+                    usercolumnheader.style.left = pageleftcutoff + 'px';
+                } else {
+                    usercolumn.style.left = firstusercellpos + 'px';
+                    usercolumnheader.style.left = firstusercellpos + 'px';
+                }
+
+                // Update footer
                 if (lastrow !== undefined) {
                     footer.style.left = userheadercell.offsetLeft + userheadercell.offsetParent.offsetLeft + 'px';
 
-                    if (window.pageYOffset + window.innerHeight < lastrowpos) {
-                        footer.style.top = (window.pageYOffset + window.innerHeight - 50) + 'px';
+                    if (pageYOffset + windowInnerHeight < lastrowpos) {
+                        footer.style.top = (pageYOffset + windowInnerHeight - 50) + 'px';
                         footer.classList.add('gradebook-footer-row-sticky');
                     } else {
                         footer.style.top = lastrowpos + 'px';
                         footer.classList.remove('gradebook-footer-row-sticky');
                     }
-                }                
-                
+                }
             };
 
+            // Add the floating 'average' footer if available.
+            if (this.node_footer_row) {
+                this.float_assignment_footer();
+            }
+
+            // Set floating element initial positions by simulating scroll.
+            onscroll();
+
+            // Generate events.
+            // 
+            // Use native DOM scroll & resize events instead of YUI synthetic event.
+            window.onscroll = onscroll;
             window.onresize = function() {
-                Y.log('Setting resize event', 'debug', LOGNS);
-                M.gradereport_grader.gradereporttable.update_assignment_footer_position();
-                M.gradereport_grader.gradereporttable.update_assignment_header_position();
-                M.gradereport_grader.gradereporttable.update_user_column_position();
+                
+                onscroll();
                 
                 // Resize headers & footers.
                 // This is an expensive operation, not expected to happen often.
@@ -183,17 +184,17 @@ M.gradereport_grader.gradereporttable = {
                 
             };
         }
-        Y.on('scroll', function () {
-            this.test();
-        }, this);
 
         // Remove loading screen.  Need to do YUI synthetic event to trigger
         // on all browsers.
         Y.on('domready', function() {
-//            Y.one('.gradebook-loading-screen').remove(true);
+            Y.one('.gradebook-loading-screen').remove(true);
+            Y.all('#user-grades .overridden').setAttribute('aria-label', 'Overriden grade');
         });
     },
     float_user_column: function() {
+        Y.log('Floating the user column.', 'debug', LOGNS);
+
         // Grab the user names column
         var user_column = Y.all('#user-grades .user.cell');
 
@@ -201,7 +202,7 @@ M.gradereport_grader.gradereporttable = {
         var floating_user_column = Y.Node.create('<div aria-hidden="true" id="gradebook-user-container"></div>');
         var floating_user_column_height = 0;
         var user_column_offset = this.node_student_cell.getY();
-        
+
         user_column.each(function(node) {
 
             // Create cloned node and container.
@@ -239,13 +240,14 @@ M.gradereport_grader.gradereporttable = {
             'left': this.node_student_cell.getX() + 'px',
             'top': this.node_student_cell.getY() + 'px',
             'width': this.node_student_cell.get('offsetWidth'),
-            'height' : floating_user_column_height + 'px',
+            'height': floating_user_column_height + 'px',
             'background-color': '#f9f9f9'
         });
 
         Y.one('body').append(floating_user_column);
     },
     float_user_header: function() {
+        Y.log('Floating the user column header.', 'debug', LOGNS);
 
         // Float the 'user name' header cell.
         var floating_user_header_cell = Y.Node.create('<div aria-hidden="true" id="gradebook-user-header-container"></div>');
@@ -268,6 +270,8 @@ M.gradereport_grader.gradereporttable = {
         Y.one('body').append(floating_user_header_cell);
     },
     float_assignment_header: function() {
+        Y.log('Floating the assignment header.', 'debug', LOGNS);
+
         var grade_headers = Y.all('#user-grades tr.heading .cell');
 
         // Generate a floating headers
@@ -276,7 +280,7 @@ M.gradereport_grader.gradereporttable = {
         var floating_grade_headers_width = 0;
         var floating_grade_headers_height = 0;
         var grade_headers_offset = this.node_student_header_cell.getX();
-        
+
         grade_headers.each(function(node) {
 
             // Get the target column to highlight.  This is embedded in
@@ -328,12 +332,13 @@ M.gradereport_grader.gradereporttable = {
             'top': this.node_student_header_cell.getY() + 'px',
             'left': this.node_student_header_cell.getX() + 'px',
             'width': floating_grade_headers_width + 'px',
-            'height' : floating_grade_headers_height + 'px'
+            'height': floating_grade_headers_height + 'px'
         });
 
         Y.one('body').append(floating_grade_headers);
     },
     float_assignment_footer: function() {
+        Y.log('Floating the averages footer.', 'debug', LOGNS);
 
         // Generate the sticky footer row.
         // Grab the row.
@@ -376,98 +381,10 @@ M.gradereport_grader.gradereporttable = {
             'position': 'absolute',
             'left': this.node_footer_row.getX() + 'px',
             'bottom': '0',
-            'height' : '50px',
-            'width' : floating_grade_footer_width + 'px'
+            'height': '50px',
+            'width': floating_grade_footer_width + 'px'
         });
 
         Y.one('body').append(floating_grade_footers);
-    },
-    update_user_column_position: function() {
-        var offsetcutoff = window.pageXOffset;
-        var sidebar_active = Y.one('.sidebar.active');
-
-        if (sidebar_active) {
-            offsetcutoff = sidebar_active.get('offsetWidth') + window.pageXOffset;
-        }
-
-        var firstusercell = document.querySelectorAll("#user-grades .user.cell")[0];
-        var firstusercellpos = firstusercell.offsetLeft + firstusercell.offsetParent.offsetLeft;
-
-        var user_column = document.getElementById('gradebook-user-container');
-        var user_column_header = document.getElementById('gradebook-user-header-container');
-
-        if (offsetcutoff > firstusercellpos) {
-            user_column.style.left = offsetcutoff + 'px';
-            user_column_header.style.left = offsetcutoff + 'px';
-        }
-
-        if (offsetcutoff < firstusercellpos) {
-            user_column.style.left = firstusercellpos + 'px';
-            user_column_header.style.left = firstusercellpos + 'px';
-        }
-    },
-    update_assignment_header_position: function() {
-
-        var header = document.getElementById('gradebook-header-container');
-        var header_cell = document.getElementById('studentheader');
-
-        var user_column_header = document.getElementById('gradebook-user-header-container');
-
-        header.style.left = header_cell.offsetLeft + header_cell.offsetParent.offsetLeft + 'px';
-
-        var headercelltop = header_cell.offsetTop + header_cell.offsetParent.offsetTop;
-
-        if (window.pageYOffset > headercelltop) {
-            header.style.top = window.pageYOffset + 'px';
-            user_column_header.style.top = window.pageYOffset + 'px';
-        } else {
-            header.style.top = headercelltop + 'px';
-            user_column_header.style.top = headercelltop + 'px';
-        }
-
-    },
-    update_assignment_footer_position: function() {
-
-        var lastrow = document.querySelectorAll('#user-grades .avg')[0];
-        // Check that Average footer is available.
-        if (lastrow === undefined) {
-            return;
-        }
-
-        var footer = document.getElementById('gradebook-footer-container');
-        var lastrowpos = lastrow.offsetTop + lastrow.offsetParent.offsetTop;
-
-        var header_cell = document.getElementById('studentheader');
-        footer.style.left = header_cell.offsetLeft + header_cell.offsetParent.offsetLeft + 'px';
-
-        if (window.pageYOffset + window.innerHeight < lastrowpos) {
-            footer.style.top = (window.pageYOffset + window.innerHeight - 50) + 'px';
-            footer.classList.add('gradebook-footer-row-sticky');
-        } else {
-            footer.style.top = lastrowpos + 'px';
-            footer.classList.remove('gradebook-footer-row-sticky');
-        }
-    },
-    sidebar_toggle: function() {
-        // Update positions when sidebar toggles
-        this.update_assignment_footer_position();
-        this.update_assignment_header_position();
-        this.update_user_column_position();
-    },
-    sidebar_toggle_pre: function() {
-        if (this.node_footer_row) {
-            Y.one('#gradebook-footer-container').hide();
-        }
-        Y.one('#gradebook-user-container').hide();
-        Y.one('#gradebook-user-header-container').hide();
-        Y.one('#gradebook-header-container').hide();
-    },
-    sidebar_toggle_post: function() {
-        if (this.node_footer_row) {
-            Y.one('#gradebook-footer-container').show();
-        }
-        Y.one('#gradebook-user-container').show();
-        Y.one('#gradebook-user-header-container').show();
-        Y.one('#gradebook-header-container').show();
     }
 };
