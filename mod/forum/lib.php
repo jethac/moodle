@@ -3067,6 +3067,7 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
         $cm->cache->caps['mod/forum:viewanyrating']    = has_capability('mod/forum:viewanyrating', $modcontext);
         $cm->cache->caps['mod/forum:exportpost']       = has_capability('mod/forum:exportpost', $modcontext);
         $cm->cache->caps['mod/forum:exportownpost']    = has_capability('mod/forum:exportownpost', $modcontext);
+        $cm->cache->caps['moodle/course:manageactivities']    = has_capability('moodle/course:manageactivities', $modcontext);
     }
 
     if (!isset($cm->uservisible)) {
@@ -3118,13 +3119,6 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
     // The discussion link is used in various places - generate it here.
     $discussionlink = new moodle_url('/mod/forum/discuss.php', array('d' => $post->discussion));
 
-    // Build an object that represents the posting user.
-    $postuser = new stdClass;
-    $postuserfields = explode(',', user_picture::fields());
-    $postuser = username_load_fields_from_object($postuser, $post, null, $postuserfields);
-    $postuser->id = $post->userid;
-    $postuser->fullname = fullname($postuser, $cm->cache->caps['moodle/site:viewfullnames']);
-    $postuser->profilelink = new moodle_url('/user/view.php', array('id' => $post->userid, 'course' => $course->id));
 
     // Prepare the groups the posting user belongs to.
     if (isset($cm->cache->usersgroups)) {
@@ -3138,91 +3132,51 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
         $groups = groups_get_all_groups($course->id, $post->userid, $cm->groupingid);
     }
 
-    // Prepare the attachments for the post, files then images
-    // TODO make this it's own renderable/render.
+    // Prepare the attachments for the post, files then images.
     list($attachments, $attachedimages) = forum_print_attachments($post, $cm, 'separateimages', true);
     $p->attachments = $attachments;
     $p->attachedimages = $attachedimages;
 
-    // Prepare an array of commands
-    $commands = array();
+    // Prepare objects with state flag information.
+    $forummeta = new stdClass();
+    $forummeta->type = $forum->type;
+    $forummeta->displaymode = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
 
-    // SPECIAL CASE: The front page can display a news item post to non-logged in users.
-    // Don't display the mark read / unread controls in this case.
-    if ($options->istracked && $CFG->forum_usermarksread && isloggedin()) {
-        $url = new moodle_url($discussionlink, array('postid'=>$post->id, 'mark'=>'unread'));
-        $text = $str->markunread;
-        if (!$options->postisread) {
-            $url->param('mark', 'read');
-            $text = $str->markread;
-        }
-        if ($str->displaymode == FORUM_MODE_THREADED) {
-            $url->param('parent', $post->parent);
-        } else {
-            $url->set_anchor('p'.$post->id);
-        }
-        $commands[] = array('url'=>$url, 'text'=>$text);
+    $postmeta = new stdClass();
+    $postmeta->id = $post->id;
+    $postmeta->discussion = $post->discussion;
+    $postmeta->parent = $post->parent;
+    $postmeta->age = time() - $post->created;
+    if (!$postmeta->parent && $forummeta->type == 'news' && $discussion->timestart > time()) {
+        $postmeta->age = 0;
     }
+    $postmeta->isfirst = $post->id == $discussion->firstpost;
+    $postmeta->isread = forum_tp_is_post_read($USER->id, $post);
+    $postmeta->ownpost = $options->ownpost;
+    $postmeta->hasattachments = !empty($attachments) || !empty($attachedimages);
+    $postmeta->canstilledit = $options->ownpost && $postmeta->age < $CFG->maxeditingtime;
+    $postmeta->showmarkread = $options->istracked && $CFG->forum_usermarksread && isloggedin();
+    $postmeta->showexport = $CFG->enableportfolios;
+    $postmeta->showprune = $cm->cache->caps['mod/forum:splitdiscussions'] && $post->parent && $forum->type != 'single';
 
-    // Zoom in to the parent specifically
-    if ($post->parent) {
-        $url = new moodle_url($discussionlink);
-        if ($str->displaymode == FORUM_MODE_THREADED) {
-            $url->param('parent', $post->parent);
-        } else {
-            $url->set_anchor('p'.$post->parent);
-        }
-        $commands[] = array('url'=>$url, 'text'=>$str->parent);
-    }
+    $postmeta->showdelete = !($forum->type == 'single' and $discussion->firstpost == $post->id);
+    $postmeta->showdelete &= (($options->ownpost && $postmeta->age < $CFG->maxeditingtime && $cm->cache->caps['mod/forum:deleteownpost']) || $cm->cache->caps['mod/forum:deleteanypost']);
 
-    // Hack for allow to edit news posts those are not displayed yet until they are displayed
-    $age = time() - $post->created;
-    if (!$post->parent && $forum->type == 'news' && $discussion->timestart > time()) {
-        $age = 0;
-    }
+    $postmeta->showreply = $options->reply;
 
-    if ($forum->type == 'single' and $discussion->firstpost == $post->id) {
-        if (has_capability('moodle/course:manageactivities', $modcontext)) {
-            // The first post in single simple is the forum description.
-            $commands[] = array('url'=>new moodle_url('/course/modedit.php', array('update'=>$cm->id, 'sesskey'=>sesskey(), 'return'=>1)), 'text'=>$str->edit);
-        }
-    } else if (($options->ownpost && $age < $CFG->maxeditingtime) || $cm->cache->caps['mod/forum:editanypost']) {
-        $commands[] = array('url'=>new moodle_url('/mod/forum/post.php', array('edit'=>$post->id)), 'text'=>$str->edit);
-    }
+    $postmeta->coursemodule = $cm; // can't just get this later
+    $postmeta->coursemodulecontext = context_module::instance($cm->id);
 
-    if ($cm->cache->caps['mod/forum:splitdiscussions'] && $post->parent && $forum->type != 'single') {
-        $commands[] = array('url'=>new moodle_url('/mod/forum/post.php', array('prune'=>$post->id)), 'text'=>$str->prune, 'title'=>$str->pruneheading);
-    }
+    // Build a commands object.
+    $p->cmd = new mod_forum_post_commands($postmeta, $forummeta, $cm->cache->caps);
 
-    if ($forum->type == 'single' and $discussion->firstpost == $post->id) {
-        // Do not allow deleting of first post in single simple type.
-    } else if (($options->ownpost && $age < $CFG->maxeditingtime && $cm->cache->caps['mod/forum:deleteownpost']) || $cm->cache->caps['mod/forum:deleteanypost']) {
-        $commands[] = array('url'=>new moodle_url('/mod/forum/post.php', array('delete'=>$post->id)), 'text'=>$str->delete);
-    }
-
-    if ($options->reply) {
-        $commands[] = array('url'=>new moodle_url('/mod/forum/post.php#mformforum', array('reply'=>$post->id)), 'text'=>$str->reply);
-    }
-
-    if ($CFG->enableportfolios && ($cm->cache->caps['mod/forum:exportpost'] || ($options->ownpost && $cm->cache->caps['mod/forum:exportownpost']))) {
-        require_once($CFG->libdir.'/portfoliolib.php');
-        $button = new portfolio_add_button();
-        $button->set_callback_options('forum_portfolio_caller', array('postid' => $post->id), 'mod_forum');
-        if (empty($attachments)) {
-            $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
-        } else {
-            $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
-        }
-
-        $porfoliohtml = $button->to_html(PORTFOLIO_ADD_TEXT_LINK);
-        if (!empty($porfoliohtml)) {
-            $commands[] = $porfoliohtml;
-        }
-    }
-    // Finished building commands
-
-
-    // Begin output
+    // Build an object that represents the posting user.
+    $postuser = new stdClass;
+    $postuserfields = explode(',', user_picture::fields());
+    $postuser = username_load_fields_from_object($postuser, $post, null, $postuserfields);
+    $postuser->id = $post->userid;
+    $postuser->fullname = fullname($postuser, $cm->cache->caps['moodle/site:viewfullnames']);
+    $postuser->profilelink = new moodle_url('/user/view.php', array('id' => $post->userid, 'course' => $course->id));
     $postuser->post = $post->subject;
     $postuser->user = $postuser->fullname;
     $postuser->name = html_writer::link($postuser->profilelink, $postuser->fullname);
@@ -3263,22 +3217,10 @@ function forum_prepare_post($post, $discussion, $forum, &$cm, $course, $traverse
         $p->wordcount = true;
     }
 
-
     // Output ratings
     if (!empty($post->rating)) {
         $p->rating = $post->rating;
     }
-
-    // Output the commands
-    $commandhtml = array();
-    foreach ($commands as $command) {
-        if (is_array($command)) {
-            $commandhtml[] = html_writer::link($command['url'], $command['text']);
-        } else {
-            $commandhtml[] = $command;
-        }
-    }
-    $p->commands = implode(' | ', $commandhtml);
 
     // Output link to post if required
     if ($options->link && forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {

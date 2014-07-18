@@ -170,6 +170,7 @@ class mod_forum_renderer extends plugin_renderer_base {
     private function render_mod_forum_post_body($post) {
         $o = '';
 
+        // Header.
         $o .= '<header>';
         $o .= "<div class='picture'>";
         $o .= $this->user_picture(
@@ -189,23 +190,7 @@ class mod_forum_renderer extends plugin_renderer_base {
         $o .= $this->render_mod_forum_post_subject($post);
         $o .= $this->render_mod_forum_post_byline($post);
         $o .= html_writer::end_tag('div');
-
-        //$o .= "<div class='row header clearfix'>";
         $o .= '</header>';
-
-
-
-
-
-        //$o .= "<div class='topic{$post->topicclass}'>";
-
-
-        //$o .= "</div>";
-        //$o .= "</div>";
-
-
-        // The main content.
-        //$o .= "<div class='row maincontent clearfix'>";
 
         // The group pictures.
         $o .= $this->render_mod_forum_post_grouppictures($post->grouppictures);
@@ -243,7 +228,7 @@ class mod_forum_renderer extends plugin_renderer_base {
 
         // Commands.
         // TODO make this it's own render.
-        $o .= $this->render_mod_forum_post_commands($post);
+        $o .= $this->render_mod_forum_post_commands($post->cmd);
         // $o .= $this->render($post->commands);
 
         // Links.
@@ -340,9 +325,11 @@ class mod_forum_renderer extends plugin_renderer_base {
         return $o;
     }
 
-    private function render_mod_forum_post_commands($post) {
+    private function render_mod_forum_post_commands(mod_forum_post_commands $commands) {
         $o = '';
-        $o .= "<div class='commands'>{$post->commands}</div>";
+        $o .= "<div class='commands'>";
+        $o .= implode(' | ', $commands->commands);
+        $o .= "</div>";
 
         return $o;
     }
