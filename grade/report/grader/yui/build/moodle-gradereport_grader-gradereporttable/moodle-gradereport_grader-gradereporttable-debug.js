@@ -373,7 +373,9 @@ M.gradereport_grader.gradereporttable = {
         if (update_button) {
             var button = Y.Node.create('<button class="btn btn-sm btn-default">' + update_button.getAttribute('value') + '</button>');
             button.on('click', function() {
-                update_button.simulate('click');
+                YUI().use('node-event-simulate', function(Y) {
+                    Y.one('#gradersubmit').simulate('click');
+                });
             });
             floating_grade_footers.one('.gradebook-footer-cell').append(button);
         }

@@ -3,8 +3,7 @@
         "requires": [
             "node",
             "event",
-            "node-event-simulate",
-            "event-mousewheel"
+            "node-event-simulate"
         ]
     }
 }

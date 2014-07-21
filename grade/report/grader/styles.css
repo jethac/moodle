@@ -97,9 +97,6 @@ table#user-grades tr .gradevalue {
   text-align: center;
   display: inline-block;
 }
-table#user-grades tr .grade:hover {
-  /*border: 2px solid $grade-report-color-overriden-border;*/
-}
 table#user-grades tr .user {
   min-width: 200px;
   max-width: 200px;
@@ -119,7 +116,6 @@ table#user-grades tr.odd td.grade.vmarked {
 }
 table#user-grades tr.odd td.grade.vmarked.overridden {
   background-color: #f39a00;
-  /*border-color: $grade-report-color-overriden-border;*/
 }
 table#user-grades tr.odd td.grade.hmarked {
   background-color: #f5cd00;
@@ -134,7 +130,6 @@ table#user-grades tr.odd td.grade.vmarked.hmarked {
 }
 table#user-grades tr.odd td.grade.vmarked.hmarked.overridden {
   background-color: #f1b900;
-  /*border-color: $grade-report-color-overriden-border;*/
 }
 table#user-grades tr.odd td.grade.overridden {
   background-color: #fff;
@@ -149,7 +144,6 @@ table#user-grades tr.even td.grade.vmarked {
 }
 table#user-grades tr.even td.grade.vmarked.overridden {
   background-color: #f4a400;
-  /*border-color: $grade-report-color-overriden-border;*/
 }
 table#user-grades tr.even td.grade.hmarked {
   background-color: #f5cf2c;
@@ -164,16 +158,13 @@ table#user-grades tr.even td.grade.vmarked.hmarked {
 }
 table#user-grades tr.even td.grade.vmarked.hmarked.overridden {
   background-color: #f1be00;
-  /*border-color: $grade-report-color-overriden-border;*/
 }
 table#user-grades tr.even td.grade.overridden {
   background-color: #efefef;
-  /*border: 2px dashed $grade-report-color-overriden-border;*/
-  /*border: 0;*/
-  background: url([[pix:theme|corner-fold]]) no-repeat;
+  background: url([[pix:gradereport_grader|corner-fold]]) no-repeat;
   width: 16px;
   height: 16px;
-  background-color: #fff;
+  background-color: #efefef;
 }
 table#user-grades .overridden .grade_icons {
   padding-left: 10px;
