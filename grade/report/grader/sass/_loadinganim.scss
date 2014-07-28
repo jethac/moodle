@@ -1,0 +1,81 @@
+// Loading screen
+
+
+.gradebook-loading-screen {
+    width: 100%;
+    height: 40px;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    background-color: black;
+    z-index: 99999;
+    opacity: 0.8;
+    padding: 10px;
+    text-align: center;
+    
+    .gradebook-loading {
+        padding-right: 40px;
+        text-align: center;
+        width: 100%;
+    }
+}
+
+.gradebook-loading i{
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    border-radius: 50%;
+    background: #00b3d5;
+}
+.gradebook-loading i:first-child{
+    -webkit-animation:gradebook-loading-ani2 0.5s linear infinite;
+    animation:gradebook-loading-ani2 0.5s linear infinite;
+    opacity: 0;
+    @include transform(translate(-20px));
+}
+.gradebook-loading i:nth-child(2),
+.gradebook-loading i:nth-child(3){
+    -webkit-animation:gradebook-loading-ani3 0.5s linear infinite;
+    animation:gradebook-loading-ani3 0.5s linear infinite;
+}
+.gradebook-loading i:last-child{
+    -webkit-animation:gradebook-loading-ani1 0.5s linear infinite;
+    animation:gradebook-loading-ani1 0.5s linear infinite;
+}
+
+// Animation is done through keyframes
+
+@-webkit-keyframes gradebook-loading-ani1{
+    100%{
+        @include transform(translate(40px));
+        opacity: 0;
+    }
+}
+@keyframes gradebook-loading-ani1{
+    100%{
+        @include transform(translate(40px));
+        opacity: 0;
+    }
+}
+@-webkit-keyframes gradebook-loading-ani2{
+    100%{
+        @include transform(translate(20px));
+        opacity: 1;
+    }
+}
+@keyframes gradebook-loading-ani2{
+    100%{
+        @include transform(translate(20px));
+        opacity: 1;
+    }
+}
+@-webkit-keyframes gradebook-loading-ani3{
+    100%{
+        @include transform(translate(20px));
+    }
+}
+@keyframes gradebook-loading-ani3{
+    100%{
+        @include transform(translate(20px));
+    }
+}

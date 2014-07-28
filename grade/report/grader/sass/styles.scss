@@ -1,0 +1,38 @@
+// One-off SASS for Grader report table.
+//
+// To compile this SASS you need Compass (www.compass-style.org).
+// From this directory run:
+//
+// compass compile --sass-dir . --css-dir .. --no-line-comments
+//
+// This will generate the 'styles.css' file that Moodle loads in parent directory.
+
+// Variables
+// If we add more, might need to move them to separate file.
+
+$grade-report-color-overriden-border: #DC691A;
+
+$grade-report-odd-vmarked-bgcolor: #F39A00;
+$grade-report-odd-hmakred-bgcolor: #F5CD00;
+$grade-report-odd-hvmarked-bgcolor: #F1B900;
+
+$grade-report-even-vmarked-bgcolor: #F4A400;
+$grade-report-even-hmakred-bgcolor: #F5CF2C;
+$grade-report-even-hvmarked-bgcolor: #F1BE00;
+
+$grade-report-font-size: 14px;
+
+$grade-overridden-image: '[[pix:gradereport_grader|corner-fold]]';
+
+// Uses Compass library.
+@import "compass";
+
+// Report table.
+@import "reporttable";
+
+// Styles for floating table.
+@import "floatingtable";
+
+// Styles for loading animation.
+@import "loadinganim";
+

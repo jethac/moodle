@@ -1,0 +1,199 @@
+// Report table styling
+
+.path-grade-report-grader {
+    
+    // Make overlay look prettier.
+    // This will reset the tooltip styles.
+    .yui3-overlay {
+        border: 0;
+        background: none;
+        background-color: 'initial';
+        min-width: 200px;
+    }
+    
+    .graderreportoverlay {
+        background-color: white;
+        width: auto;
+        padding: 10px;
+        border-color: #ddd;
+        font-size: 12px;
+        
+        @include box-shadow(#999 2px 2px 3px);
+        @include border-radius(4px);
+        
+        // Add a better overridden indicator
+        &.overriden {
+            border-top: 22px solid #f1c32a;
+            
+            &:before {
+                font-size: 12px;
+                content: "Overridden grade";
+                color: black;
+                height: 0px;
+                width: 100%;
+                display: inline-block;
+                text-align: center;
+                top: -32px;
+                float: left;
+                position: relative;
+            }
+        }
+        
+        .overriden {
+            background-color: #f1c32a;
+            width: 100%;
+            text-align: center;
+        }
+        .fullname {
+            color: #444;
+        }
+        .itemname {
+            padding-top: 4px;
+            color: #666;
+        }
+    }
+    
+    // Remove the table overflow
+    .gradeparent {
+        overflow: inherit;
+    }
+}
+
+table#user-grades {
+    
+    font-size: $grade-report-font-size;
+
+    .avg th,
+    .avg td,
+    .heading th {
+        font-weight: bold;
+        background-color: #333;
+        color: #ddd;
+        border-color: #444;
+        a {
+            color: white;
+            font-weight: normal;
+        }
+    }
+    .avg .cell {
+        font-weight: bold;
+        text-align: center;
+        
+        &.header { text-align: right;}
+    }
+    th {
+        font-weight: normal;
+        &.cell {
+            height: 20px;
+            white-space: nowrap;
+            // Fix header for grade history plugin
+            .path-grade-report-history & {
+                white-space: normal;
+            }
+        }
+    }
+    .controls {
+        text-align: right;
+        background-color: #eee;
+        height: 20px;
+    }
+    tr {
+        height: 40px;
+        
+        .gradevalue {
+            width: 100%;
+            text-align: center;
+            display: inline-block;
+        }
+        .user {
+            min-width: 200px;
+            max-width: 200px;
+            width: 200px;
+            background-color: #777777;
+            border-color: #666666;
+            
+            a {color: white}
+            .userpicture {display: none;}
+        }
+        
+        // ODD rows
+        &.odd {
+            td.grade.vmarked {
+                background-color: $grade-report-odd-vmarked-bgcolor;
+                border-bottom-color: $grade-report-odd-vmarked-bgcolor;
+                &.overridden {
+                    background-color: $grade-report-odd-vmarked-bgcolor;
+                }
+            }
+            td.grade.hmarked {
+                background-color: $grade-report-odd-hmakred-bgcolor;
+                border-bottom-color: $grade-report-odd-hmakred-bgcolor;
+                &.overridden {
+                    background-color: $grade-report-odd-hmakred-bgcolor;
+                }
+            }
+            td.grade.vmarked.hmarked {
+                background-color: $grade-report-odd-hvmarked-bgcolor;
+                border-bottom-color: $grade-report-odd-hvmarked-bgcolor;
+                &.overridden {
+                    background-color: $grade-report-odd-hvmarked-bgcolor;
+                }
+            }
+            td.grade.overridden {
+                background-color: #fff;
+                
+                background: url(#{$grade-overridden-image}) no-repeat;
+                width: 16px;
+                height: 16px;
+                background-color: #efefef;
+
+            }
+        }
+        
+        // EVEN rows
+        &.even {
+            td.grade.vmarked {
+                background-color: $grade-report-even-vmarked-bgcolor;  
+                border-bottom-color: $grade-report-even-vmarked-bgcolor;
+                    &.overridden {
+                    background-color: $grade-report-even-vmarked-bgcolor;
+                }
+            }
+            td.grade.hmarked {
+                background-color: $grade-report-even-hmakred-bgcolor;
+                border-bottom-color: $grade-report-even-hmakred-bgcolor;
+                &.overridden {
+                    background-color: $grade-report-even-hmakred-bgcolor;
+                }
+            }
+            td.grade.vmarked.hmarked {
+                background-color: $grade-report-even-hvmarked-bgcolor;
+                border-bottom-color: $grade-report-even-hvmarked-bgcolor;
+                &.overridden {
+                    background-color: $grade-report-even-hvmarked-bgcolor;
+                }
+            }
+            td.grade.overridden {
+                background-color: #efefef;
+                
+                background: url(#{$grade-overridden-image}) no-repeat;
+                width: 16px;
+                height: 16px;
+                background-color: #efefef;
+            }
+        }
+    }
+
+    .overridden .grade_icons {
+        padding-left: 10px;
+    }
+    // Icon highlight
+    .catlevel1 .action-icon {
+        img {
+            opacity: 0.5;
+        }
+        &.selected img {
+            opacity: 1;
+        }
+    }
+}
