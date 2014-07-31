@@ -27,27 +27,63 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
     /** @var custom_menu_item language The language menu if created */
     protected $language = null;
 
-    /*
+    /**
      * This renders a notification message.
      * Uses bootstrap compatible html.
+     *
+     * @param string $message the message to print out.
+     * @param string|array $classes normally 'notifyproblem' or 'notifysuccess', can be an array of classes
+     * @return string the HTML to output.
      */
     public function notification($message, $classes = 'notifyproblem') {
         $message = clean_text($message);
-        $type = '';
 
-        if (($classes == 'notifyproblem') || ($classes == 'notifytiny')) {
-            $type = 'alert alert-error';
+        // String of classes to use, an empty string by default.
+        $classstring = '';
+
+        // If we didn't get an array as $classes, convert it to an array
+        // so we don't have to have two logic paths for converting Moodle
+        // class names to their bootstrap equivalents.
+        if (!is_array($classes)) {
+
+            // Trim extant whitespace, handle multiple spaces between
+            // classes.
+            $classes = preg_replace('/\s+/', ' ', trim($classes));
+
+            // Convert the string to an array of strings (even an array
+            // of size 1).
+            if(substr_count($classes, ' ') > 0) {
+                $classes = explode(' ', $classes);
+            } else {
+                $classes = array($classes);
+            }
         }
-        if ($classes == 'notifysuccess') {
-            $type = 'alert alert-success';
+
+        // Make sure the array is unique.
+        $classes = array_unique($classes);
+
+        // Map Bootstrap class names to Moodle equivalents.
+        foreach ($classes as $key => $class) {
+            $newclass = $class;
+            if (($class == 'notifyproblem') || ($class == 'notifytiny')) {
+                $newclass = 'alert alert-error';
+            } else if ($class == 'notifysuccess') {
+                $newclass = 'alert alert-success';
+            } else if ($class == 'notifymessage') {
+                $newclass = 'alert alert-info';
+            } else if ($class == 'redirectmessage') {
+                $newclass = 'alert alert-block alert-info';
+            }
+
+            if ($class != $newclass) {
+                $classes[$key] = $newclass;
+            }
         }
-        if ($classes == 'notifymessage') {
-            $type = 'alert alert-info';
-        }
-        if ($classes == 'redirectmessage') {
-            $type = 'alert alert-block alert-info';
-        }
-        return "<div class=\"$type\">$message</div>";
+
+        // Join the string array back up together using spaces.
+        $classstring = implode(' ', $classes);
+
+        return "<div class=\"$classstring\">$message</div>";
     }
 
     /*
