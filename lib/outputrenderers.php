@@ -2659,7 +2659,7 @@ EOD;
      * just happened).
      *
      * @param string $message the message to print out
-     * @param string $classes normally 'notifyproblem' or 'notifysuccess'.
+     * @param string|array $classes normally 'notifyproblem' or 'notifysuccess', can be an array of classes
      * @return string the HTML to output.
      */
     public function notification($message, $classes = 'notifyproblem') {
