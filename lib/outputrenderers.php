@@ -797,13 +797,9 @@ class core_renderer extends renderer_base {
                 throw new coding_exception('You cannot redirect after the entire page has been generated');
                 break;
         }
-        $output .= $this->notification($message, 'redirectmessage');
-        $output .= '<div class="continuebutton">(<a href="'. $encodedurl .'">'. get_string('continue') .'</a>)</div>';
-        if ($debugdisableredirect) {
-            $output .= '<p><strong>Error output, so disabling automatic redirect.</strong></p>';
-        }
-        $output .= $this->footer();
-        return $output;
+
+        // Actually output the redirect message.
+        return $this->redirect_message_display($message, $encodedurl, $debugdisableredirect);
     }
 
     /**
@@ -2659,11 +2655,128 @@ EOD;
      * just happened).
      *
      * @param string $message the message to print out
-     * @param string $classes normally 'notifyproblem' or 'notifysuccess'.
+     * @param string|array $classes a string or array of strings; normally, but not limited to, 'notifyproblem' or 'notifysuccess'.
+     * @param string $details optionally, more detailed information relating to this notification.
      * @return string the HTML to output.
      */
-    public function notification($message, $classes = 'notifyproblem') {
-        return html_writer::tag('div', clean_text($message), array('class' => renderer_base::prepare_classes($classes)));
+    public function notification($message, $classes = 'notifyproblem', $details = null) {
+
+        // If we weren't passed an array for $classes, just convert it to an array so our processing
+        // logic isn't confused.
+        if (!is_array($classes)) {
+            $classes = explode(" ", trim(preg_replace('/\s+/', ' ', $classes)));
+        }
+
+        if (count($classes) == 1) {
+            // Match based on string and use alert_* functions.
+            if ($classes[0] == 'notifyproblem') {
+                return $this->alert_danger($message, $details);
+            } else if ($classes[0] == 'notifysuccess' || $classes[0] == 'notifytiny') {
+                return $this->alert_success($message, $details);
+            } else if ($classes[0] == 'notifymessage') {
+                return $this->alert_info($message, $details);
+            } else if ($classes[0] == 'redirectmessage') {
+                return $this->do_alert($classes[0], $message, $details);
+            }
+        }
+
+        // Use moodle->theme class mappings if present.
+        if (property_exists($this, 'notificationclasses')) {
+            foreach ($classes as $idx => $class) {
+                if (array_key_exists($class, static::$notificationclasses)) {
+                    $classes[$idx] = static::$notificationclasses[$class];
+                }
+            }
+        }
+
+        $innertext = clean_text($message);
+        if (!is_null($details)) {
+            $innertext .= '<div class="details">' . clean_text($details) . '</div>';
+        }
+
+        return html_writer::tag('div', $innertext, array('class' => renderer_base::prepare_classes($classes)));
+    }
+
+    /**
+     * Helper function for alert_* function calls.
+     * @param string $class the class to use.
+     * @param string $message the message to print out.
+     * @param string $details optionally, more detailed information relating to this notification.
+     * @return string HTML fragment.
+     */
+    private function do_alert($class, $message, $details = null) {
+        $innertext = clean_text($message);
+        if (!empty($details)) {
+            $innertext .= '<div class="details">' . clean_text($details) . '</div>';
+        }
+        if (property_exists($this, 'notificationclasses') && array_key_exists($class, static::$notificationclasses)) {
+            $class = static::$notificationclasses[$class];
+        }
+        return html_writer::tag('div', $innertext, array('class' => $class));
+    }
+
+    /**
+     * Output an informational notification.
+     *
+     * @param string $message the message to print out.
+     * @param string $details optionally, more detailed information relating to this notification.
+     * @return string HTML fragment.
+     */
+    public function alert_info($message, $details = null) {
+        return $this->do_alert('notifymessage', $message, $details);
+    }
+
+    /**
+     * Output a success notification.
+     *
+     * @param string $message the message to print out.
+     * @param string $details optionally, more detailed information relating to this notification.
+     * @return string HTML fragment.
+     */
+    public function alert_success($message, $details = null) {
+        return $this->do_alert('notifysuccess', $message, $details);
+    }
+
+    /**
+     * Output a warning notification.
+     *
+     * @param string $message the message to print out.
+     * @param string $details optionally, more detailed information relating to this notification.
+     * @return string HTML fragment.
+     */
+    public function alert_warning($message, $details = null) {
+        return $this->do_alert('notifymessage', $message, $details);
+    }
+
+    /**
+     * Output an error / danger notification.
+     *
+     * @param string $message the message to print out.
+     * @param string $details optionally, more detailed information relating to this notification.
+     * @return string HTML fragment.
+     */
+    public function alert_danger($message, $details = null) {
+        return $this->do_alert('notifyproblem', $message, $details);
+    }
+
+    /**
+     * Actually output a redirect message. This is a helper for redirect_message, containing
+     * parts which are safe for themers to override. This should never be called directly from
+     * anywhere else.
+     *
+     * @param string $message the message to print out.
+     * @param string $encodedurl the redirect URL.
+     * @param bool $debugdisableredirect whether redirect is disabled on error output.
+     * @param string $details optionally, more detailed information relating to this notification.
+     * @return string HTML fragment.
+     */
+    protected function redirect_message_display($message, $encodedurl, $debugdisableredirect, $details = null) {
+        $output = html_writer::tag('div', clean_text($message), array('class' => 'redirectmessage'));
+        $output .= '<div class="continuebutton">(<a href="'. $encodedurl .'">'. get_string('continue') .'</a>)</div>';
+        if ($debugdisableredirect) {
+            $output .= $this->alert_danger(get_string('pageredirectdisabledonerror'), clean_text($details));
+        }
+        return $output;
     }
 
     /**
@@ -3523,15 +3636,88 @@ class core_renderer_cli extends core_renderer {
      * Returns a template fragment representing a notification.
      *
      * @param string $message The message to include
-     * @param string $classes A space-separated list of CSS classes
+     * @param string|array $classes A space-separated list, or array of CSS classes
      * @return string A template fragment for a notification
      */
-    public function notification($message, $classes = 'notifyproblem') {
-        $message = clean_text($message);
-        if ($classes === 'notifysuccess') {
-            return "++ $message ++\n";
+    public function notification($message, $classes = 'notifyproblem', $details = null) {
+
+        // If we weren't passed an array for $classes, just convert it to an array so our processing
+        // logic isn't confused.
+        if (!is_array($classes)) {
+            $classes = explode(" ", trim(preg_replace('/\s+/', ' ', $classes)));
         }
-        return "!! $message !!\n";
+
+        // We won't actually process any non-Moodle classes in the CLI renderer; we just need to
+        // be able to identify Moodle classes when passed an array.
+        if (array_key_exists('notifyproblem', $classes)) {
+            return $this->alert_danger($message, $details);
+        } else if (array_key_exists('notifysuccess', $classes) || array_key_exists('notifytiny', $classes)) {
+            return $this->alert_success($message, $details);
+        } else if (array_key_exists('notifymessage', $classes)) {
+            return $this->alert_info($message, $details);
+        }
+
+        return $this->alert_danger($message, $details);
+    }
+
+    /**
+     * Returns a template fragment representing an informational notification.
+     *
+     * @param string $message the message to print out.
+     * @param string $details optionally, more detailed information relating to this notification.
+     * @return string A template fragment for a notification.
+     */
+    public function alert_info($message, $details = null) {
+        $outputtext = 'info: ' . clean_text($message) . "\n";
+        if (!empty($details)) {
+            $outputtext .= '\t' . clean_text($details) . '\n';
+        }
+        return $outputtext;
+    }
+
+    /**
+     * Returns a template fragment representing a success notification.
+     *
+     * @param string $message the message to print out.
+     * @param string $details optionally, more detailed information relating to this notification.
+     * @return string A template fragment for a notification.
+     */
+    public function alert_success($message, $details = null) {
+        $outputtext = '++ '.clean_text($message)." ++\n";
+        if (!empty($details)) {
+            $outputtext .= '\t' . clean_text($details) . '\n';
+        }
+        return $outputtext;
+    }
+
+    /**
+     * Returns a template fragment representing a warning notification.
+     *
+     * @param string $message the message to print out.
+     * @param string $details optionally, more detailed information relating to this notification.
+     * @return string A template fragment for a notification.
+     */
+    public function alert_warning($message, $details = null) {
+        $outputtext = '! '.clean_text($message)." !\n";
+        if (!empty($details)) {
+            $outputtext .= '\t' . clean_text($details) . '\n';
+        }
+        return $outputtext;
+    }
+
+    /**
+     * Returns a template fragment representing an error / danger notification.
+     *
+     * @param string $message the message to print out.
+     * @param string $details optionally, more detailed information relating to this notification.
+     * @return string A template fragment for a notification.
+     */
+    public function alert_danger($message, $details = null) {
+        $outputtext = '!! '.clean_text($message)." !!\n";
+        if (!empty($details)) {
+            $outputtext .= '\t' . clean_text($details) . '\n';
+        }
+        return $outputtext;
     }
 }
 
@@ -3593,7 +3779,8 @@ class core_renderer_ajax extends core_renderer {
      * @param string $message
      * @param string $classes
      */
-    public function notification($message, $classes = 'notifyproblem') {}
+    public function notification($message, $classes = 'notifyproblem', $details = null) {
+    }
 
     /**
      * Used to display a redirection message.

@@ -27,27 +27,33 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
     /** @var custom_menu_item language The language menu if created */
     protected $language = null;
 
-    /*
-     * This renders a notification message.
-     * Uses bootstrap compatible html.
-     */
-    public function notification($message, $classes = 'notifyproblem') {
-        $message = clean_text($message);
-        $type = '';
+    /** @var array A collection of mappings between Moodle CSS classes and this theme's CSS classes for notifications. */
+    protected static $notificationclasses = array(
+        'notifyproblem' => 'alert alert-error',
+        'notifysuccess' => 'alert alert-success',
+        'notifytiny' => 'alert alert-success',
+        'notifymessage' => 'alert alert-info',
+        'redirectmessage' => 'alert alert-block alert-info'
+    );
 
-        if (($classes == 'notifyproblem') || ($classes == 'notifytiny')) {
-            $type = 'alert alert-error';
+    /**
+     * Actually output a redirect message. This is a helper for redirect_message, containing
+     * parts which are safe for themers to override. This should never be called directly from
+     * anywhere else.
+     *
+     * @param string $message the message to print out.
+     * @param string $encodedurl the redirect URL.
+     * @param bool $debugdisableredirect whether redirect is disabled on error output.
+     * @param string $details optionally, more detailed information relating to this notification.
+     * @return string HTML fragment.
+     */
+    public function redirect_message_display($message, $encodedurl, $debugdisableredirect, $details = null) {
+        $output = $this->alert_info($message);
+        $output .= '<a class=btn href="'. $encodedurl .'">'. get_string('continue') .'</a>';
+        if ($debugdisableredirect) {
+            $output .= $this->alert_danger(get_string('pageredirectdisabledonerror'), clean_text($details));
         }
-        if ($classes == 'notifysuccess') {
-            $type = 'alert alert-success';
-        }
-        if ($classes == 'notifymessage') {
-            $type = 'alert alert-info';
-        }
-        if ($classes == 'redirectmessage') {
-            $type = 'alert alert-block alert-info';
-        }
-        return "<div class=\"$type\">$message</div>";
+        return "<div class=\"$type\">$output</div>";
     }
 
     /*
@@ -247,34 +253,13 @@ class theme_bootstrapbase_core_renderer extends core_renderer {
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class theme_bootstrapbase_core_renderer_maintenance extends core_renderer_maintenance {
-    /**
-     * Renders notifications for maintenance scripts.
-     *
-     * We need to override this method in the same way we do for the core_renderer maintenance method
-     * found above.
-     * Please note this isn't required of every function, only functions used during maintenance.
-     * In this case notification is used to print errors and we want pretty errors.
-     *
-     * @param string $message
-     * @param string $classes
-     * @return string
-     */
-    public function notification($message, $classes = 'notifyproblem') {
-        $message = clean_text($message);
-        $type = '';
 
-        if (($classes == 'notifyproblem') || ($classes == 'notifytiny')) {
-            $type = 'alert alert-error';
-        }
-        if ($classes == 'notifysuccess') {
-            $type = 'alert alert-success';
-        }
-        if ($classes == 'notifymessage') {
-            $type = 'alert alert-info';
-        }
-        if ($classes == 'redirectmessage') {
-            $type = 'alert alert-block alert-info';
-        }
-        return "<div class=\"$type\">$message</div>";
-    }
+    /** @var array A collection of mappings between Moodle CSS classes and this theme's CSS classes for notifications. */
+    protected $notificationclasses = array(
+        'notifyproblem' => 'alert alert-error',
+        'notifysuccess' => 'alert alert-success',
+        'notifytiny' => 'alert alert-success',
+        'notifymessage' => 'alert alert-info',
+        'redirectmessage' => 'alert alert-block alert-info'
+    );
 }

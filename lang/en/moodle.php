@@ -1372,6 +1372,7 @@ $string['pagea'] = 'Page {$a}';
 $string['pageheaderconfigablock'] = 'Configuring a block in {$a->fullname}';
 $string['pagepath'] = 'Page path';
 $string['pageshouldredirect'] = 'This page should automatically redirect. If nothing is happening please use the continue link below.';
+$string['pageredirectdisabledonerror'] = 'Error output, so disabling automatic redirect.';
 $string['parentcategory'] = 'Parent category';
 $string['parentcoursenotfound'] = 'Parent course not found!';
 $string['parentfolder'] = 'Parent folder';
