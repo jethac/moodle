@@ -15,378 +15,700 @@ YUI.add('moodle-gradereport_grader-gradereporttable', function (Y, NAME) {
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * Static header and student column for grader table.
  *
+ * @module    moodle-gradereport_grader-gradereporttable
  * @package   gradereport_grader
  * @copyright 2014 UC Regents
- * @author    Alfonso Roman <aroman@oid.ucla.edu>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author    Alfonso Roman <aroman@oid.ucla.edu>
  */
 
-var LOGNS = 'moodle-gradereport_grader-gradereporttable';
+/**
+ * @module moodle-gradereport_grader-gradereporttable
+ */
 
-M.gradereport_grader = M.gradereport_grader || {};
-
-// Create a gradebook module
-M.gradereport_grader.gradereporttable = {
-    // Resuable nodes
-    node_student_header_cell: {},
-    node_student_cell: {},
-    node_footer_row: {},
-    scrollevent: function() {
-        console.log('scrolll event');
+var SELECTORS = {
+        FOOTERROW: '#user-grades .avg',
+        GRADECELL: 'td.cell',
+        HEADERCELL: '.gradebook-header-cell',
+        STUDENTHEADER: '#studentheader',
+        SPINNER: '.gradebook-loading-screen',
+        USERCELL: '#user-grades .user.cell'
     },
-    // Init module
-    init: function() {
+    CSS = {
+        COLMARK: 'vmarked',
+        UIDMARK: 'hmarked',
+        STICKYFOOTER: 'gradebook-footer-row-sticky'
+    };
 
-        // Set up some reusable nodes.
-        this.node_student_header_cell = Y.one('#studentheader');
-        // First student cell.
-        this.node_student_cell = Y.one('#user-grades .user.cell');
-        // Averages row.
-        this.node_footer_row = Y.one('#user-grades .avg');
+/**
+ * The Grader Report Table.
+ *
+ * @namespace M.gradereport_grader
+ * @class ReportTable
+ * @constructor
+ */
+function ReportTable() {
+    ReportTable.superclass.constructor.apply(this, arguments);
+}
 
-        // Check if there are any students -- otherwise no need to do anything.
-        if (this.node_student_cell) {
-            // Generate floating elements.
-            this.float_user_column();
-            this.float_assignment_header();
-            this.float_user_header();
+Y.extend(ReportTable, Y.Base, {
+    /**
+     * Array of EventHandles.
+     *
+     * @type EventHandle[]
+     * @property _eventHandles
+     * @protected
+     */
+    _eventHandles: [],
 
-            // Onscroll event updates all the floating header/column positions.
-            var onscroll = function() {
+    /**
+     * Setup the grader report table.
+     *
+     * @method init
+     */
+    initializer: function() {
+        // Setup the floating headers.
+        this.setupFloatingHeaders();
 
-                // Get better performance by preventing layout thrashing.  This occurs
-                // when the DOM is repeatedly updated and queried for updated values.
-                // 
-                // To fix this, group reads and writes
+        // Hide the loading spinner - we've finished for the moment.
+        this._hideSpinner();
+    },
 
-                //
-                // First get all the readable values needed.
+    /**
+     * Show the loading spinner.
+     *
+     * @method showSpinner
+     * @protected
+     */
+    showSpinner: function() {
+        // Show the grading spinner.
+        Y.one(SELECTORS.SPINNER).show();
+    },
 
-                // Header row
-                var headercontainer = document.getElementById('gradebook-header-container');
-                var userheadercell = document.getElementById('studentheader');
+    /**
+     * Hide the loading spinner.
+     *
+     * @method hideSpinner
+     * @protected
+     */
+    hideSpinner: function() {
+        // Hide the grading spinner.
+        Y.one(SELECTORS.SPINNER).hide();
+    },
 
-                var usercolumnheader = document.getElementById('gradebook-user-header-container');
+    /**
+     * Highlight the current assignment column.
+     *
+     * @method _highlightColumn
+     * @param {EventFacade} e The Event fired. This describes the column to highlight.
+     * @protected
+     */
+    _highlightColumn: function(e) {
+        var column = e.target.getData('column');
 
-                var headercelltop = userheadercell.offsetTop + userheadercell.offsetParent.offsetTop;
-
-                // User column
-                var pageleftcutoff = window.pageXOffset;
-                var firstusercell = document.querySelectorAll("#user-grades .user.cell")[0];
-                var firstusercellpos = firstusercell.offsetLeft + firstusercell.offsetParent.offsetLeft;
-
-                var usercolumn = document.getElementById('gradebook-user-container');
-
-                // Footer row
-                var lastrow = document.querySelectorAll('#user-grades .avg')[0];
-                var footer, lastrowpos;
-
-                // Check that Average footer is available.
-                if (lastrow !== undefined) {
-                    footer = document.getElementById('gradebook-footer-container');
-                    lastrowpos = lastrow.offsetTop + lastrow.offsetParent.offsetTop;
-                }
-
-                // Viewport values
-                var pageYOffset = window.pageYOffset;
-                var windowInnerHeight = window.innerHeight;
-
-                // 
-                // Next do all the writing.
-
-                // Header position
-                headercontainer.style.left = userheadercell.offsetLeft + userheadercell.offsetParent.offsetLeft + 'px';
-                if (pageYOffset > headercelltop) {
-                    headercontainer.style.top = pageYOffset + 40 + 'px';
-                    usercolumnheader.style.top = pageYOffset + 40 + 'px';
-                } else {
-                    headercontainer.style.top = headercelltop + 'px';
-                    usercolumnheader.style.top = headercelltop + 'px';
-                }
-
-                // User column position
-                if (pageleftcutoff > firstusercellpos) {
-                    usercolumn.style.left = pageleftcutoff + 'px';
-                    usercolumnheader.style.left = pageleftcutoff + 'px';
-                } else {
-                    usercolumn.style.left = firstusercellpos + 'px';
-                    usercolumnheader.style.left = firstusercellpos + 'px';
-                }
-
-                // Update footer
-                if (lastrow !== undefined) {
-                    footer.style.left = userheadercell.offsetLeft + userheadercell.offsetParent.offsetLeft + 'px';
-
-                    if (pageYOffset + windowInnerHeight < lastrowpos) {
-                        footer.style.top = (pageYOffset + windowInnerHeight - 50) + 'px';
-                        footer.classList.add('gradebook-footer-row-sticky');
-                    } else {
-                        footer.style.top = lastrowpos + 'px';
-                        footer.classList.remove('gradebook-footer-row-sticky');
-                    }
-                }
-            };
-
-            // Add the floating 'average' footer if available.
-            if (this.node_footer_row) {
-                this.float_assignment_footer();
-            }
-
-            // Set floating element initial positions by simulating scroll.
-            onscroll();
-
-            // Generate events.
-            // 
-            // Use native DOM scroll & resize events instead of YUI synthetic event.
-            window.onscroll = onscroll;
-            window.onresize = function() {
-                
-                onscroll();
-                
-                // Resize headers & footers.
-                // This is an expensive operation, not expected to happen often.
-                var headers = Y.all('#gradebook-header-container .gradebook-header-cell');
-                var resizedcells = Y.all('#user-grades .heading .cell');
-                
-                var headeroffsetleft = Y.one('#studentheader').getX();
-                var newcontainerwidth = 0;
-                resizedcells.each(function(cell, idx) {
-                    var headercell = headers.item(idx);
-                    
-                    newcontainerwidth += cell.get('offsetWidth');
-                    var styles = {
-                        width: cell.get('offsetWidth'),
-                        left: cell.getX() - headeroffsetleft + 'px'
-                    };
-                    headercell.setStyles(styles);
-                });
-                
-                var footers = Y.all('#gradebook-footer-container .gradebook-footer-cell');
-                
-                if (footers.size() !== 0) {
-                    var resizedavgcells = Y.all('#user-grades .avg .cell');
-
-                    resizedavgcells.each(function(cell, idx) {
-                        var footercell = footers.item(idx);
-                        var styles = {
-                            width: cell.get('offsetWidth'),
-                            left: cell.getX() - headeroffsetleft + 'px'
-                        };
-                        footercell.setStyles(styles);
-                    });
-                    Y.one('#gradebook-footer-container').setStyle('width', newcontainerwidth);
-                }
-
-                Y.one('#gradebook-header-container').setStyle('width', newcontainerwidth);
-                
-            };
+        if (typeof column === 'undefined') {
+            // Unable to determine which user to highlight. Return early.
+            return;
         }
 
-        // Remove loading screen.  Need to do YUI synthetic event to trigger
-        // on all browsers.
-        Y.on('domready', function() {
-            Y.one('.gradebook-loading-screen').remove(true);
-            Y.all('#user-grades .overridden').setAttribute('aria-label', 'Overriden grade');
-        });
+        Y.all('td.cell[data-column="' + column + '"]').toggleClass(CSS.COLMARK);
     },
-    float_user_column: function() {
 
-        // Grab the user names column
-        var user_column = Y.all('#user-grades .user.cell');
+    /**
+     * Highlight the current user row.
+     *
+     * @method _highlightUser
+     * @param {EventFacade} e The Event fired. This describes the user to highlight.
+     * @protected
+     */
+    _highlightUser: function(e) {
+        var uid = e.target.getData('uid');
 
-        // Generate a floating table
-        var floating_user_column = Y.Node.create('<div aria-hidden="true" id="gradebook-user-container"></div>');
-        var floating_user_column_height = 0;
-        var user_column_offset = this.node_student_cell.getY();
+        if (typeof uid === 'undefined') {
+            // Unable to determine which user to highlight. Return early.
+            return;
+        }
 
-        user_column.each(function(node) {
+        Y.all('td.cell[data-uid="' + uid + '"]').toggleClass(CSS.UIDMARK);
+    }
+});
 
-            // Create cloned node and container.
-            // We'll absolutely position the container to each cell position,
-            // this will guarantee that student cells are always aligned.
-            var container_node = Y.Node.create('<div class="gradebook-user-cell"></div>');
+Y.namespace('M.gradereport_grader').ReportTable = ReportTable;
+Y.namespace('M.gradereport_grader').init = function(config) {
+    return new Y.M.gradereport_grader.ReportTable(config);
+};
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-            // Grab the username
-            var usernamenode = node.cloneNode(true);
-            container_node.append(usernamenode.getHTML());
-            usernamenode = null;
+/**
+ * @module moodle-gradereport_grader-gradereport_grader
+ * @submodule tooltip
+ */
 
-            container_node.setStyles({
-                'height': node.get('offsetHeight') + 'px',
-                'width': node.get('offsetWidth') + 'px',
-                'position': 'absolute',
-                'top': (node.getY() - user_column_offset) + 'px'
-            });
+/**
+ * Functions for the Grader Report Grade Editor.
+ *
+ * See {{#crossLink "M.gradereport_grader.ReportTable"}}{{/crossLink}} for details.
+ *
+ * @namespace M.gradereport_grader
+ * @class Tooltip
+ */
 
-            floating_user_column_height += node.get('offsetHeight');
-            // Retrieve the corresponding row
-            var classes = node.ancestor().getAttribute('class').split(' ').join('.');
-            // Attach highlight event
-            container_node.on('click', function() {
-                Y.one('.' + classes).all('.grade').toggleClass('hmarked');
-            });
-            // Add the cloned nodes to our floating table
-            floating_user_column.appendChild(container_node);
+var OFFSETWIDTH = 'offsetWidth',
+    OFFSETHEIGHT = 'offsetHeight',
+    OFFSETLEFT = 'offsetLeft',
+    OFFSETPARENT = 'offsetParent';
 
+function FloatingHeaders() {}
+
+FloatingHeaders.ATTRS= {
+};
+
+FloatingHeaders.prototype = {
+    /**
+     * A Node representing the header cell.
+     *
+     * @property headerCell
+     * @type Node
+     * @protected
+     */
+    headerCell: null,
+
+    /**
+     * A Node representing the first cell which contains user name information.
+     *
+     * @property firstUserCell
+     * @type Node
+     * @protected
+     */
+    firstUserCell: null,
+
+    /**
+     * A Node representing the original table footer row.
+     *
+     * @property tableFooterRow
+     * @type Node
+     * @protected
+     */
+    tableFooterRow: null,
+
+    /**
+     * A Node representing the floating footer row in the grading table.
+     *
+     * @property footerRow
+     * @type Node
+     * @protected
+     */
+    footerRow: null,
+
+    /**
+     * A Node representing the floating assignment header.
+     *
+     * @property assignmentHeadingContainer
+     * @type Node
+     * @protected
+     */
+    assignmentHeadingContainer: null,
+
+    /**
+     * A Node representing the floating user header. This is the header with the Surname/First name
+     * sorting.
+     *
+     * @property userColumnHeader
+     * @type Node
+     * @protected
+     */
+    userColumnHeader: null,
+
+    /**
+     * A Node representing the floating user column. This is the column containing all of the user
+     * names.
+     *
+     * @property userColumn
+     * @type Node
+     * @protected
+     */
+    userColumn: null,
+
+    /**
+     * The position of the top of the first user cell.
+     * This is used when processing the scroll event as an optimisation. It must be updated when
+     * additional rows are loaded, or the window changes in some fashion.
+     *
+     * @property firstUserCellTop
+     * @type Node
+     * @protected
+     */
+    firstUserCellTop: 0,
+
+    /**
+     * The position of the left of the first user cell.
+     * This is used when processing the scroll event as an optimisation. It must be updated when
+     * additional rows are loaded, or the window changes in some fashion.
+     *
+     * @property firstUserCellLeft
+     * @type Node
+     * @protected
+     */
+    firstUserCellLeft: 0,
+
+    /**
+     * The position of the top of the final user cell.
+     * This is used when processing the scroll event as an optimisation. It must be updated when
+     * additional rows are loaded, or the window changes in some fashion.
+     *
+     * @property lastUserCellTop
+     * @type Node
+     * @protected
+     */
+    lastUserCellTop: 0,
+
+    /**
+     * Array of EventHandles.
+     *
+     * @type EventHandle[]
+     * @property _eventHandles
+     * @protected
+     */
+    _eventHandles: [],
+
+    /**
+     * Setup the grader report table.
+     *
+     * @method init
+     */
+    initializer: function() {
+        // Grab references to commonly used Nodes.
+        this.firstUserCell = Y.one(SELECTORS.USERCELL);
+
+        if (!this.firstUserCell) {
+            // There was no first user cell - no need to do anything at this stage.
+            this._hideSpinner();
+            return;
+        }
+
+        // Generate floating elements.
+        this._setupFloatingUserColumn();
+        this._setupFloatingUserHeader();
+        this._setupFloatingAssignmentHeaders();
+        this._setupFloatingAssignmentFooter();
+
+        // Calculate the positions of edge cells. These are used for positioning of the floating headers.
+        // This must be called after the floating headers are setup, but before the scroll event handler is invoked.
+        this._calculateCellPositions();
+
+        // Setup the floating element initial positions by simulating scroll.
+        this._handleScrollEvent();
+
+        // Setup the event handlers.
+        this._setupEventHandlers();
+
+        // Hide the loading spinner - we've finished for the moment.
+        this._hideSpinner();
+    },
+
+    /**
+     * Calculate the positions of some cells. These values are used heavily
+     * in scroll event handling.
+     *
+     * @method _calculateCellPositions
+     * @protected
+     */
+    _calculateCellPositions: function() {
+        // The header row shows the assigment headers and is floated to the top of the window.
+        // WAS: var headerCellTop = this.headerCell.get(OFFSETTOP) + this.headerCell.get(OFFSETPARENT).get(OFFSETTOP);
+        this.headerCellTop = this.headerCell.getY();
+
+        var userCellList = Y.all(SELECTORS.USERCELL);
+
+        if (userCellList.size() > 1) {
+            // Use the top of the second cell for the bottom of the first cell.
+            // This is used when scrolling to fix the footer to at the top-left edge of the window.
+            this.firstUserCellTop = userCellList.item(1).getY();
+            // WAS: var firstUserCellPosition = this.firstUserCell.get(OFFSETLEFT) + this.firstUserCell.get(OFFSETPARENT).get(OFFSETLEFT);
+            this.firstUserCellLeft = userCellList.item(0).getX();
+
+            // Use the top of the penultimate cell when scrolling the header.
+            // The header is the same size as the cells.
+            this.lastUserCellTop = userCellList.item(userCellList.size() - 2).getY();
+        } else {
+            // TODO Fix to the current position.
+            this.firstUserCell = 0;
+            this.lastUserCellTop = 0;
+        }
+
+        // The footer row shows the grade averages and will be floated to the page bottom.
+        if (this.tableFooterRow) {
+            // WAS: lastrowpos = lastrow.offsetTop + lastrow.offsetParent.offsetTop;
+            this.footerRowPosition = this.tableFooterRow.getY();
+        }
+    },
+
+    /**
+     * Setup the main event listeners.
+     * These deal with things like window events.
+     *
+     * @method _setupEventHandlers
+     * @protected
+     */
+    _setupEventHandlers: function() {
+        this._eventHandles.push(
+            // Listen for window scrolls, resizes, and rotation events.
+            Y.one(Y.config.win).on('scroll', this._handleScrollEvent, this),
+            Y.one(Y.config.win).on('resize', this._handleResizeEvent, this),
+            Y.one(Y.config.win).on('orientationchange', this._handleResizeEvent, this)
+        );
+    },
+
+    /**
+     * Show the loading spinner.
+     *
+     * @method _showSpinner
+     * @protected
+     */
+    _showSpinner: function() {
+        // Show the grading spinner.
+        Y.one(SELECTORS.SPINNER).show();
+    },
+
+    /**
+     * Hide the loading spinner.
+     *
+     * @method _hideSpinner
+     * @protected
+     */
+    _hideSpinner: function() {
+        // Hide the grading spinner.
+        Y.one(SELECTORS.SPINNER).hide();
+    },
+
+    /**
+     * Create and setup the floating column of user names.
+     *
+     * @method _setupFloatingUserColumn
+     * @protected
+     */
+    _setupFloatingUserColumn: function() {
+        // Grab all cells in the user names column.
+        var userColumn = Y.all(SELECTORS.USERCELL),
+
+        // TODO check ARIA - should this be linked to the row somehow?
+        // Create a floating table.
+            floatingUserColumn = Y.Node.create('<div aria-hidden="true" id="gradebook-user-container"></div>');
+
+        // Generate the new fields.
+        userColumn.each(function(node) {
+            // Create and configure the new container.
+            var containerNode = Y.Node.create('<div class="gradebook-user-cell"></div>');
+            containerNode.set('innerHTML', node.get('innerHTML'))
+                    .setData('uid', node.getData('uid'))
+                    .setStyles({
+                        height: node.get(OFFSETHEIGHT) + 'px',
+                        width:  node.get(OFFSETWIDTH) + 'px'
+                    });
+
+            // Add the new nodes to our floating table.
+            floatingUserColumn.appendChild(containerNode);
         }, this);
 
-        // Style the table
-        floating_user_column.setStyles({
-            'position': 'absolute',
-            'left': this.node_student_cell.getX() + 'px',
-            'top': this.node_student_cell.getY() + 'px',
-            'width': this.node_student_cell.get('offsetWidth'),
-            'height': floating_user_column_height + 'px',
-            'background-color': '#f9f9f9'
+        // Clicking on the cell should highlight the row.
+        floatingUserColumn.delegate('click', this._highlightUser, 'th.user, .gradebook-user-cell', this);
+
+        // Style the floating user container.
+        floatingUserColumn.setStyles({
+            left:       this.firstUserCell.getX() + 'px',
+            position:   'absolute',
+            top:        this.firstUserCell.getY() + 'px'
         });
 
-        Y.one('body').append(floating_user_column);
+        // Append to the body.
+        Y.one(Y.config.doc.body).append(floatingUserColumn);
+
+        // Store a reference to this for later - we use it in the event handlers.
+        this.userColumn = floatingUserColumn;
     },
-    float_user_header: function() {
+
+    /**
+     * Create and setup the floating username header cell.
+     *
+     * @method _setupFloatingUserHeader
+     * @protected
+     */
+    _setupFloatingUserHeader: function() {
+        // We make various references to the this header cell. Store it for later.
+        this.headerCell = Y.one(SELECTORS.STUDENTHEADER);
 
         // Float the 'user name' header cell.
-        var floating_user_header_cell = Y.Node.create('<div aria-hidden="true" id="gradebook-user-header-container"></div>');
+        var floatingUserCell = Y.Node.create('<div aria-hidden="true" id="gradebook-user-header-container"></div>');
 
-        // Clone the node
-        var cellnode = this.node_student_header_cell.cloneNode(true);
         // Append node contents
-        floating_user_header_cell.append(cellnode.getHTML());
-        floating_user_header_cell.setStyles({
-            'position': 'absolute',
-            'left': this.node_student_cell.getX() + 'px',
-            'top': this.node_student_header_cell.getY() + 'px',
-            'width': '200px',
-            'height': this.node_student_header_cell.get('offsetHeight') + 'px'
+        floatingUserCell.set('innerHTML', this.headerCell.getHTML());
+        floatingUserCell.setStyles({
+            height:     this.headerCell.get(OFFSETHEIGHT) + 'px',
+            left:       this.firstUserCell.getX() + 'px',
+            position:   'absolute',
+            top:        this.headerCell.getY() + 'px',
+            width:      this.firstUserCell.get(OFFSETWIDTH) + 'px'
         });
 
-        // Safe for collection
-        cellnode = null;
+        // Append to the body.
+        Y.one(Y.config.doc.body).append(floatingUserCell);
 
-        Y.one('body').append(floating_user_header_cell);
+        // Store a reference to this for later - we use it in the event handlers.
+        this.userColumnHeader = floatingUserCell;
     },
-    float_assignment_header: function() {
 
-        var grade_headers = Y.all('#user-grades tr.heading .cell');
+    /**
+     * Create and setup the floating assignment header row.
+     *
+     * @method _setupFloatingAssignmentHeaders
+     * @protected
+     */
+    _setupFloatingAssignmentHeaders: function() {
+        var gradeHeaders = Y.all('#user-grades tr.heading .cell');
 
         // Generate a floating headers
-        var floating_grade_headers = Y.Node.create('<div aria-hidden="true" id="gradebook-header-container"></div>');
+        var floatingGradeHeaders = Y.Node.create('<div aria-hidden="true" id="gradebook-header-container"></div>');
 
-        var floating_grade_headers_width = 0;
-        var floating_grade_headers_height = 0;
-        var grade_headers_offset = this.node_student_header_cell.getX();
+        var floatingGradeHeadersWidth = 0;
+        var floatingGradeHeadersHeight = 0;
+        var gradeHeadersOffset = this.headerCell.getX();
 
-        grade_headers.each(function(node) {
-
+        gradeHeaders.each(function(node) {
             // Get the target column to highlight.  This is embedded in
             // the column cell #, but it's off by one, so need to adjust for that.
-            var col = node.getAttribute('class');
-
-            // Extract the column #
-            var search = /c[0-9]+/g;
-            var match = search.exec(col);
-            match = match[0].replace('c', '');
-
-            // Offset
-            var target_col = parseInt(match, 10);
-            ++target_col;
-
             var nodepos = node.getX();
-
-            // We need to clone the node, otherwise we mutate original obj
-            var nodeclone = node.cloneNode(true);
 
             var newnode = Y.Node.create('<div class="gradebook-header-cell"></div>');
-            newnode.append(nodeclone.getHTML());
-            newnode.addClass(nodeclone.getAttribute('class'));
-            nodeclone = null;
+            newnode.append(node.getHTML())
+                    .addClass(node.getAttribute('class'))
+                    .setData('column', node.getData('column'))
+                    .setStyles({
+                        height:     node.get(OFFSETHEIGHT) + 'px',
+                        left:       (nodepos - gradeHeadersOffset) + 'px',
+                        position:   'absolute',
+                        width:      node.get(OFFSETWIDTH) + 'px'
+                    });
 
-            newnode.setStyles({
-                'width': node.get('offsetWidth') + 'px',
-                'height': node.get('offsetHeight') + 'px',
-                'position': 'absolute',
-                'left': (nodepos - grade_headers_offset) + 'px'
-            });
+            // Sum up total widths - these are used in the container styles.
+            floatingGradeHeadersWidth += parseInt(node.get(OFFSETWIDTH), 10);
+            floatingGradeHeadersHeight = node.get(OFFSETHEIGHT);
 
-            // Sum up total width
-            floating_grade_headers_width += parseInt(node.get('offsetWidth'), 10);
-            floating_grade_headers_height = node.get('offsetHeight');
-
-            // Attach 'highlight column' event to new node
-            newnode.on('click', function() {
-                Y.all('.cell.c' + target_col).toggleClass('vmarked');
-            });
-
-            // Append to floating table.
-            floating_grade_headers.appendChild(newnode);
+            // Append to our floating table.
+            floatingGradeHeaders.appendChild(newnode);
         }, this);
 
+        // Clicking on the cell should highlight the current column.
+        floatingGradeHeaders.delegate('click', this._highlightColumn, 'th.item[data-column], .gradebook-header-cell', this);
+
         // Position header table.
-        floating_grade_headers.setStyles({
-            'position': 'absolute',
-            'top': this.node_student_header_cell.getY() + 'px',
-            'left': this.node_student_header_cell.getX() + 'px',
-            'width': floating_grade_headers_width + 'px',
-            'height': floating_grade_headers_height + 'px'
+        floatingGradeHeaders.setStyles({
+            height:     floatingGradeHeadersHeight + 'px',
+            left:       this.headerCell.getX() + 'px',
+            position:   'absolute',
+            top:        this.headerCell.getY() + 'px',
+            width:      floatingGradeHeadersWidth + 'px'
         });
 
-        Y.one('body').append(floating_grade_headers);
+        // Append to the body.
+        this.userColumnHeader.insert(floatingGradeHeaders, 'before');
+
+        // Store a reference to this for later - we use it in the event handlers.
+        this.assignmentHeadingContainer = floatingGradeHeaders;
     },
-    float_assignment_footer: function() {
+
+    /**
+     * Create and setup the floating header row of assignment titles.
+     *
+     * @method _setupFloatingAssignmentFooter
+     * @protected
+     */
+    _setupFloatingAssignmentFooter: function() {
+        this.tableFooterRow = Y.one('#user-grades .avg');
+        if (!this.tableFooterRow) {
+            return;
+        }
 
         // Generate the sticky footer row.
-        // Grab the row.
-        var footer_row = Y.all('#user-grades .lastrow .cell');
+        var footerCells = this.tableFooterRow.all('.cell');
+
         // Create a container.
-        var floating_grade_footers = Y.Node.create('<div aria-hidden="true" id="gradebook-footer-container"></div>');
-        var floating_grade_footer_width = 0;
-        var footer_row_offset = this.node_footer_row.getX();
-        // Copy nodes
-        footer_row.each(function(node) {
+        var floatingGraderFooter = Y.Node.create('<div aria-hidden="true" id="gradebook-footer-container"></div>');
+        var footerWidth = 0;
+        var footerRowOffset = this.tableFooterRow.getX();
 
-            var nodepos = node.getX();
-            var cellnodeclone = node.cloneNode(true);
-
+        // Copy cell content.
+        footerCells.each(function(node) {
             var newnode = Y.Node.create('<div class="gradebook-footer-cell"></div>');
-            newnode.append(cellnodeclone.getHTML());
+            newnode.set('innerHTML', node.getHTML());
             newnode.setStyles({
-                'width': node.get('offsetWidth') + 'px',
-                'height': '50px',
-                'position': 'absolute',
-                'left': (nodepos - footer_row_offset) + 'px'
+                height:     node.get(OFFSETHEIGHT) + 'px',
+                left:       (node.getX() - footerRowOffset) + 'px',
+                position:   'absolute',
+                width:      node.get(OFFSETWIDTH) + 'px'
             });
 
-            floating_grade_footers.append(newnode);
-            floating_grade_footer_width += parseInt(node.get('offsetWidth'), 10);
+            floatingGraderFooter.append(newnode);
+            footerWidth += parseInt(node.get(OFFSETWIDTH), 10);
         }, this);
 
         // Attach 'Update' button.
         var update_button = Y.one('#gradersubmit');
         if (update_button) {
+            // TODO decide what to do with classes here to make them compatible with the base themes.
             var button = Y.Node.create('<button class="btn btn-sm btn-default">' + update_button.getAttribute('value') + '</button>');
             button.on('click', function() {
                 YUI().use('node-event-simulate', function(Y) {
+                    // TODO ICKKKK Remove this. Simulate is not intended for production - it's a
+                    // module for testing.
                     Y.one('#gradersubmit').simulate('click');
                 });
             });
-            floating_grade_footers.one('.gradebook-footer-cell').append(button);
+            floatingGraderFooter.one('.gradebook-footer-cell').append(button);
         }
 
         // Position the row
-        floating_grade_footers.setStyles({
-            'position': 'absolute',
-            'left': this.node_footer_row.getX() + 'px',
-            'bottom': '0',
-            'height': '50px',
-            'width': floating_grade_footer_width + 'px'
+        floatingGraderFooter.setStyles({
+            position:   'absolute',
+            left:       this.tableFooterRow.getX() + 'px',
+            bottom:     0,
+            height:     '40px',
+            width:      footerWidth + 'px'
         });
 
-        Y.one('body').append(floating_grade_footers);
+        Y.one(Y.config.doc.body).append(floatingGraderFooter);
+        this.footerRow = floatingGraderFooter;
+    },
+
+    /**
+     * Process a Scroll Event on the window.
+     *
+     * @method _handleScrollEvent
+     */
+    _handleScrollEvent: function() {
+        // Performance is important in this function as it is called frequently and in quick succesion.
+        // To prevent layout thrashing when the DOM is repeatedly updated and queried, updated and queried,
+        // updates must be batched.
+
+        // Next do all the calculations.
+        var assignmentHeadingContainerStyles = {},
+            userColumnHeaderStyles = {},
+            userColumnStyles = {},
+            footerStyles = {};
+
+        // Header position.
+        assignmentHeadingContainerStyles.left = this.headerCell.get(OFFSETLEFT) + this.headerCell.get(OFFSETPARENT).get(OFFSETLEFT) + 'px';
+        if (Y.config.win.pageYOffset + 40 > this.headerCellTop) {
+            if (Y.config.win.pageYOffset + 40 < this.lastUserCellTop) {
+                assignmentHeadingContainerStyles.top = Y.config.win.pageYOffset + 40 + 'px';
+                userColumnHeaderStyles.top = Y.config.win.pageYOffset + 40 + 'px';
+            } else {
+                assignmentHeadingContainerStyles.top = this.lastUserCellTop + 'px';
+                userColumnHeaderStyles.top = this.lastUserCellTop + 'px';
+            }
+        } else {
+            assignmentHeadingContainerStyles.top = this.headerCellTop + 'px';
+            userColumnHeaderStyles.top = this.headerCellTop + 'px';
+        }
+
+        // User column position.
+        if (Y.config.win.pageXOffset > this.firstUserCellLeft) {
+            userColumnStyles.left = Y.config.win.pageXOffset + 'px';
+            userColumnHeaderStyles.left = Y.config.win.pageXOffset + 'px';
+        } else {
+            userColumnStyles.left = this.firstUserCellLeft + 'px';
+            userColumnHeaderStyles.left = this.firstUserCellLeft + 'px';
+        }
+
+        // Update footer.
+        if (this.footerRow) {
+            footerStyles.left = this.headerCell.get(OFFSETLEFT) + this.headerCell.get(OFFSETPARENT).get(OFFSETLEFT) + 'px';
+
+            // Determine whether the footer should now be shown as sticky.
+            if (Y.config.win.pageYOffset + Y.config.win.innerHeight - 40 < this.footerRowPosition) {
+                if (Y.config.win.pageYOffset + Y.config.win.innerHeight - 40 > this.firstUserCellTop) {
+                    footerStyles.top = (Y.config.win.pageYOffset + Y.config.win.innerHeight - 40) + 'px';
+                } else {
+                    footerStyles.top = this.firstUserCellTop;
+                }
+                this.footerRow.addClass(CSS.STICKYFOOTER);
+            } else {
+                footerStyles.top = this.footerRowPosition + 'px';
+                this.footerRow.removeClass(CSS.STICKYFOOTER);
+            }
+        }
+
+        // Finally, apply the styles.
+        this.assignmentHeadingContainer.setStyles(assignmentHeadingContainerStyles);
+        this.userColumnHeader.setStyles(userColumnHeaderStyles);
+        this.userColumn.setStyles(userColumnStyles);
+        this.footerRow.setStyles(footerStyles);
+    },
+
+    /**
+     * Process a size change Event on the window.
+     *
+     * @method _handleResizeEvent
+     */
+    _handleResizeEvent: function() {
+        // Recalculate the position of the edge cells for scroll positioning.
+        this._calculateCellPositions();
+
+        // Simulate a scroll.
+        this._handleScrollEvent();
+
+        // Resize headers & footers.
+        // This is an expensive operation, not expected to happen often.
+        var headers = this.assignmentHeadingContainer.all(SELECTORS.HEADERCELL);
+        var resizedcells = Y.all('#user-grades .heading .cell');
+
+        var headeroffsetleft = this.headerCell.getX();
+        var newcontainerwidth = 0;
+        resizedcells.each(function(cell, idx) {
+            var headercell = headers.item(idx);
+
+            newcontainerwidth += cell.get(OFFSETWIDTH);
+            var styles = {
+                width: cell.get(OFFSETWIDTH),
+                left: cell.getX() - headeroffsetleft + 'px'
+            };
+            headercell.setStyles(styles);
+        });
+
+        var footers = Y.all('#gradebook-footer-container .gradebook-footer-cell');
+        if (footers.size() !== 0) {
+            var resizedavgcells = Y.all('#user-grades .avg .cell');
+
+            resizedavgcells.each(function(cell, idx) {
+                var footercell = footers.item(idx);
+                var styles = {
+                    width: cell.get(OFFSETWIDTH),
+                    left: cell.getX() - headeroffsetleft + 'px'
+                };
+                footercell.setStyles(styles);
+            });
+        }
+
+        this.assignmentHeadingContainer.setStyle('width', newcontainerwidth);
     }
 };
 
+Y.Base.mix(Y.M.gradereport_grader.ReportTable, [FloatingHeaders]);
 
-}, '@VERSION@');
+
+}, '@VERSION@', {"requires": ["base", "node", "event", "node-event-simulate"]});

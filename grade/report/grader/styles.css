@@ -53,7 +53,6 @@
 table#user-grades {
   font-size: 14px;
 }
-table#user-grades .avg th,
 table#user-grades .avg td,
 table#user-grades .heading th {
   font-weight: bold;
@@ -110,56 +109,56 @@ table#user-grades tr .user a {
 table#user-grades tr .user .userpicture {
   display: none;
 }
-table#user-grades tr.odd td.grade.vmarked {
+table#user-grades tr:nth-child(odd) td.grade.vmarked {
   background-color: #f39a00;
   border-bottom-color: #f39a00;
 }
-table#user-grades tr.odd td.grade.vmarked.overridden {
+table#user-grades tr:nth-child(odd) td.grade.vmarked.overridden {
   background-color: #f39a00;
 }
-table#user-grades tr.odd td.grade.hmarked {
+table#user-grades tr:nth-child(odd) td.grade.hmarked {
   background-color: #f5cd00;
   border-bottom-color: #f5cd00;
 }
-table#user-grades tr.odd td.grade.hmarked.overridden {
+table#user-grades tr:nth-child(odd) td.grade.hmarked.overridden {
   background-color: #f5cd00;
 }
-table#user-grades tr.odd td.grade.vmarked.hmarked {
+table#user-grades tr:nth-child(odd) td.grade.vmarked.hmarked {
   background-color: #f1b900;
   border-bottom-color: #f1b900;
 }
-table#user-grades tr.odd td.grade.vmarked.hmarked.overridden {
+table#user-grades tr:nth-child(odd) td.grade.vmarked.hmarked.overridden {
   background-color: #f1b900;
 }
-table#user-grades tr.odd td.grade.overridden {
+table#user-grades tr:nth-child(odd) td.grade.overridden {
   background-color: #fff;
   background: url([[pix:gradereport_grader|corner-fold]]) no-repeat;
   width: 16px;
   height: 16px;
   background-color: #efefef;
 }
-table#user-grades tr.even td.grade.vmarked {
+table#user-grades tr:nth-child(even) td.grade.vmarked {
   background-color: #f4a400;
   border-bottom-color: #f4a400;
 }
-table#user-grades tr.even td.grade.vmarked.overridden {
+table#user-grades tr:nth-child(even) td.grade.vmarked.overridden {
   background-color: #f4a400;
 }
-table#user-grades tr.even td.grade.hmarked {
+table#user-grades tr:nth-child(even) td.grade.hmarked {
   background-color: #f5cf2c;
   border-bottom-color: #f5cf2c;
 }
-table#user-grades tr.even td.grade.hmarked.overridden {
+table#user-grades tr:nth-child(even) td.grade.hmarked.overridden {
   background-color: #f5cf2c;
 }
-table#user-grades tr.even td.grade.vmarked.hmarked {
+table#user-grades tr:nth-child(even) td.grade.vmarked.hmarked {
   background-color: #f1be00;
   border-bottom-color: #f1be00;
 }
-table#user-grades tr.even td.grade.vmarked.hmarked.overridden {
+table#user-grades tr:nth-child(even) td.grade.vmarked.hmarked.overridden {
   background-color: #f1be00;
 }
-table#user-grades tr.even td.grade.overridden {
+table#user-grades tr:nth-child(even) td.grade.overridden {
   background-color: #efefef;
   background: url([[pix:gradereport_grader|corner-fold]]) no-repeat;
   width: 16px;
@@ -264,6 +263,8 @@ table#user-grades .catlevel1 .action-icon.selected img {
 #gradebook-footer-container.gradebook-footer-row-sticky .cell {
   border-top: 2px solid gray;
 }
+
+table#user-grades .avg th,
 #gradebook-footer-container .gradebook-footer-cell {
   padding: 8px;
   font-size: 14px;
