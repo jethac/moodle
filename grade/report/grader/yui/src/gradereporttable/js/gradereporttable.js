@@ -29,6 +29,7 @@
 
 var SELECTORS = {
         FOOTERROW: '#user-grades .avg',
+        GRADECELL: 'td.cell',
         HEADERCELL: '.gradebook-header-cell',
         STUDENTHEADER: '#studentheader',
         SPINNER: '.gradebook-loading-screen',
