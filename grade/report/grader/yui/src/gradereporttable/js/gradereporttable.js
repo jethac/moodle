@@ -29,16 +29,18 @@
 
 var SELECTORS = {
         FOOTERROW: '#user-grades .avg',
-        GRADECELL: 'td.cell',
+        GRADECELL: 'td.grade',
+        GRADERTABLE: '.gradeparent table',
+        GRADEPARENT: '.gradeparent',
         HEADERCELL: '.gradebook-header-cell',
         STUDENTHEADER: '#studentheader',
         SPINNER: '.gradebook-loading-screen',
         USERCELL: '#user-grades .user.cell'
     },
     CSS = {
-        COLMARK: 'vmarked',
-        UIDMARK: 'hmarked',
-        STICKYFOOTER: 'gradebook-footer-row-sticky'
+        OVERRIDDEN: 'overridden',
+        STICKYFOOTER: 'gradebook-footer-row-sticky',
+        TOOLTIPACTIVE: 'tooltipactive'
     };
 
 /**
@@ -63,13 +65,31 @@ Y.extend(ReportTable, Y.Base, {
     _eventHandles: [],
 
     /**
+     * A Node reference to the grader table.
+     *
+     * @property graderTable
+     * @type Node
+     */
+    graderTable: null,
+
+    /**
      * Setup the grader report table.
      *
-     * @method init
+     * @method initializer
      */
     initializer: function() {
+        // Some useful references within our target area.
+        this.graderRegion = Y.one(SELECTORS.GRADEPARENT);
+        this.graderTable = Y.one(SELECTORS.GRADERTABLE);
+
+        // Setup row and column highlighting.
+        this.setupHighlighter();
+
         // Setup the floating headers.
         this.setupFloatingHeaders();
+
+        // Setup the mouse tooltips.
+        this.setupTooltips();
 
         // Hide the loading spinner - we've finished for the moment.
         this._hideSpinner();
@@ -98,39 +118,48 @@ Y.extend(ReportTable, Y.Base, {
     },
 
     /**
-     * Highlight the current assignment column.
+     * Get the text content of the username for the specified grade item.
      *
-     * @method _highlightColumn
-     * @param {EventFacade} e The Event fired. This describes the column to highlight.
-     * @protected
+     * @method getGradeUserName
+     * @param {Node} cell The grade item cell to obtain the username for
+     * @return {String} The string content of the username cell.
      */
-    _highlightColumn: function(e) {
-        var column = e.target.getData('column');
+    getGradeUserName: function(cell) {
+        var userrow = cell.ancestor('tr'),
+            usercell = userrow.one("th.user .username");
 
-        if (typeof column === 'undefined') {
-            // Unable to determine which user to highlight. Return early.
-            return;
+        if (usercell) {
+            return usercell.get('text');
+        } else {
+            return '';
         }
-
-        Y.all('td.cell[data-column="' + column + '"]').toggleClass(CSS.COLMARK);
     },
 
     /**
-     * Highlight the current user row.
+     * Get the text content of the item name for the specified grade item.
      *
-     * @method _highlightUser
-     * @param {EventFacade} e The Event fired. This describes the user to highlight.
-     * @protected
+     * @method getGradeItemName
+     * @param {Node} cell The grade item cell to obtain the item name for
+     * @return {String} The string content of the item name cell.
      */
-    _highlightUser: function(e) {
-        var uid = e.target.getData('uid');
-
-        if (typeof uid === 'undefined') {
-            // Unable to determine which user to highlight. Return early.
-            return;
+    getGradeItemName: function(cell) {
+        var itemcell = Y.one("th.item[data-column='" + cell.getData('column') + "']");
+        if (itemcell) {
+            return itemcell.get('text');
+        } else {
+            return '';
         }
+    },
 
-        Y.all('td.cell[data-uid="' + uid + '"]').toggleClass(CSS.UIDMARK);
+    /**
+     * Get the text content of any feedback associated with the grade item.
+     *
+     * @method getGradeFeedback
+     * @param {Node} cell The grade item cell to obtain the item name for
+     * @return {String} The string content of the feedback.
+     */
+    getGradeFeedback: function(cell) {
+        return cell.getData('feedback');
     }
 });
 
