@@ -1611,7 +1611,10 @@ class html_writer {
                         $row->attributes['class'] .= ' lastrow';
                     }
 
-                    $output .= html_writer::start_tag('tr', array('class' => trim($row->attributes['class']), 'style' => $row->style, 'id' => $row->id)) . "\n";
+                    $row->attributes['class'] = trim($row->attributes['class']);
+                    $attributes = array_merge($row->attributes, array('style' => $row->style, 'id' => $row->id));
+
+                    $output .= html_writer::start_tag('tr', $attributes) . "\n";
                     $keys2 = array_keys($row->cells);
                     $lastkey = end($keys2);
 
