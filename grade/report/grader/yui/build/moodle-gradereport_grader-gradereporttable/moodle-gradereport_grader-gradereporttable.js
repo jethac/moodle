@@ -31,16 +31,18 @@ YUI.add('moodle-gradereport_grader-gradereporttable', function (Y, NAME) {
 
 var SELECTORS = {
         FOOTERROW: '#user-grades .avg',
-        GRADECELL: 'td.cell',
+        GRADECELL: 'td.grade',
+        GRADERTABLE: '.gradeparent table',
+        GRADEPARENT: '.gradeparent',
         HEADERCELL: '.gradebook-header-cell',
         STUDENTHEADER: '#studentheader',
         SPINNER: '.gradebook-loading-screen',
         USERCELL: '#user-grades .user.cell'
     },
     CSS = {
-        COLMARK: 'vmarked',
-        UIDMARK: 'hmarked',
-        STICKYFOOTER: 'gradebook-footer-row-sticky'
+        OVERRIDDEN: 'overridden',
+        STICKYFOOTER: 'gradebook-footer-row-sticky',
+        TOOLTIPACTIVE: 'tooltipactive'
     };
 
 /**
@@ -65,13 +67,31 @@ Y.extend(ReportTable, Y.Base, {
     _eventHandles: [],
 
     /**
+     * A Node reference to the grader table.
+     *
+     * @property graderTable
+     * @type Node
+     */
+    graderTable: null,
+
+    /**
      * Setup the grader report table.
      *
-     * @method init
+     * @method initializer
      */
     initializer: function() {
+        // Some useful references within our target area.
+        this.graderRegion = Y.one(SELECTORS.GRADEPARENT);
+        this.graderTable = Y.one(SELECTORS.GRADERTABLE);
+
+        // Setup row and column highlighting.
+        this.setupHighlighter();
+
         // Setup the floating headers.
         this.setupFloatingHeaders();
+
+        // Setup the mouse tooltips.
+        this.setupTooltips();
 
         // Hide the loading spinner - we've finished for the moment.
         this._hideSpinner();
@@ -100,6 +120,105 @@ Y.extend(ReportTable, Y.Base, {
     },
 
     /**
+     * Get the text content of the username for the specified grade item.
+     *
+     * @method getGradeUserName
+     * @param {Node} cell The grade item cell to obtain the username for
+     * @return {String} The string content of the username cell.
+     */
+    getGradeUserName: function(cell) {
+        var userrow = cell.ancestor('tr'),
+            usercell = userrow.one("th.user .username");
+
+        if (usercell) {
+            return usercell.get('text');
+        } else {
+            return '';
+        }
+    },
+
+    /**
+     * Get the text content of the item name for the specified grade item.
+     *
+     * @method getGradeItemName
+     * @param {Node} cell The grade item cell to obtain the item name for
+     * @return {String} The string content of the item name cell.
+     */
+    getGradeItemName: function(cell) {
+        var itemcell = Y.one("th.item[data-column='" + cell.getData('column') + "']");
+        if (itemcell) {
+            return itemcell.get('text');
+        } else {
+            return '';
+        }
+    },
+
+    /**
+     * Get the text content of any feedback associated with the grade item.
+     *
+     * @method getGradeFeedback
+     * @param {Node} cell The grade item cell to obtain the item name for
+     * @return {String} The string content of the feedback.
+     */
+    getGradeFeedback: function(cell) {
+        return cell.getData('feedback');
+    }
+});
+
+Y.namespace('M.gradereport_grader').ReportTable = ReportTable;
+Y.namespace('M.gradereport_grader').init = function(config) {
+    return new Y.M.gradereport_grader.ReportTable(config);
+};
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * @module moodle-gradereport_grader-gradereport_grader
+ * @submodule highlighter
+ */
+
+/**
+ * Functions for the Grader Report Row and Column highlighter
+ *
+ * See {{#crossLink "M.gradereport_grader.ReportTable"}}{{/crossLink}} for details.
+ *
+ * @namespace M.gradereport_grader
+ * @class Highlighter
+ */
+
+var COLMARK = 'vmarked',
+    UIDMARK = 'hmarked';
+
+function Highlighter() {}
+
+Highlighter.ATTRS= {
+};
+
+Highlighter.prototype = {
+    /**
+     */
+    setupHighlighter: function() {
+        // Clicking on the cell should highlight the row.
+        this.graderRegion.delegate('click', this._highlightUser, 'th.user, th.userreport, th.userfield, .gradebook-user-cell', this);
+
+        // Clicking on the cell should highlight the current column.
+        this.graderRegion.delegate('click', this._highlightColumn, 'th.item[data-column], .gradebook-header-cell', this);
+
+    },
+
+    /**
      * Highlight the current assignment column.
      *
      * @method _highlightColumn
@@ -114,7 +233,7 @@ Y.extend(ReportTable, Y.Base, {
             return;
         }
 
-        Y.all('td.cell[data-column="' + column + '"]').toggleClass(CSS.COLMARK);
+        Y.all('td.cell[data-column="' + column + '"]').toggleClass(COLMARK);
     },
 
     /**
@@ -125,21 +244,23 @@ Y.extend(ReportTable, Y.Base, {
      * @protected
      */
     _highlightUser: function(e) {
-        var uid = e.target.getData('uid');
+        var tableRow = e.target.ancestor('[data-uid]', true),
+            uid;
+
+        if (tableRow) {
+            uid = tableRow.getData('uid');
+        }
 
         if (typeof uid === 'undefined') {
             // Unable to determine which user to highlight. Return early.
             return;
         }
 
-        Y.all('td.cell[data-uid="' + uid + '"]').toggleClass(CSS.UIDMARK);
+        Y.all('td.cell[data-uid="' + uid + '"]').toggleClass(UIDMARK);
     }
-});
-
-Y.namespace('M.gradereport_grader').ReportTable = ReportTable;
-Y.namespace('M.gradereport_grader').init = function(config) {
-    return new Y.M.gradereport_grader.ReportTable(config);
 };
+
+Y.Base.mix(Y.M.gradereport_grader.ReportTable, [Highlighter]);
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -292,7 +413,7 @@ FloatingHeaders.prototype = {
      *
      * @method init
      */
-    initializer: function() {
+    setupFloatingHeaders: function() {
         // Grab references to commonly used Nodes.
         this.firstUserCell = Y.one(SELECTORS.USERCELL);
 
@@ -416,7 +537,7 @@ FloatingHeaders.prototype = {
             // Create and configure the new container.
             var containerNode = Y.Node.create('<div class="gradebook-user-cell"></div>');
             containerNode.set('innerHTML', node.get('innerHTML'))
-                    .setData('uid', node.getData('uid'))
+                    .setAttribute('data-uid', node.ancestor('tr').getData('uid'))
                     .setStyles({
                         height: node.get(OFFSETHEIGHT) + 'px',
                         width:  node.get(OFFSETWIDTH) + 'px'
@@ -426,9 +547,6 @@ FloatingHeaders.prototype = {
             floatingUserColumn.appendChild(containerNode);
         }, this);
 
-        // Clicking on the cell should highlight the row.
-        floatingUserColumn.delegate('click', this._highlightUser, 'th.user, .gradebook-user-cell', this);
-
         // Style the floating user container.
         floatingUserColumn.setStyles({
             left:       this.firstUserCell.getX() + 'px',
@@ -436,8 +554,8 @@ FloatingHeaders.prototype = {
             top:        this.firstUserCell.getY() + 'px'
         });
 
-        // Append to the body.
-        Y.one(Y.config.doc.body).append(floatingUserColumn);
+        // Append to the grader region.
+        this.graderRegion.append(floatingUserColumn);
 
         // Store a reference to this for later - we use it in the event handlers.
         this.userColumn = floatingUserColumn;
@@ -466,8 +584,8 @@ FloatingHeaders.prototype = {
             width:      this.firstUserCell.get(OFFSETWIDTH) + 'px'
         });
 
-        // Append to the body.
-        Y.one(Y.config.doc.body).append(floatingUserCell);
+        // Append to the grader region.
+        this.graderRegion.append(floatingUserCell);
 
         // Store a reference to this for later - we use it in the event handlers.
         this.userColumnHeader = floatingUserCell;
@@ -490,8 +608,6 @@ FloatingHeaders.prototype = {
         var gradeHeadersOffset = this.headerCell.getX();
 
         gradeHeaders.each(function(node) {
-            // Get the target column to highlight.  This is embedded in
-            // the column cell #, but it's off by one, so need to adjust for that.
             var nodepos = node.getX();
 
             var newnode = Y.Node.create('<div class="gradebook-header-cell"></div>');
@@ -513,9 +629,6 @@ FloatingHeaders.prototype = {
             floatingGradeHeaders.appendChild(newnode);
         }, this);
 
-        // Clicking on the cell should highlight the current column.
-        floatingGradeHeaders.delegate('click', this._highlightColumn, 'th.item[data-column], .gradebook-header-cell', this);
-
         // Position header table.
         floatingGradeHeaders.setStyles({
             height:     floatingGradeHeadersHeight + 'px',
@@ -525,7 +638,7 @@ FloatingHeaders.prototype = {
             width:      floatingGradeHeadersWidth + 'px'
         });
 
-        // Append to the body.
+        // Insert in place before the grader headers.
         this.userColumnHeader.insert(floatingGradeHeaders, 'before');
 
         // Store a reference to this for later - we use it in the event handlers.
@@ -591,7 +704,9 @@ FloatingHeaders.prototype = {
             width:      footerWidth + 'px'
         });
 
-        Y.one(Y.config.doc.body).append(floatingGraderFooter);
+        // Append to the grader region.
+        this.graderRegion.append(floatingGraderFooter);
+
         this.footerRow = floatingGraderFooter;
     },
 
@@ -709,6 +824,108 @@ FloatingHeaders.prototype = {
 };
 
 Y.Base.mix(Y.M.gradereport_grader.ReportTable, [FloatingHeaders]);
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * @module moodle-gradereport_grader-gradereport_grader
+ * @submodule tooltip
+ */
+
+/**
+ * Functions for the Grader Report Grade Editor.
+ *
+ * See {{#crossLink "M.gradereport_grader.ReportTable"}}{{/crossLink}} for details.
+ *
+ * @namespace M.gradereport_grader
+ * @class Tooltip
+ */
+
+function Tooltip() {}
+
+Tooltip.ATTRS= {
+};
+
+CONTENT = '<div class="graderreportoverlay {{overridden}}" role="tooltip" aria-describedby="{{id}}">' +
+              '<div class="fullname">{{username}}</div><div class="itemname">{{itemname}}</div>' +
+              '{{#if feedback}}' +
+                  '<div class="feedback">{{feedback}}</div>' +
+              '{{/if}}' +
+          '</div>';
+
+Tooltip.prototype = {
+    _tooltip: null,
+    _tooltipHandler: null,
+    _tooltipBoundingBox: null,
+    tooltipTemplate: null,
+    setupTooltips: function() {
+        this._eventHandles.push(
+            this.graderTable.delegate('hover', this._showTooltip, this._hideTooltip, SELECTORS.GRADECELL, this),
+            this.graderTable.delegate('click', this._toggleTooltip, SELECTORS.GRADECELL, this)
+        );
+    },
+    _getTooltip: function() {
+        if (!this._tooltip) {
+            this._tooltip = new Y.Overlay({
+                visible: false,
+                render: Y.one(SELECTORS.GRADEPARENT)
+            });
+            this._tooltipBoundingBox = this._tooltip.get('boundingBox');
+            this.tooltipTemplate = Y.Handlebars.compile(CONTENT);
+        }
+        return this._tooltip;
+    },
+    _showTooltip: function(e) {
+        var cell = e.currentTarget;
+
+        var tooltip = this._getTooltip();
+
+        tooltip.set('bodyContent', this.tooltipTemplate({
+                    cellid: cell.get('id'),
+                    username: this.getGradeUserName(cell),
+                    itemname: this.getGradeItemName(cell),
+                    feedback: this.getGradeFeedback(cell),
+                    overridden: cell.hasClass(CSS.OVERRIDDEN) ? CSS.OVERRIDDEN : ''
+                }))
+                .set('xy', [
+                    cell.getX() + (cell.get('offsetWidth') / 2),
+                    cell.getY() + (cell.get('offsetHeight') / 2)
+                ])
+                .show();
+        e.currentTarget.addClass(CSS.TOOLTIPACTIVE);
+    },
+    _hideTooltip: function(e) {
+        if (e.relatedTarget && this._tooltipBoundingBox && this._tooltipBoundingBox.contains(e.relatedTarget)) {
+            // Do not exit if the user is mousing over the tooltip itself.
+            return;
+        }
+        if (this._tooltip) {
+            e.currentTarget.removeClass(CSS.TOOLTIPACTIVE);
+            this._tooltip.hide();
+        }
+    },
+    _toggleTooltip: function(e) {
+        if (e.currentTarget.hasClass(CSS.TOOLTIPACTIVE)) {
+            this._hideTooltip(e);
+        } else {
+            this._showTooltip(e);
+        }
+    }
+};
+
+Y.Base.mix(Y.M.gradereport_grader.ReportTable, [Tooltip]);
 
 
-}, '@VERSION@', {"requires": ["base", "node", "event", "node-event-simulate"]});
+}, '@VERSION@', {"requires": ["base", "node", "event", "handlebars", "overlay", "event-hover", "node-event-simulate"]});
