@@ -150,7 +150,7 @@ FloatingHeaders.prototype = {
      *
      * @method init
      */
-    initializer: function() {
+    setupFloatingHeaders: function() {
         // Grab references to commonly used Nodes.
         this.firstUserCell = Y.one(SELECTORS.USERCELL);
 
@@ -274,7 +274,7 @@ FloatingHeaders.prototype = {
             // Create and configure the new container.
             var containerNode = Y.Node.create('<div class="gradebook-user-cell"></div>');
             containerNode.set('innerHTML', node.get('innerHTML'))
-                    .setData('uid', node.getData('uid'))
+                    .setAttribute('data-uid', node.ancestor('tr').getData('uid'))
                     .setStyles({
                         height: node.get(OFFSETHEIGHT) + 'px',
                         width:  node.get(OFFSETWIDTH) + 'px'
@@ -284,9 +284,6 @@ FloatingHeaders.prototype = {
             floatingUserColumn.appendChild(containerNode);
         }, this);
 
-        // Clicking on the cell should highlight the row.
-        floatingUserColumn.delegate('click', this._highlightUser, 'th.user, .gradebook-user-cell', this);
-
         // Style the floating user container.
         floatingUserColumn.setStyles({
             left:       this.firstUserCell.getX() + 'px',
@@ -294,8 +291,8 @@ FloatingHeaders.prototype = {
             top:        this.firstUserCell.getY() + 'px'
         });
 
-        // Append to the body.
-        Y.one(Y.config.doc.body).append(floatingUserColumn);
+        // Append to the grader region.
+        this.graderRegion.append(floatingUserColumn);
 
         // Store a reference to this for later - we use it in the event handlers.
         this.userColumn = floatingUserColumn;
@@ -324,8 +321,8 @@ FloatingHeaders.prototype = {
             width:      this.firstUserCell.get(OFFSETWIDTH) + 'px'
         });
 
-        // Append to the body.
-        Y.one(Y.config.doc.body).append(floatingUserCell);
+        // Append to the grader region.
+        this.graderRegion.append(floatingUserCell);
 
         // Store a reference to this for later - we use it in the event handlers.
         this.userColumnHeader = floatingUserCell;
@@ -348,8 +345,6 @@ FloatingHeaders.prototype = {
         var gradeHeadersOffset = this.headerCell.getX();
 
         gradeHeaders.each(function(node) {
-            // Get the target column to highlight.  This is embedded in
-            // the column cell #, but it's off by one, so need to adjust for that.
             var nodepos = node.getX();
 
             var newnode = Y.Node.create('<div class="gradebook-header-cell"></div>');
@@ -371,9 +366,6 @@ FloatingHeaders.prototype = {
             floatingGradeHeaders.appendChild(newnode);
         }, this);
 
-        // Clicking on the cell should highlight the current column.
-        floatingGradeHeaders.delegate('click', this._highlightColumn, 'th.item[data-column], .gradebook-header-cell', this);
-
         // Position header table.
         floatingGradeHeaders.setStyles({
             height:     floatingGradeHeadersHeight + 'px',
@@ -383,7 +375,7 @@ FloatingHeaders.prototype = {
             width:      floatingGradeHeadersWidth + 'px'
         });
 
-        // Append to the body.
+        // Insert in place before the grader headers.
         this.userColumnHeader.insert(floatingGradeHeaders, 'before');
 
         // Store a reference to this for later - we use it in the event handlers.
@@ -450,7 +442,9 @@ FloatingHeaders.prototype = {
             width:      footerWidth + 'px'
         });
 
-        Y.one(Y.config.doc.body).append(floatingGraderFooter);
+        // Append to the grader region.
+        this.graderRegion.append(floatingGraderFooter);
+
         this.footerRow = floatingGraderFooter;
     },
 
