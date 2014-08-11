@@ -50,6 +50,8 @@
   overflow: inherit;
 }
 
+/*
+
 table#user-grades {
   font-size: 14px;
 }
@@ -80,9 +82,11 @@ table#user-grades th.cell {
   height: 20px;
   white-space: nowrap;
 }
+
 .path-grade-report-history table#user-grades th.cell {
   white-space: normal;
 }
+
 table#user-grades .controls {
   text-align: right;
   background-color: #eee;
@@ -106,9 +110,12 @@ table#user-grades tr .user {
 table#user-grades tr .user a {
   color: white;
 }
+
+
 table#user-grades tr .user .userpicture {
   display: none;
 }
+
 table#user-grades tr:nth-child(odd) td.grade.vmarked {
   background-color: #f39a00;
   border-bottom-color: #f39a00;
@@ -214,9 +221,33 @@ table#user-grades .catlevel1 .action-icon.selected img {
   border: 0;
   padding-right: 6px;
 }
+#gradebook-user-header-container {
+  display: block;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+}
+#gradebook-header-container {
+  display: block;
+  position: fixed;
+  background: transparent;
+  left: 0px;
+  right: 0px;
+  height: 40px;
+  top: 40px;
+}
+#gradebook-header-container-inner {
+  width: 8000px;
+  position: relative;
+  visibility: hidden;
+}
+
+#gradebook-user-container-inner {
+  position: relative;
+  visibility: hidden;
+}
 
 #gradebook-user-container {
-  background-color: #777;
 }
 #gradebook-user-container .gradebook-user-cell {
   background-color: #666;
@@ -246,19 +277,36 @@ table#user-grades .catlevel1 .action-icon.selected img {
   background-color: #6d6d6d;
 }
 #gradebook-user-container .gradebook-user-cell:first-child {
-  /*border-top: 1px solid #666;*/
+  border-top: 1px solid #666;
 }
 
+
+
 #gradebook-footer-container {
-  display: none;
+  display: block;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
   font-size: 14px;
-  background-color: #444;
+  background-color: transparent;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
-#gradebook-footer-container.gradebook-footer-row-sticky {
+#gradebook-footer-container-inner {
+  width: 8000px;
+  position: relative;
+  visibility: hidden;
+}
+#gradebook-footer-container-inner.gradebook-footer-row-sticky {
   display: block;
+}
+*/
+#gradebook-footer-container-inner .gradebook-footer-cell {
+  position: absolute;
+  top: 0;
 }
 #gradebook-footer-container.gradebook-footer-row-sticky .cell {
   border-top: 2px solid gray;

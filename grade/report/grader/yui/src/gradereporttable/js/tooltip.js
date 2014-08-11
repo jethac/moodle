@@ -45,10 +45,12 @@ Tooltip.prototype = {
     _tooltipBoundingBox: null,
     tooltipTemplate: null,
     setupTooltips: function() {
+        /*
         this._eventHandles.push(
             this.graderTable.delegate('hover', this._showTooltip, this._hideTooltip, SELECTORS.GRADECELL, this),
             this.graderTable.delegate('click', this._toggleTooltip, SELECTORS.GRADECELL, this)
         );
+        */
     },
     _getTooltip: function() {
         if (!this._tooltip) {
@@ -66,19 +68,22 @@ Tooltip.prototype = {
 
         var tooltip = this._getTooltip();
 
-        tooltip.set('bodyContent', this.tooltipTemplate({
-                    cellid: cell.get('id'),
-                    username: this.getGradeUserName(cell),
-                    itemname: this.getGradeItemName(cell),
-                    feedback: this.getGradeFeedback(cell),
-                    overridden: cell.hasClass(CSS.OVERRIDDEN) ? CSS.OVERRIDDEN : ''
-                }))
-                .set('xy', [
-                    cell.getX() + (cell.get('offsetWidth') / 2),
-                    cell.getY() + (cell.get('offsetHeight') / 2)
-                ])
-                .show();
-        e.currentTarget.addClass(CSS.TOOLTIPACTIVE);
+        var me = this;
+        var requestID = window.requestAnimationFrame(function(timestamp){
+            tooltip.set('bodyContent', me.tooltipTemplate({
+                        cellid: cell.get('id'),
+                        username: me.getGradeUserName(cell),
+                        itemname: me.getGradeItemName(cell),
+                        feedback: me.getGradeFeedback(cell),
+                        overridden: cell.hasClass(CSS.OVERRIDDEN) ? CSS.OVERRIDDEN : ''
+                    }))
+                    .set('xy', [
+                        cell.getX() + (cell.get('offsetWidth') / 2),
+                        cell.getY() + (cell.get('offsetHeight') / 2)
+                    ])
+                    .show();
+            e.currentTarget.addClass(CSS.TOOLTIPACTIVE);
+        });
     },
     _hideTooltip: function(e) {
         if (e.relatedTarget && this._tooltipBoundingBox && this._tooltipBoundingBox.contains(e.relatedTarget)) {
@@ -86,8 +91,11 @@ Tooltip.prototype = {
             return;
         }
         if (this._tooltip) {
-            e.currentTarget.removeClass(CSS.TOOLTIPACTIVE);
-            this._tooltip.hide();
+            var me = this;
+            var requestID = window.requestAnimationFrame(function(timestamp){
+                e.currentTarget.removeClass(CSS.TOOLTIPACTIVE);
+                me._tooltip.hide();
+            });
         }
     },
     _toggleTooltip: function(e) {
