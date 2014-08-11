@@ -240,3 +240,272 @@
         }
     }
 }
+
+
+// GRADEBOOK
+// --------------------------------------
+.gradebook-fullscreen-fixed() {
+    display: block;
+    position: fixed;
+    background: transparent;
+}
+.gradebook-fullscreen-inner() {
+    position: relative;
+}
+
+#gradebook-user-header-container {
+    .gradebook-fullscreen-fixed();
+    .box-sizing(border-box);
+    background-color: #333;
+    font-size: 14px;
+    text-align: left;
+    padding: 8px;
+    a {
+        color: #fff;
+    }
+}
+
+// Header
+#gradebook-header-container {
+    .gradebook-fullscreen-fixed();
+    .box-sizing(border-box);
+    visibility: hidden;
+    font-size: 14px;
+    background-color: #444;
+    left: 0px;
+    right: 0px;
+
+    .gradebook-header-cell {
+        .box-sizing(border-box);
+        background-color: #444;
+        color: #fff;
+        padding: 4px;
+        white-space: nowrap;
+        border: 1px solid #444;
+        border-top: 0;
+        border-right: 0;
+        overflow: hidden;
+
+        &.catlevel1 {
+            background-color: #333;
+        }
+        &.catlevel2 {
+            background-color: #333;
+        }
+
+        &:hover {
+            background-color: #111;
+        }
+
+        a {
+            color: #fff;
+        }
+        .icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            border: 0;
+            padding-right: 6px;
+        }
+    }
+
+    // remove later
+    height: 40px;
+    top: 40px;
+}
+#gradebook-header-container-inner {
+    .gradebook-fullscreen-inner();
+    width: 8000px;
+}
+
+#gradebook-user-container {
+    .gradebook-user-cell {
+        .box-sizing(border-box);
+        padding: 4px;
+        background-color: #666;
+        font-size: 14px;
+        border: 1px solid #666;
+        border-top: 0;
+        &:first-child {
+          //border-top: 1px solid #666;
+        }
+
+        .username {
+            vertical-align: middle;
+            display: inline-block;
+        }
+    }
+}
+#gradebook-user-container-inner {
+    .gradebook-fullscreen-inner();
+}
+
+#user-grades .user,
+#gradebook-user-container .gradebook-user-cell {
+
+    line-height: 36px;
+
+    .userpicture {
+        display: none;//inline-block;
+        vertical-align: middle;
+        width: 32px;
+        height: 32px;
+        margin-right: 6px;
+        border-radius: 4px;
+        border: 1px solid rgba(0,0,0,0.1);
+        box-shadow:0px 0px 3px rgba(255,255,255,0.3);
+    }
+    a {
+        font-weight: normal;
+        color: #fff;
+    }
+}
+
+.dir-rtl #user-grades .user,
+.dir-rtl #gradebook-user-container .gradebook-user-cell {
+    .userpicture {
+        margin-left: 6px;
+    }
+}
+
+// Odd rows
+#user-grades tr:nth-child(2n+1) .user,
+#gradebook-user-container .gradebook-user-cell:nth-child(2n+1) {
+    background-color: #777;
+    border-bottom: 1px solid #777;
+
+    &:hover {
+        background-color: #6d6d6d;
+    }
+}
+// Even rows
+#user-grades tr:nth-child(2n) .user,
+#gradebook-user-container .gradebook-user-cell:nth-child(2n) {
+    background-color: #666;
+    border-bottom: 1px solid #666;
+
+    &:hover {
+        background-color: #5c5c5c;
+    }
+}
+
+.gradebook-cell-emphasis {
+    font-weight: bold;
+    background-color: #333;
+    color: #ddd;
+    border-color: #444;
+    a {
+        color: #fff;
+        font-weight: normal;
+    }
+}
+
+.gradebook-cell-overridden {
+    background-color: #fff;
+    background: url([[pix:gradereport_grader|corner-fold]]) no-repeat;
+    background-color: #efefef;
+}
+
+#user-grades {
+    @font-size: 14px;
+    font-size: @font-size;
+    .heading {
+        th {
+            .gradebook-cell-emphasis();
+        }
+    }
+    .avg {
+        .cell {
+            font-weight: bold;
+            text-align: center;
+            &.header {
+                text-align: right;
+            }
+        }
+    }
+    .controls {
+        text-align: right;
+        background-color: #eee;
+        height: 20px;
+    }
+    tr {
+        height: 40px;
+
+        &:nth-child(odd) {
+
+            td {
+                &.grade {
+                    &.vmarked {
+                        background-color: #f39a00;
+                        border-bottom-color: #f39a00;
+                        &.overridden {
+                            background-color: #f39a00;
+                        }
+                    }
+                    &.hmarked {
+                        background-color: #f5cd00;
+                        border-bottom-color: #f5cd00;
+                        &.overridden {
+                            background-color: #f5cd00;
+                        }
+                    }
+                    &.overridden {
+                        .gradebook-cell-overridden();
+                    }
+                }
+            }
+
+        }
+        &:nth-child(even) {
+
+            td {
+
+            }
+
+        }
+    }
+    th {
+        font-weight: normal;
+        &.cell {
+            height: 20px;
+            white-space: nowrap;
+        }
+        &.userreport {
+            padding: 0;
+            .action-icon {
+                padding: 12px 10px;
+                display: inline-block;
+                .smallicon {
+                    display: block;
+                    margin: 0;
+                    width: 16px;
+                    height: 16px;
+                }
+            }
+            &:hover {
+                background: #eee;
+            }
+        }
+    }
+    th,
+    td {
+        vertical-align: middle;
+    }
+
+    .gradevalue {
+        width: 100%;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .user {
+        min-width: 200px;
+        max-width: 200px;
+        width: 200px;
+        background-color: #777;
+        border-color: #666;
+        a {
+          color: #fff;
+        }
+    }
+}

@@ -113,6 +113,7 @@ FloatingHeaders.prototype = {
      * @protected
      */
     firstUserCellTop: 0,
+    firstUserCellHeight: 0,
 
     /**
      * The position of the left of the first user cell.
@@ -151,6 +152,24 @@ FloatingHeaders.prototype = {
      * @method init
      */
     setupFloatingHeaders: function() {
+
+        // OR together vendor-specific implementations of requestAnimationFrame as needed.
+        window.requestAnimationFrame =
+            window.requestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.oRequestAnimationFrame;
+
+        if (typeof(window.requestAnimationFrame === "function")) {
+            var me = this;
+            me._setupFloatingHeadersInternal.call(this);
+        } else {
+            _setupFloatingHeadersInternal();
+        }
+
+    },
+
+    _setupFloatingHeadersInternal: function() {
         // Grab references to commonly used Nodes.
         this.firstUserCell = Y.one(SELECTORS.USERCELL);
 
@@ -161,10 +180,10 @@ FloatingHeaders.prototype = {
         }
 
         // Generate floating elements.
-        this._setupFloatingUserColumn();
         this._setupFloatingUserHeader();
         this._setupFloatingAssignmentHeaders();
         this._setupFloatingAssignmentFooter();
+        this._setupFloatingUserColumn();
 
         // Calculate the positions of edge cells. These are used for positioning of the floating headers.
         // This must be called after the floating headers are setup, but before the scroll event handler is invoked.
@@ -208,7 +227,9 @@ FloatingHeaders.prototype = {
             // TODO Fix to the current position.
             this.firstUserCell = 0;
             this.lastUserCellTop = 0;
+            this.firstUserCellLeft = userCellList.item(0).getX();
         }
+        this.firstUserCellHeight = this.firstUserCell.get(OFFSETHEIGHT);
 
         // The footer row shows the grade averages and will be floated to the page bottom.
         if (this.tableFooterRow) {
@@ -263,11 +284,15 @@ FloatingHeaders.prototype = {
      */
     _setupFloatingUserColumn: function() {
         // Grab all cells in the user names column.
-        var userColumn = Y.all(SELECTORS.USERCELL),
+        var userColumn = Y.all(SELECTORS.USERCELL);
 
         // TODO check ARIA - should this be linked to the row somehow?
         // Create a floating table.
-            floatingUserColumn = Y.Node.create('<div aria-hidden="true" id="gradebook-user-container"></div>');
+        var floatingUserColumn = Y.Node.create('<div aria-hidden="true" id="gradebook-user-container"></div>');
+
+        var floatingUserColumnDummy = Y.Node.create('<div aria-hidden="true" id="gradebook-user-container"></div>');
+        var floatingUserColumnInner = Y.Node.create('<div id="gradebook-user-container-inner"></div>');
+
 
         // Generate the new fields.
         userColumn.each(function(node) {
@@ -276,12 +301,12 @@ FloatingHeaders.prototype = {
             containerNode.set('innerHTML', node.get('innerHTML'))
                     .setAttribute('data-uid', node.ancestor('tr').getData('uid'))
                     .setStyles({
-                        height: node.get(OFFSETHEIGHT) + 'px',
-                        width:  node.get(OFFSETWIDTH) + 'px'
+                        height: node.get(OFFSETHEIGHT) + 'px'
+                        //width:  node.get(OFFSETWIDTH) + 'px'
                     });
 
             // Add the new nodes to our floating table.
-            floatingUserColumn.appendChild(containerNode);
+            floatingUserColumnInner.appendChild(containerNode);
         }, this);
 
         // Style the floating user container.
@@ -291,12 +316,38 @@ FloatingHeaders.prototype = {
             top:        this.firstUserCell.getY() + 'px'
         });
 
+        var navbar = Y.one('header.navbar');
+        var navbarOffset = 0;
+        if (navbar) {
+            navbarOffset = navbar.get('offsetHeight');
+        }
+        floatingUserColumnDummy.setStyles({
+            position:   'fixed',
+            left:       0,
+            top:        navbarOffset + this.assignmentHeadingContainer.get('offsetHeight') - 1,
+            //height:     '400px',
+            width:      '211px',
+            //background: '#f00',
+            bottom:        this.footerRow.get('offsetHeight')
+        });
+
         // Append to the grader region.
-        this.graderRegion.append(floatingUserColumn);
+        floatingUserColumnDummy.appendChild(floatingUserColumnInner);
+        //this.graderRegion.append(floatingUserColumn);
+
+        //this.graderRegion.append(floatingUserColumnDummy);
+        this.userColumnHeader.insert(floatingUserColumnDummy, 'before');
+
+        //this.userColumnHeader.insert(floatingGradeHeaders, 'before');
 
         // Store a reference to this for later - we use it in the event handlers.
         this.userColumn = floatingUserColumn;
+        this.userColumnInner = floatingUserColumnInner;
+        this.userColumnFixed = floatingUserColumnDummy;
     },
+
+    userColumnFixed: null,
+    userColumnInner: null,
 
     /**
      * Create and setup the floating username header cell.
@@ -315,9 +366,9 @@ FloatingHeaders.prototype = {
         floatingUserCell.set('innerHTML', this.headerCell.getHTML());
         floatingUserCell.setStyles({
             height:     this.headerCell.get(OFFSETHEIGHT) + 'px',
-            left:       this.firstUserCell.getX() + 'px',
-            position:   'absolute',
-            top:        this.headerCell.getY() + 'px',
+            //left:       this.firstUserCell.getX() + 'px',
+            //position:   'absolute',
+            //top:        this.headerCell.getY() + 'px',
             width:      this.firstUserCell.get(OFFSETWIDTH) + 'px'
         });
 
@@ -338,7 +389,10 @@ FloatingHeaders.prototype = {
         var gradeHeaders = Y.all('#user-grades tr.heading .cell');
 
         // Generate a floating headers
-        var floatingGradeHeaders = Y.Node.create('<div aria-hidden="true" id="gradebook-header-container"></div>');
+        //var floatingGradeHeaders = Y.Node.create('<div aria-hidden="true" id="gradebook-header-container"></div>');
+        var floatingGradeHeadersFixed = Y.Node.create('<div aria-hidden="true" id="gradebook-header-container"></div>');
+        var inner = Y.Node.create('<div id="gradebook-header-container-inner"></div>');
+        floatingGradeHeadersFixed.appendChild(inner);
 
         var floatingGradeHeadersWidth = 0;
         var floatingGradeHeadersHeight = 0;
@@ -348,11 +402,13 @@ FloatingHeaders.prototype = {
             var nodepos = node.getX();
 
             var newnode = Y.Node.create('<div class="gradebook-header-cell"></div>');
+
             newnode.append(node.getHTML())
                     .addClass(node.getAttribute('class'))
                     .setData('column', node.getData('column'))
                     .setStyles({
                         height:     node.get(OFFSETHEIGHT) + 'px',
+                        display:    'block',
                         left:       (nodepos - gradeHeadersOffset) + 'px',
                         position:   'absolute',
                         width:      node.get(OFFSETWIDTH) + 'px'
@@ -363,24 +419,18 @@ FloatingHeaders.prototype = {
             floatingGradeHeadersHeight = node.get(OFFSETHEIGHT);
 
             // Append to our floating table.
-            floatingGradeHeaders.appendChild(newnode);
+            inner.appendChild(newnode);
         }, this);
 
-        // Position header table.
-        floatingGradeHeaders.setStyles({
-            height:     floatingGradeHeadersHeight + 'px',
-            left:       this.headerCell.getX() + 'px',
-            position:   'absolute',
-            top:        this.headerCell.getY() + 'px',
-            width:      floatingGradeHeadersWidth + 'px'
-        });
-
         // Insert in place before the grader headers.
-        this.userColumnHeader.insert(floatingGradeHeaders, 'before');
+        this.userColumnHeader.insert(floatingGradeHeadersFixed, 'before');
 
         // Store a reference to this for later - we use it in the event handlers.
-        this.assignmentHeadingContainer = floatingGradeHeaders;
+        this.assignmentHeadingContainer = floatingGradeHeadersFixed;
+        this.assignmentHeadingContainerInner = inner;
     },
+
+    assignmentHeadingContainerInner: null,
 
     /**
      * Create and setup the floating header row of assignment titles.
@@ -400,6 +450,9 @@ FloatingHeaders.prototype = {
 
         // Create a container.
         var floatingGraderFooter = Y.Node.create('<div aria-hidden="true" id="gradebook-footer-container"></div>');
+        var inner = Y.Node.create('<div id="gradebook-footer-container-inner"></div>');
+        floatingGraderFooter.appendChild(inner);
+
         var footerWidth = 0;
         var footerRowOffset = this.tableFooterRow.getX();
 
@@ -410,11 +463,11 @@ FloatingHeaders.prototype = {
             newnode.setStyles({
                 height:     node.get(OFFSETHEIGHT) + 'px',
                 left:       (node.getX() - footerRowOffset) + 'px',
-                position:   'absolute',
+                //position:   'absolute',
                 width:      node.get(OFFSETWIDTH) + 'px'
             });
 
-            floatingGraderFooter.append(newnode);
+            inner.append(newnode);
             footerWidth += parseInt(node.get(OFFSETWIDTH), 10);
         }, this);
 
@@ -430,22 +483,92 @@ FloatingHeaders.prototype = {
                     Y.one('#gradersubmit').simulate('click');
                 });
             });
-            floatingGraderFooter.one('.gradebook-footer-cell').append(button);
+            inner.one('.gradebook-footer-cell').append(button);
         }
 
         // Position the row
-        floatingGraderFooter.setStyles({
-            position:   'absolute',
-            left:       this.tableFooterRow.getX() + 'px',
-            bottom:     0,
-            height:     '40px',
-            width:      footerWidth + 'px'
-        });
+        //floatingGraderFooter.setStyles({
+            //position:   'absolute',
+            //left:       this.tableFooterRow.getX() + 'px',
+            //bottom:     0,
+            //height:     '40px',
+            //width:      footerWidth + 'px'
+        //});
 
         // Append to the grader region.
         this.graderRegion.append(floatingGraderFooter);
 
-        this.footerRow = floatingGraderFooter;
+        this.footerRow = inner;
+    },
+
+
+    /**
+     * Actually process a scroll event on the window.
+     */
+    _handleScrollEventInternal: function(timestamp) {
+        // Performance is important in this function as it is called frequently and in quick succesion.
+        // To prevent layout thrashing when the DOM is repeatedly updated and queried, updated and queried,
+        // updates must be batched.
+
+        // Styles to add.
+        var headerInnerStyles = {},
+            footerInnerStyles = {},
+            userColumnInnerStyles = {},
+            userColumnHeaderStyles = {};
+
+        // Cache page offsets.
+        var pageOffset = {
+            x: Y.config.win.pageXOffset,
+            y: Y.config.win.pageYOffset
+        };
+        var innerHeight = Y.config.win.innerHeight;
+
+        // Inexplicable magic number (it's actually the navbar height).
+        var navbarHeight = 40;
+
+        // Calculate X-offset for internal containers of header and footer.
+        var xOffset = (this.firstUserCellLeft - pageOffset.x) + 'px';
+
+        // Calculate flags.
+        var tableHeaderOriginalVisible = pageOffset.y + navbarHeight <= this.headerCellTop;
+        var tableHeaderOffTop = pageOffset.y + navbarHeight > this.headerCellTop;
+        var tableFooterOffTop = tableHeaderOffTop && pageOffset.y + navbarHeight >= this.lastUserCellTop;
+
+        var tableVisible = (!tableHeaderOffTop || !tableFooterOffTop);
+
+        var tableFooterOffBot = pageOffset.y + innerHeight - navbarHeight < this.footerRowPosition;
+        var tableFooterY = pageOffset.y + innerHeight - navbarHeight > this.firstUserCellTop;
+
+
+        // User column position.
+        var tableSidebarOffLeft = pageOffset.x > this.firstUserCellLeft;
+
+        // Set styles.
+        headerInnerStyles.left = xOffset;
+        headerInnerStyles.visibility = ((tableHeaderOffTop && !tableFooterOffTop)? 'visible' : 'hidden');
+
+        userColumnHeaderStyles.visibility =
+        (((tableHeaderOffTop && !tableFooterOffTop && tableSidebarOffLeft) || tableSidebarOffLeft)?
+            'visible' :
+            'hidden'
+        );
+        userColumnHeaderStyles.left = tableSidebarOffLeft ? '0px' : xOffset + 'px';
+        userColumnHeaderStyles.top =
+        (tableHeaderOffTop && !tableFooterOffTop) ?
+            navbarHeight + 'px' :
+            (this.firstUserCellTop - pageOffset.y - this.firstUserCellHeight - navbarHeight) + 'px';
+
+        footerInnerStyles.left = xOffset;
+        footerInnerStyles.visibility = ((tableFooterOffBot && tableFooterY)? 'visible' : 'hidden');
+
+        userColumnInnerStyles.visibility = (tableSidebarOffLeft? 'visible' : 'hidden');
+        userColumnInnerStyles.top = ((this.firstUserCellTop - pageOffset.y) - 80 - this.firstUserCellHeight) + 'px';
+
+        // Apply styles.
+        this.footerRow.setStyles(footerInnerStyles);
+        this.assignmentHeadingContainerInner.setStyles(headerInnerStyles);
+        this.userColumnInner.setStyles(userColumnInnerStyles);
+        this.userColumnHeader.setStyles(userColumnHeaderStyles);
     },
 
     /**
@@ -454,76 +577,35 @@ FloatingHeaders.prototype = {
      * @method _handleScrollEvent
      */
     _handleScrollEvent: function() {
-        // Performance is important in this function as it is called frequently and in quick succesion.
-        // To prevent layout thrashing when the DOM is repeatedly updated and queried, updated and queried,
-        // updates must be batched.
 
-        // Next do all the calculations.
-        var assignmentHeadingContainerStyles = {},
-            userColumnHeaderStyles = {},
-            userColumnStyles = {},
-            footerStyles = {};
 
-        // Header position.
-        assignmentHeadingContainerStyles.left = this.headerCell.get(OFFSETLEFT) + this.headerCell.get(OFFSETPARENT).get(OFFSETLEFT) + 'px';
-        if (Y.config.win.pageYOffset + 40 > this.headerCellTop) {
-            if (Y.config.win.pageYOffset + 40 < this.lastUserCellTop) {
-                assignmentHeadingContainerStyles.top = Y.config.win.pageYOffset + 40 + 'px';
-                userColumnHeaderStyles.top = Y.config.win.pageYOffset + 40 + 'px';
-            } else {
-                assignmentHeadingContainerStyles.top = this.lastUserCellTop + 'px';
-                userColumnHeaderStyles.top = this.lastUserCellTop + 'px';
-            }
+        // OR together vendor-specific implementations of requestAnimationFrame as needed.
+        window.requestAnimationFrame =
+            window.requestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.oRequestAnimationFrame;
+
+        if (typeof(window.requestAnimationFrame === "function")) {
+            // Perform scroll event handling in one animation frame on Webkit/Gecko/IE10+.
+            var me = this;
+            window.requestAnimationFrame(function(timestamp){
+                me._handleScrollEventInternal.call(me, timestamp);
+            });
         } else {
-            assignmentHeadingContainerStyles.top = this.headerCellTop + 'px';
-            userColumnHeaderStyles.top = this.headerCellTop + 'px';
+            // Perform, albeit badly on IE9.
+            this._handleScrollEventInternal.call(this);
         }
 
-        // User column position.
-        if (Y.config.win.pageXOffset > this.firstUserCellLeft) {
-            userColumnStyles.left = Y.config.win.pageXOffset + 'px';
-            userColumnHeaderStyles.left = Y.config.win.pageXOffset + 'px';
-        } else {
-            userColumnStyles.left = this.firstUserCellLeft + 'px';
-            userColumnHeaderStyles.left = this.firstUserCellLeft + 'px';
-        }
-
-        // Update footer.
-        if (this.footerRow) {
-            footerStyles.left = this.headerCell.get(OFFSETLEFT) + this.headerCell.get(OFFSETPARENT).get(OFFSETLEFT) + 'px';
-
-            // Determine whether the footer should now be shown as sticky.
-            if (Y.config.win.pageYOffset + Y.config.win.innerHeight - 40 < this.footerRowPosition) {
-                if (Y.config.win.pageYOffset + Y.config.win.innerHeight - 40 > this.firstUserCellTop) {
-                    footerStyles.top = (Y.config.win.pageYOffset + Y.config.win.innerHeight - 40) + 'px';
-                } else {
-                    footerStyles.top = this.firstUserCellTop;
-                }
-                this.footerRow.addClass(CSS.STICKYFOOTER);
-            } else {
-                footerStyles.top = this.footerRowPosition + 'px';
-                this.footerRow.removeClass(CSS.STICKYFOOTER);
-            }
-        }
-
-        // Finally, apply the styles.
-        this.assignmentHeadingContainer.setStyles(assignmentHeadingContainerStyles);
-        this.userColumnHeader.setStyles(userColumnHeaderStyles);
-        this.userColumn.setStyles(userColumnStyles);
-        this.footerRow.setStyles(footerStyles);
     },
 
-    /**
-     * Process a size change Event on the window.
-     *
-     * @method _handleResizeEvent
-     */
-    _handleResizeEvent: function() {
+    _handleResizeEventInternal: function(timestamp) {
+
         // Recalculate the position of the edge cells for scroll positioning.
         this._calculateCellPositions();
 
         // Simulate a scroll.
-        this._handleScrollEvent();
+        this._handleScrollEventInternal();
 
         // Resize headers & footers.
         // This is an expensive operation, not expected to happen often.
@@ -558,6 +640,32 @@ FloatingHeaders.prototype = {
         }
 
         this.assignmentHeadingContainer.setStyle('width', newcontainerwidth);
+    },
+
+    /**
+     * Process a size change Event on the window.
+     *
+     * @method _handleResizeEvent
+     */
+    _handleResizeEvent: function() {
+
+        // OR together vendor-specific implementations of requestAnimationFrame as needed.
+        window.requestAnimationFrame =
+            window.requestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.oRequestAnimationFrame;
+
+        if (typeof(window.requestAnimationFrame === "function")) {
+            // Perform scroll event handling in one animation frame on Webkit/Gecko/IE10+.
+            var me = this;
+            window.requestAnimationFrame(function(timestamp){
+                me._handleResizeEventInternal.call(me, timestamp);
+            });
+        } else {
+            // Perform, albeit badly on IE9.
+            this._handleResizeEventInternal.call(this);
+        }
     }
 };
 
