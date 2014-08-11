@@ -32,19 +32,70 @@ function Tooltip() {}
 Tooltip.ATTRS= {
 };
 
+CONTENT = '<div class="graderreportoverlay {{overridden}}" role="tooltip" aria-describedby="{{id}}">' +
+              '<div class="fullname">{{username}}</div><div class="itemname">{{itemname}}</div>' +
+              '{{#if feedback}}' +
+                  '<div class="feedback">{{feedback}}</div>' +
+              '{{/if}}' +
+          '</div>';
+
 Tooltip.prototype = {
-    tooltip: null,
-    _setupTooltips: function() {
+    _tooltip: null,
+    _tooltipHandler: null,
+    _tooltipBoundingBox: null,
+    tooltipTemplate: null,
+    setupTooltips: function() {
         this._eventHandles.push(
-            Y.delegate('mouseenter', this._showTooltip, SELECTORS.GRADECELL, this)
+            this.graderTable.delegate('hover', this._showTooltip, this._hideTooltip, SELECTORS.GRADECELL, this),
+            this.graderTable.delegate('click', this._toggleTooltip, SELECTORS.GRADECELL, this)
         );
     },
     _getTooltip: function() {
-        if (!this.tooltip) {
-        
+        if (!this._tooltip) {
+            this._tooltip = new Y.Overlay({
+                visible: false,
+                render: Y.one(SELECTORS.GRADEPARENT)
+            });
+            this._tooltipBoundingBox = this._tooltip.get('boundingBox');
+            this.tooltipTemplate = Y.Handlebars.compile(CONTENT);
+        }
+        return this._tooltip;
+    },
+    _showTooltip: function(e) {
+        var cell = e.currentTarget;
+
+        var tooltip = this._getTooltip();
+
+        tooltip.set('bodyContent', this.tooltipTemplate({
+                    cellid: cell.get('id'),
+                    username: this.getGradeUserName(cell),
+                    itemname: this.getGradeItemName(cell),
+                    feedback: this.getGradeFeedback(cell),
+                    overridden: cell.hasClass(CSS.OVERRIDDEN) ? CSS.OVERRIDDEN : ''
+                }))
+                .set('xy', [
+                    cell.getX() + (cell.get('offsetWidth') / 2),
+                    cell.getY() + (cell.get('offsetHeight') / 2)
+                ])
+                .show();
+        e.currentTarget.addClass(CSS.TOOLTIPACTIVE);
+    },
+    _hideTooltip: function(e) {
+        if (e.relatedTarget && this._tooltipBoundingBox && this._tooltipBoundingBox.contains(e.relatedTarget)) {
+            // Do not exit if the user is mousing over the tooltip itself.
+            return;
+        }
+        if (this._tooltip) {
+            e.currentTarget.removeClass(CSS.TOOLTIPACTIVE);
+            this._tooltip.hide();
         }
     },
-    _showTooltip: function() {
+    _toggleTooltip: function(e) {
+        if (e.currentTarget.hasClass(CSS.TOOLTIPACTIVE)) {
+            this._hideTooltip(e);
+        } else {
+            this._showTooltip(e);
+        }
     }
 };
 
