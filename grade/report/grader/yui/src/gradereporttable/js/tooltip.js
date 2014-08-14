@@ -69,7 +69,7 @@ Tooltip.prototype = {
         var tooltip = this._getTooltip();
 
         var me = this;
-        var requestID = window.requestAnimationFrame(function(timestamp){
+        window.requestAnimationFrame(function(){
             tooltip.set('bodyContent', me.tooltipTemplate({
                         cellid: cell.get('id'),
                         username: me.getGradeUserName(cell),
@@ -92,7 +92,7 @@ Tooltip.prototype = {
         }
         if (this._tooltip) {
             var me = this;
-            var requestID = window.requestAnimationFrame(function(timestamp){
+            window.requestAnimationFrame(function(){
                 e.currentTarget.removeClass(CSS.TOOLTIPACTIVE);
                 me._tooltip.hide();
             });

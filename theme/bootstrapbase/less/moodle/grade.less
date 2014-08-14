@@ -254,26 +254,49 @@
 }
 
 #gradebook-user-header-container {
-    .gradebook-fullscreen-fixed();
+    display: block;
+    position: absolute;
+    //.gradebook-fullscreen-fixed();
     .box-sizing(border-box);
-    background-color: #333;
+    background-color: #f00;//#333;
     font-size: 14px;
     text-align: left;
-    padding: 8px;
+    border-top: 1px solid #444;
+    padding: 4px;
     a {
         color: #fff;
     }
 }
 
+#gradebook-footer-container{
+    display: block;
+    position: absolute;
+    //.gradebook-fullscreen-fixed();
+    .box-sizing(border-box);
+    //bottom: 0;
+    //left: 0;
+    //right: 0;
+    height: 40px;
+    font-size: 14px;
+
+    .gradebook-footer-cell {
+        position: absolute;
+    }
+}
+#gradebook-footer-container-inner {
+    .gradebook-fullscreen-inner();
+    visibility: hidden;
+}
 // Header
 #gradebook-header-container {
-    .gradebook-fullscreen-fixed();
+    //.gradebook-fullscreen-fixed();
     .box-sizing(border-box);
-    visibility: hidden;
+    //visibility: hidden;
     font-size: 14px;
-    background-color: #444;
-    left: 0px;
-    right: 0px;
+    background-color: #0f0;
+    position: absolute;
+    //left: 0px;
+    //right: 0px;
 
     .gradebook-header-cell {
         .box-sizing(border-box);
@@ -319,13 +342,17 @@
 }
 
 #gradebook-user-container {
+    position: absolute;
+    //left: 0;
+    //top: 0;
+    //bottom: 0;
+    background: rgba(255, 0, 0, 0.5);
     .gradebook-user-cell {
         .box-sizing(border-box);
         padding: 4px;
         background-color: #666;
         font-size: 14px;
         border: 1px solid #666;
-        border-top: 0;
         &:first-child {
           //border-top: 1px solid #666;
         }
@@ -338,6 +365,12 @@
 }
 #gradebook-user-container-inner {
     .gradebook-fullscreen-inner();
+    background: rgba(0, 255, 0, 0.5);
+
+    height: 200px;
+}
+
+#gradebook-user-container .gradebook-user-cell {
 }
 
 #user-grades .user,
@@ -508,4 +541,8 @@
           color: #fff;
         }
     }
+}
+
+.navbar {
+    -webkit-transform: translate3d(0, 0, 0);
 }
