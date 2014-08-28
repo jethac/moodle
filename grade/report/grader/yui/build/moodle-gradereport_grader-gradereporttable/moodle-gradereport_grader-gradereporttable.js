@@ -430,6 +430,15 @@ FloatingHeaders.prototype = {
     _eventHandles: [],
 
     /**
+     * Whether a touch event was started.
+     *
+     * @property _touchStarted
+     * @type boolean
+     * @protected
+     */
+    _touchStarted: false,
+
+    /**
      * Setup the grader report table.
      *
      * @method setupFloatingHeaders
@@ -526,6 +535,10 @@ FloatingHeaders.prototype = {
      */
     _setupEventHandlers: function() {
         this._eventHandles.push(
+            // Listen for touch start and end events on mobile.
+            Y.one(Y.config.win).on('touchstart', this._handleTouchStartEvent, this),
+            Y.one(Y.config.win).on('touchend', this._handleTouchEndEvent, this),
+
             // Listen for window scrolls, resizes, and rotation events.
             Y.one(Y.config.win).on('scroll', this._handleScrollEvent, this),
             Y.one(Y.config.win).on('resize', this._handleResizeEvent, this),
@@ -724,6 +737,29 @@ FloatingHeaders.prototype = {
     },
 
     /**
+     * Process the beginning of a Touch event on mobile.
+     *
+     * @method _handleTouchStartEvent
+     * @protected
+     */
+     _handleTouchStartEvent: function() {
+        this.assignmentHeadingContainer.hide();
+        this.userColumnHeader.hide();
+        this.userColumn.hide();
+        this.footerRow.hide();
+        this._touchStarted = true;
+     },
+
+    /**
+     * Process the end of a Touch event on mobile.
+     *
+     * @method _handleTouchEndEvent
+     * @protected
+     */
+     _handleTouchEndEvent: function() {
+     },
+
+    /**
      * Process a Scroll Event on the window.
      *
      * @method _handleScrollEvent
@@ -791,6 +827,14 @@ FloatingHeaders.prototype = {
         this.userColumnHeader.setStyles(userColumnHeaderStyles);
         this.userColumn.setStyles(userColumnStyles);
         this.footerRow.setStyles(footerStyles);
+        // Show elements if they've been previously hidden.
+        if (this._touchStarted) {
+            this.assignmentHeadingContainer.show();
+            this.userColumnHeader.show();
+            this.userColumn.show();
+            this.footerRow.show();
+            this._touchStarted = false;
+        }
     },
 
     /**
