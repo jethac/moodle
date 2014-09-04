@@ -322,6 +322,40 @@ class edit_category_form extends moodleform {
 
             }
 
+            // Iterate over child items / categories looking for unequal coefficients.
+            $coefficientsequal = true;
+            $children = $grade_category->get_children(false);
+            $lastcoefficient = 0.0;
+            foreach ($children as $key => $value) {
+                $obj = $value['object'];
+                $type = $value['type'];
+
+                $coefficient = 0.0;
+                if ($type === 'item') {
+                    $coefficient = $obj->aggregationcoef2;
+                } else if ($type === 'category') {
+                    $coefficient = $obj->load_grade_item()->aggregationcoef2;
+                }
+                if ($coefficient != $lastcoefficient) {
+                    // Mismatching coefficient detected.
+                    $coefficientsequal = false;
+                    break;
+                }
+                $lastcoefficient = $coefficient;
+            }
+
+            // Disable keephigh / droplow functionality when unequal coefficients defined.
+            if ($coefficientsequal != true) {
+                if ($mform->elementExists('keephigh')) {
+                    $keephigh = $mform->getElement('keephigh');
+                    $keephigh->freeze();
+                }
+                if ($mform->elementExists('droplow')) {
+                    $droplow = $mform->getElement('droplow');
+                    $droplow->freeze();
+                }
+            }
+
             if ($grade_item->is_calculated()) {
                 // following elements are ignored when calculation formula used
                 if ($mform->elementExists('aggregation')) {
