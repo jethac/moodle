@@ -2,7 +2,8 @@
   "moodle-theme_bootstrapbase-bootstrap": {
     "requires": [
         "node",
-        "selector-css3"
+        "selector-css3",
+        "gallery-bootstrap-dropdown"
     ]
   }
 }

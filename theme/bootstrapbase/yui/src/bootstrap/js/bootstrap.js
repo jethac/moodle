@@ -35,8 +35,7 @@ NS.init = function() {
     // When debugging is disabled and we seed the Loader with out configuration, if these
     // are in the requires array, then the Loader will try to load them from the CDN. It
     // does not know that we have added them to the module rollup.
-    Y.use('gallery-bootstrap-dropdown',
-            'gallery-bootstrap-collapse',
+    Y.use(  'gallery-bootstrap-collapse',
             'gallery-bootstrap-engine', function() {
 
         // Set up expandable and show.
