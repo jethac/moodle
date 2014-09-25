@@ -3500,3 +3500,144 @@ class action_menu_link_secondary extends action_menu_link {
         parent::__construct($url, $icon, $text, false, $attributes);
     }
 }
+
+/**
+ * A menu for enqueueing in a {@link header_bar}; not renderable by itself.
+ *
+ * @copyright 2014 Jetha Chan
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @since Moodle 2.8
+ * @category output
+ */
+class header_bar_item {
+    /**
+     * This is a HTML fragment used for header bar items that have an undefined button.
+     */
+    const DEFAULT_BUTTON = '<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>';
+
+    /**
+     * These are symbolic constants representing left and right alignment respectively.
+     */
+    const LEFT = 0;
+    const RIGHT = 1;
+
+    /**
+     * @var array CSS classes for alignments.
+     */
+    private static $cssalignments = array(
+        "left",
+        "right"
+    );
+
+    /**
+     * Return an array of CSS classes for alignments.
+     *
+     * @return array
+     */
+    public static function alignments() {
+        return self::$cssalignments;
+    }
+
+    /**
+     * @var string An internal name for this menu, used to enqueue it and also for CSS.
+     */
+    protected $name = '';
+    /**
+     * @var array An array of strings and HTML fragments that control the behaviour of this menu.
+     */
+    protected $settings;
+    /**
+     * @var array Default strings and HTML fragments.
+     */
+    static protected $defaultsettings = array(
+        'alignment' => header_bar_item::LEFT,
+        'collapses' => true,
+        'button' => '',
+        'menu' => ''
+    );
+
+    /**
+     * Returns the name of this menu.
+     * @return string The name of this menu.
+     */
+    public function name() {
+        return $this->name;
+    }
+
+    /**
+     * Returns (and optionally sets) the settings currently associated with this menu.
+     * @param array $settings An optionally-incomplete settings array to merge into and displace the existing settings object.
+     * @return array The settings currently associated with the menu.
+     */
+    public function settings(array $settings = null) {
+        if (!empty($settings)) {
+            $this->settings = array_merge(self::$defaultsettings, $settings);
+        }
+
+        return $this->settings;
+    }
+
+    /**
+     * Constructs a menu.
+     * @param string $name The name this menu should go by.
+     * @param array $settings (optional) An array of settings.
+     */
+    public function __construct($name, $settings = null) {
+        $this->name = $name;
+        if (empty($settings)) {
+            $this->settings = self::$defaultsettings;
+        } else {
+            $this->settings = array_merge(self::$defaultsettings, $settings);
+        }
+    }
+}
+
+/**
+ * A Bootstrap-inspired navbar, comprising a site "brand" and a list of {@link header_bar_item} objects.
+ *
+ * @copyright 2014 Jetha Chan
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @since Moodle 2.8
+ * @category output
+ */
+class header_bar implements renderable {
+
+    /**
+     * @var string The "brand" associated with this navbar (and by extension the site).
+     */
+    public $brand = "header_bar";
+
+    /**
+     * @var array An array of {@link header_bar_item} objects for rendering.
+     */
+    public $menus = array();
+
+    /**
+     * @var string A string of extra CSS classes to be applied.
+     */
+    public $extraclasses = "";
+
+    /**
+     * Constructs the header_bar given a specified brand.
+     * @param string $brand The new brand to use (optional).
+     */
+    public function __construct($brand = null) {
+        if (!empty($brand)) {
+            $this->brand = $brand;
+        }
+        $this->menus = array();
+        $this->extraclasses = '';
+    }
+
+    /**
+     * Enqueue a {@link header_bar_item} in this navbar.
+     * @param bootstrap_navbar_item $item The item to enqueue.
+     * @return void
+     */
+    public function enqueue(header_bar_item $item) {
+        if (empty($item)) {
+            return;
+        }
+        $this->menus[$item->name()] = $item;
+    }
+}

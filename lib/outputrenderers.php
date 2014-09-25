@@ -3029,6 +3029,74 @@ EOD;
     }
 
     /**
+     * Constructs and then renders a header bar with optional responsive
+     * support.
+     * $extraclasses string|array Extra classes to apply to the header bar, either as a
+     *                            space-separated list or as an array.
+     * @return string HTML fragment.
+     */
+    public function headerbar($extraclasses = "") {
+        global $SITE, $USER;
+
+        if (is_array($extraclasses)) {
+            $extraclasses = implode(" ", $extraclasses);
+        }
+
+        // Construct a header_bar object.
+        $headerbar = new header_bar($SITE->shortname);
+        $headerbar->extraclasses = $extraclasses;
+
+        // Enqueue custom menu (only if one's actually defined!).
+        $custommenu = $this->custom_menu('', true);
+        if (strlen(trim($custommenu)) > 0) {
+            $headerbar->enqueue(new header_bar_item(
+                'custom',
+                array(
+                    'menu' => $custommenu
+                )
+            ));
+        }
+
+        // Enqueue user menu.
+        $usermenu = $this->user_menu();
+        $isloggedin = isloggedin();
+        $asotheruser = \core\session\manager::is_loggedinas();
+        $avatar = null;
+        if ($isloggedin) {
+            if ($asotheruser) {
+                $realuser = \core\session\manager::get_realuser();
+                $avatar = $this->user_picture($realuser, array('link' => false));
+            } else {
+                $avatar = $this->user_picture($USER, array('link' => false));
+            }
+        }
+        $headerbar->enqueue(new header_bar_item(
+            'user',
+            array(
+                'button' => $avatar,
+                'menu' => $usermenu,
+                'alignment' => header_bar_item::RIGHT,
+                'collapses' => $isloggedin
+            )
+        ));
+
+        // Enqueue page heading menu (again, only if one's defined).
+        $pageheading = $this->page_heading_menu();
+        if (strlen($pageheading) > 0) {
+            $headerbar->enqueue(new header_bar_item(
+                'headermenu',
+                array(
+                    'menu' => $pageheading,
+                    'alignment' => header_bar_item::RIGHT,
+                    'collapses' => false
+                )
+            ));
+        }
+
+        return $this->render($headerbar);
+    }
+
+    /**
      * Return the navbar content so that it can be echoed out by the layout
      *
      * @return string XHTML navbar
@@ -3270,6 +3338,97 @@ EOD;
         }
         // Return the sub menu
         return $content;
+    }
+
+
+    /**
+     * Render a header_bar.
+     *
+     * @param header_bar $headerbar The header_bar to render.
+     * @return string HTML fragment.
+     */
+    public function render_header_bar(header_bar $headerbar) {
+        global $CFG;
+
+        if (empty($headerbar)) {
+            return "";
+        }
+
+        // Build render output from the inside out.
+        $innerstr = '';
+
+        // Render brand.
+        $innerstr .= html_writer::link(
+            $CFG->wwwroot,
+            $headerbar->brand,
+            array(
+                'class' => 'brand'
+            )
+        );
+
+        // Render menus.
+        $buttonstr = '';
+        $menustr = '';
+        foreach ($headerbar->menus as $key => $menu) {
+            $name = $menu->name();
+            $opts = $menu->settings();
+
+            // Get the CSS classes for the nav.
+            $navclasses = 'nav pull-' . header_bar_item::alignments()[$opts['alignment']];
+            $menuclasses = '';
+            if ($opts['collapses']) {
+
+                if (strlen($opts['button']) != 0) {
+                    $buttonstr .= html_writer::tag(
+                        'a',
+                        $opts['button'],
+                        array(
+                            'class' => 'btn btn-navbar btn-navbar-' . $name,
+                            'data-toggle' => 'workaround-collapse',
+                            'data-target' => '.nav-collapse-' . $name
+                        )
+                    );
+                } else {
+                    $buttonstr .= html_writer::tag(
+                        'a',
+                        header_bar_item::DEFAULT_BUTTON,
+                        array(
+                            'class' => 'btn btn-navbar default btn-navbar-' . $name,
+                            'data-toggle' => 'workaround-collapse',
+                            'data-target' => '.nav-collapse-' . $name
+                        )
+                    );
+
+                }
+
+                $menuclasses = 'nav-collapse nav-collapse-' . $name;
+            }
+            $menustr .= html_writer::div(
+                html_writer::tag(
+                    'ul',
+                    $opts['menu'],
+                    array('class' => $navclasses)
+                ),
+                $menuclasses
+            );
+        }
+        $innerstr .= $buttonstr . $menustr;
+
+        // Wrap output in a <header />.
+        $outputstr = html_writer::tag(
+            'header',
+            html_writer::tag(
+                'nav',
+                html_writer::div(
+                    $innerstr,
+                    'container-fluid'
+                ),
+                array('class' => 'navbar-inner', 'role' => 'navigation')
+            ),
+            array('class' => 'navbar navbar-fixed-top moodle-has-zindex' . $headerbar->extraclasses, 'role' => 'banner')
+        );
+
+        return $outputstr;
     }
 
     /**
