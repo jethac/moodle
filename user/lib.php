@@ -685,7 +685,7 @@ function user_get_user_navigation_info($user, $page) {
         $login = new stdClass();
         $login->url = new moodle_url(get_login_url());
         $login->title = get_string('login');
-        // TODO MDL-47457: we should be setting a login icon here.
+        $login->pix = "a/login";
         $returnobject->navitems[] = $login;
 
     } else {
