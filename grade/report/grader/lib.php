@@ -591,9 +591,15 @@ class grade_report_grader extends grade_report {
 
         for ($i = 0; $i < $levels; $i++) {
             $fillercell = new html_table_cell();
-            $fillercell->attributes['class'] = 'fixedcolumn cell topleft';
-            $fillercell->text = ' ';
+            $fillercell->attributes['class'] = 'cell topleft';
             $fillercell->colspan = $colspan;
+
+            if ($is_first = $i == 0) {
+                $fillercell->header = true;
+                $fillercell->attributes['scope'] = 'col';
+                $fillercell->text = html_writer::span(get_string('participants'), 'accesshide');
+            }
+
             $row = new html_table_row(array($fillercell));
             $rows[] = $row;
         }
@@ -636,7 +642,8 @@ class grade_report_grader extends grade_report {
             $userrow->attributes['class'] = 'r'.$this->rowcount++.' '.$rowclasses[$this->rowcount % 2];
 
             $usercell = new html_table_cell();
-            $usercell->attributes['class'] = 'user';
+            $usercell->attributes['class'] = 'header user';
+            $usercell->attributes['role'] = 'rowheader';
 
             $usercell->header = true;
             $usercell->scope = 'row';
@@ -662,7 +669,7 @@ class grade_report_grader extends grade_report {
             if (has_capability('gradereport/'.$CFG->grade_profilereport.':view', $this->context)) {
                 $userreportcell = new html_table_cell();
                 $userreportcell->attributes['class'] = 'userreport';
-                $userreportcell->header = true;
+                $userreportcell->header = false;
                 $a = new stdClass();
                 $a->user = fullname($user);
                 $strgradesforuser = get_string('gradesforuser', 'grades', $a);
@@ -674,8 +681,7 @@ class grade_report_grader extends grade_report {
             foreach ($extrafields as $field) {
                 $fieldcell = new html_table_cell();
                 $fieldcell->attributes['class'] = 'header userfield user' . $field;
-                $fieldcell->header = true;
-                $fieldcell->scope = 'row';
+                $fieldcell->header = false;
                 $fieldcell->text = $user->{$field};
                 $userrow->cells[] = $fieldcell;
             }
@@ -754,8 +760,9 @@ class grade_report_grader extends grade_report {
                     $fillercell->attributes['class'] = $type . ' ' . $catlevel;
                     $fillercell->colspan = $colspan;
                     $fillercell->text = '&nbsp;';
-                    $fillercell->header = true;
-                    $fillercell->scope = 'col';
+
+                    // This is a filler cell; don't use a <th>, it'll confuse screen readers.
+                    $fillercell->header = false;
                     $headingrow->cells[] = $fillercell;
                 }
 // Element is a category
@@ -1105,17 +1112,20 @@ class grade_report_grader extends grade_report {
             $fixedcolumntable = new html_table();
             $fixedcolumntable->id = 'fixed_column';
             $fixedcolumntable->data = $leftrows;
+            $fixedcolumntable->summary = get_string('summarygraderleft', 'gradereport_grader');
             $html .= $OUTPUT->container(html_writer::table($fixedcolumntable), 'left_scroller');
 
             $righttable = new html_table();
             $righttable->id = 'user-grades';
             $righttable->data = $rightrows;
+            $righttable->summary = get_string('summarygraderright', 'gradereport_grader');
 
             $html .= $OUTPUT->container(html_writer::table($righttable), 'right_scroller');
         } else {
             $fulltable = new html_table();
             $fulltable->attributes['class'] = 'gradestable flexible boxaligncenter generaltable';
             $fulltable->id = 'user-grades';
+            $fulltable->summary = get_string('summarygrader', 'gradereport_grader');
 
             // Extract rows from each side (left and right) and collate them into one row each
             foreach ($leftrows as $key => $row) {

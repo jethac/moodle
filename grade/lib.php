@@ -1167,7 +1167,7 @@ class grade_structure {
                 if ($element['object']->is_calculated()) {
                     $strcalc = get_string('calculatedgrade', 'grades');
                     return '<img src="'.$OUTPUT->pix_url('i/calc') . '" class="icon itemicon" title="'.
-                            s($strcalc).'" alt="'.s($strcalc).'"/>';
+                            s($strcalc).'" alt="'.s($strcalc).'" role="presentation" />';
 
                 } else if (($is_course or $is_category) and ($is_scale or $is_value)) {
                     if ($category = $element['object']->get_item_category()) {
@@ -1179,11 +1179,14 @@ class grade_structure {
                             case GRADE_AGGREGATE_EXTRACREDIT_MEAN:
                                 $stragg = get_string('aggregation', 'grades');
                                 return '<img src="'.$OUTPUT->pix_url('i/agg_mean') . '" ' .
-                                        'class="icon itemicon" title="'.s($stragg).'" alt="'.s($stragg).'"/>';
+                                        'class="icon itemicon" title="'.s($stragg).'" alt="'.s($stragg).'" role="presentation" />';
                             case GRADE_AGGREGATE_SUM:
                                 $stragg = get_string('aggregation', 'grades');
                                 return '<img src="'.$OUTPUT->pix_url('i/agg_sum') . '" ' .
-                                        'class="icon itemicon" title="'.s($stragg).'" alt="'.s($stragg).'"/>';
+                                        'class="icon itemicon" title="'.s($stragg).'" alt="'.s($stragg).'" role="presentation" />';
+                            default:
+                                return '<img src="'.$OUTPUT->pix_url('i/calc') . '" ' .
+                                        'class="icon itemicon" title="'.s($stragg).'" alt="'.s($stragg).'" role="presentation" />';
                         }
                     }
 
@@ -1193,25 +1196,25 @@ class grade_structure {
                         $stroutcome = s(get_string('outcome', 'grades'));
                         return '<img src="'.$OUTPUT->pix_url('i/outcomes') . '" ' .
                             'class="icon itemicon" title="'.$stroutcome.
-                            '" alt="'.$stroutcome.'"/>';
+                            '" alt="'.$stroutcome.'" role="presentation" />';
                     } else {
                         $strmodname = get_string('modulename', $element['object']->itemmodule);
                         return '<img src="'.$OUTPUT->pix_url('icon',
                             $element['object']->itemmodule) . '" ' .
                             'class="icon itemicon" title="' .s($strmodname).
-                            '" alt="' .s($strmodname).'"/>';
+                            '" alt="' .s($strmodname).'" role="presentation" />';
                     }
                 } else if ($element['object']->itemtype == 'manual') {
                     if ($element['object']->is_outcome_item()) {
                         $stroutcome = get_string('outcome', 'grades');
                         return '<img src="'.$OUTPUT->pix_url('i/outcomes') . '" ' .
                                 'class="icon itemicon" title="'.s($stroutcome).
-                                '" alt="'.s($stroutcome).'"/>';
+                                '" alt="'.s($stroutcome).'" role="presentation" />';
                     } else {
                         $strmanual = get_string('manualitem', 'grades');
                         return '<img src="'.$OUTPUT->pix_url('i/manual_item') . '" '.
                                 'class="icon itemicon" title="'.s($strmanual).
-                                '" alt="'.s($strmanual).'"/>';
+                                '" alt="'.s($strmanual).'" role="presentation" />';
                     }
                 }
                 break;
@@ -1219,7 +1222,7 @@ class grade_structure {
             case 'category':
                 $strcat = get_string('category', 'grades');
                 return '<img src="'.$OUTPUT->pix_url('i/folder') . '" class="icon itemicon" ' .
-                        'title="'.s($strcat).'" alt="'.s($strcat).'" />';
+                        'title="'.s($strcat).'" alt="'.s($strcat).'" role="presentation" />';
         }
 
         if ($spacerifnone) {
