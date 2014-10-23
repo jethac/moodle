@@ -600,14 +600,15 @@ class grade_report_grader extends grade_report {
 
         $levels = count($this->gtree->levels) - 1;
 
-        for ($i = 0; $i < $levels; $i++) {
-            $fillercell = new html_table_cell();
-            $fillercell->attributes['class'] = 'fixedcolumn cell topleft';
-            $fillercell->text = ' ';
-            $fillercell->colspan = $colspan;
-            $row = new html_table_row(array($fillercell));
-            $rows[] = $row;
-        }
+        $fillercell = new html_table_cell();
+        $fillercell->header = true;
+        $fillercell->attributes['scope'] = 'col';
+        $fillercell->attributes['class'] = 'cell topleft';
+        $fillercell->text = html_writer::span(get_string('participants'), 'accesshide');
+        $fillercell->colspan = $colspan;
+        $fillercell->rowspan = $levels;
+        $row = new html_table_row(array($fillercell));
+        $rows[] = $row;
 
         $headerrow = new html_table_row();
         $headerrow->attributes['class'] = 'heading';
@@ -643,14 +644,15 @@ class grade_report_grader extends grade_report {
             $userrow = new html_table_row();
             $userrow->id = 'fixed_user_'.$userid;
 
+            // User cell.
             $usercell = new html_table_cell();
-            $usercell->attributes['class'] = 'user';
+            $usercell->attributes['class'] = 'header user';
 
             $usercell->header = true;
             $usercell->scope = 'row';
-
+            $usercell->attributes['role'] = 'rowheader';
             if ($showuserimage) {
-                $usercell->text = $OUTPUT->user_picture($user);
+                $usercell->text = $OUTPUT->user_picture($user, array('visibletoscreenreaders' => false));
             }
 
             $fullname = fullname($user);
@@ -673,7 +675,7 @@ class grade_report_grader extends grade_report {
 
             $userreportcell = new html_table_cell();
             $userreportcell->attributes['class'] = 'userreport';
-            $userreportcell->header = true;
+            $userreportcell->header = false;
             if (has_capability('gradereport/'.$CFG->grade_profilereport.':view', $this->context)) {
                 $a = new stdClass();
                 $a->user = $fullname;
@@ -692,11 +694,11 @@ class grade_report_grader extends grade_report {
                 $userrow->cells[] = $userreportcell;
             }
 
+            // Extra user cells (usually just an email address).
             foreach ($extrafields as $field) {
                 $fieldcell = new html_table_cell();
                 $fieldcell->attributes['class'] = 'header userfield user' . $field;
-                $fieldcell->header = true;
-                $fieldcell->scope = 'row';
+                $fieldcell->header = false;
                 $fieldcell->text = $user->{$field};
                 $userrow->cells[] = $fieldcell;
             }
@@ -832,7 +834,12 @@ class grade_report_grader extends grade_report {
                             'id' => $this->course->id,
                             'item' => 'grade',
                             'itemid' => $element['object']->id));
-                        $singleview = $OUTPUT->action_icon($url, new pix_icon('t/editstring', get_string('singleview', 'grades', $element['object']->itemname)));
+                        $singleview = $OUTPUT->action_icon(
+                            $url,
+                            new pix_icon('t/editstring', get_string('singleview', 'grades', $element['object']->itemname)),
+                            null,
+                            array('aria-hidden' => 'true')
+                        );
                     }
 
                     $itemcell->colspan = $colspan;
@@ -1152,6 +1159,7 @@ class grade_report_grader extends grade_report {
 
         $fulltable = new html_table();
         $fulltable->attributes['class'] = 'gradereport-grader-table';
+        $fulltable->summary = get_string('summarygrader', 'gradereport_grader');
         $fulltable->id = 'user-grades';
 
         // Extract rows from each side (left and right) and collate them into one row each
@@ -1572,15 +1580,15 @@ class grade_report_grader extends grade_report {
 
             if (in_array($element['object']->id, $this->collapsed['aggregatesonly'])) {
                 $url->param('action', 'switch_plus');
-                $icon = $OUTPUT->action_icon($url, new pix_icon('t/switch_plus', $strswitchplus));
+                $icon = $OUTPUT->action_icon($url, new pix_icon('t/switch_plus', $strswitchplus, null), null, array('aria-hidden' => 'true'));
 
             } else if (in_array($element['object']->id, $this->collapsed['gradesonly'])) {
                 $url->param('action', 'switch_whole');
-                $icon = $OUTPUT->action_icon($url, new pix_icon('t/switch_whole', $strswitchwhole));
+                $icon = $OUTPUT->action_icon($url, new pix_icon('t/switch_whole', $strswitchwhole, null), null, array('aria-hidden' => 'true'));
 
             } else {
                 $url->param('action', 'switch_minus');
-                $icon = $OUTPUT->action_icon($url, new pix_icon('t/switch_minus', $strswitchminus));
+                $icon = $OUTPUT->action_icon($url, new pix_icon('t/switch_minus', $strswitchminus, null), null, array('aria-hidden' => 'true'));
             }
         }
         return $icon;
@@ -1774,8 +1782,16 @@ class grade_report_grader extends grade_report {
         $iconasc = $OUTPUT->pix_icon('t/sort_asc', $strsortasc, '', array('class' => 'iconsmall sorticon'));
         $icondesc = $OUTPUT->pix_icon('t/sort_desc', $strsortdesc, '', array('class' => 'iconsmall sorticon'));
 
-        $firstlink = html_writer::link(new moodle_url($this->baseurl, array('sortitemid'=>'firstname')), $strfirstname);
-        $lastlink = html_writer::link(new moodle_url($this->baseurl, array('sortitemid'=>'lastname')), $strlastname);
+        $firstlink = html_writer::link(
+            new moodle_url($this->baseurl, array('sortitemid'=>'firstname')),
+            $strfirstname,
+            array('aria-hidden' => 'true')
+        );
+        $lastlink = html_writer::link(
+            new moodle_url($this->baseurl, array('sortitemid'=>'lastname')),
+            $strlastname,
+            array('aria-hidden' => 'true')
+        );
 
         $arrows['studentname'] = $lastlink;
 
