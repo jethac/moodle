@@ -2329,6 +2329,13 @@ class core_renderer extends renderer_base {
         }
 
         $attributes = array('href'=>$url);
+<<<<<<< HEAD
+=======
+        if (!$userpicture->visibletoscreenreaders) {
+            $attributes['tabindex'] = '-1';
+            $attributes['aria-hidden'] = 'true';
+        }
+>>>>>>> 92037ec... MDL-48394 core_renderers: remove role=presentation on user picture links
 
         if ($userpicture->popup) {
             $id = html_writer::random_id('userpicture');
