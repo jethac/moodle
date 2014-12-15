@@ -1898,38 +1898,338 @@ function calendar_add_event_allowed($event) {
  */
 function calendar_normalize_tz($tz) {
     switch ($tz) {
+        // Hard-coded timezones (abbreviations, etc.) for legacy reasons; some timezone
+        // names removed to avoid collisions, some timezones changed to match Unicode CLDR.
         case('CST'):
         case('Central Time'):
-        case('Central Standard Time'):
             $tz = 'America/Chicago';
             break;
         case('CET'):
-        case('Central European Time'):
             $tz = 'Europe/Berlin';
             break;
         case('EST'):
         case('Eastern Time'):
-        case('Eastern Standard Time'):
             $tz = 'America/New_York';
             break;
         case('PST'):
         case('Pacific Time'):
-        case('Pacific Standard Time'):
             $tz = 'America/Los_Angeles';
             break;
         case('China Time'):
         case('China Standard Time'):
-            $tz = 'Asia/Beijing';
+            $tz = 'Asia/Shanghai';
             break;
         case('IST'):
         case('India Time'):
-        case('India Standard Time'):
-            $tz = 'Asia/New_Delhi';
+            $tz = 'Asia/Calcutta';
             break;
         case('JST');
         case('Japan Time'):
         case('Japan Standard Time'):
             $tz = 'Asia/Tokyo';
+            break;
+
+        // Auto-generated from Unicode CLDR XML, version 7de0006.2014g - should be
+        // no reason to edit below this line.
+        case 'Dateline Standard Time':
+            $tz = 'Etc/GMT+12';
+            break;
+        case 'UTC-11':
+            $tz = 'Etc/GMT+11';
+            break;
+        case 'Hawaiian Standard Time':
+            $tz = 'Pacific/Honolulu';
+            break;
+        case 'Alaskan Standard Time':
+            $tz = 'America/Anchorage';
+            break;
+        case 'Pacific Standard Time (Mexico)':
+            $tz = 'America/Santa_Isabel';
+            break;
+        case 'Pacific Standard Time':
+            $tz = 'America/Los_Angeles';
+            break;
+        case 'US Mountain Standard Time':
+            $tz = 'America/Phoenix';
+            break;
+        case 'Mountain Standard Time (Mexico)':
+            $tz = 'America/Chihuahua';
+            break;
+        case 'Mountain Standard Time':
+            $tz = 'America/Denver';
+            break;
+        case 'Central America Standard Time':
+            $tz = 'America/Guatemala';
+            break;
+        case 'Central Standard Time':
+            $tz = 'America/Chicago';
+            break;
+        case 'Central Standard Time (Mexico)':
+            $tz = 'America/Mexico_City';
+            break;
+        case 'Canada Central Standard Time':
+            $tz = 'America/Regina';
+            break;
+        case 'SA Pacific Standard Time':
+            $tz = 'America/Bogota';
+            break;
+        case 'Eastern Standard Time':
+            $tz = 'America/New_York';
+            break;
+        case 'US Eastern Standard Time':
+            $tz = 'America/Indianapolis';
+            break;
+        case 'Venezuela Standard Time':
+            $tz = 'America/Caracas';
+            break;
+        case 'Paraguay Standard Time':
+            $tz = 'America/Asuncion';
+            break;
+        case 'Atlantic Standard Time':
+            $tz = 'America/Halifax';
+            break;
+        case 'Central Brazilian Standard Time':
+            $tz = 'America/Cuiaba';
+            break;
+        case 'SA Western Standard Time':
+            $tz = 'America/La_Paz';
+            break;
+        case 'Pacific SA Standard Time':
+            $tz = 'America/Santiago';
+            break;
+        case 'Newfoundland Standard Time':
+            $tz = 'America/St_Johns';
+            break;
+        case 'E. South America Standard Time':
+            $tz = 'America/Sao_Paulo';
+            break;
+        case 'Argentina Standard Time':
+            $tz = 'America/Buenos_Aires';
+            break;
+        case 'SA Eastern Standard Time':
+            $tz = 'America/Cayenne';
+            break;
+        case 'Greenland Standard Time':
+            $tz = 'America/Godthab';
+            break;
+        case 'Montevideo Standard Time':
+            $tz = 'America/Montevideo';
+            break;
+        case 'Bahia Standard Time':
+            $tz = 'America/Bahia';
+            break;
+        case 'UTC-02':
+            $tz = 'Etc/GMT+2';
+            break;
+        case 'Azores Standard Time':
+            $tz = 'Atlantic/Azores';
+            break;
+        case 'Cape Verde Standard Time':
+            $tz = 'Atlantic/Cape_Verde';
+            break;
+        case 'Morocco Standard Time':
+            $tz = 'Africa/Casablanca';
+            break;
+        case 'UTC':
+            $tz = 'Etc/GMT';
+            break;
+        case 'GMT Standard Time':
+            $tz = 'Europe/London';
+            break;
+        case 'Greenwich Standard Time':
+            $tz = 'Atlantic/Reykjavik';
+            break;
+        case 'W. Europe Standard Time':
+            $tz = 'Europe/Berlin';
+            break;
+        case 'Central Europe Standard Time':
+            $tz = 'Europe/Budapest';
+            break;
+        case 'Romance Standard Time':
+            $tz = 'Europe/Paris';
+            break;
+        case 'Central European Standard Time':
+            $tz = 'Europe/Warsaw';
+            break;
+        case 'W. Central Africa Standard Time':
+            $tz = 'Africa/Lagos';
+            break;
+        case 'Namibia Standard Time':
+            $tz = 'Africa/Windhoek';
+            break;
+        case 'Jordan Standard Time':
+            $tz = 'Asia/Amman';
+            break;
+        case 'GTB Standard Time':
+            $tz = 'Europe/Bucharest';
+            break;
+        case 'Middle East Standard Time':
+            $tz = 'Asia/Beirut';
+            break;
+        case 'Egypt Standard Time':
+            $tz = 'Africa/Cairo';
+            break;
+        case 'Syria Standard Time':
+            $tz = 'Asia/Damascus';
+            break;
+        case 'South Africa Standard Time':
+            $tz = 'Africa/Johannesburg';
+            break;
+        case 'FLE Standard Time':
+            $tz = 'Europe/Kiev';
+            break;
+        case 'Turkey Standard Time':
+            $tz = 'Europe/Istanbul';
+            break;
+        case 'Israel Standard Time':
+            $tz = 'Asia/Jerusalem';
+            break;
+        case 'Libya Standard Time':
+            $tz = 'Africa/Tripoli';
+            break;
+        case 'Arabic Standard Time':
+            $tz = 'Asia/Baghdad';
+            break;
+        case 'Kaliningrad Standard Time':
+            $tz = 'Europe/Kaliningrad';
+            break;
+        case 'Arab Standard Time':
+            $tz = 'Asia/Riyadh';
+            break;
+        case 'E. Africa Standard Time':
+            $tz = 'Africa/Nairobi';
+            break;
+        case 'Iran Standard Time':
+            $tz = 'Asia/Tehran';
+            break;
+        case 'Arabian Standard Time':
+            $tz = 'Asia/Dubai';
+            break;
+        case 'Azerbaijan Standard Time':
+            $tz = 'Asia/Baku';
+            break;
+        case 'Russian Standard Time':
+            $tz = 'Europe/Moscow';
+            break;
+        case 'Mauritius Standard Time':
+            $tz = 'Indian/Mauritius';
+            break;
+        case 'Georgian Standard Time':
+            $tz = 'Asia/Tbilisi';
+            break;
+        case 'Caucasus Standard Time':
+            $tz = 'Asia/Yerevan';
+            break;
+        case 'Afghanistan Standard Time':
+            $tz = 'Asia/Kabul';
+            break;
+        case 'West Asia Standard Time':
+            $tz = 'Asia/Tashkent';
+            break;
+        case 'Pakistan Standard Time':
+            $tz = 'Asia/Karachi';
+            break;
+        case 'India Standard Time':
+            $tz = 'Asia/Calcutta';
+            break;
+        case 'Sri Lanka Standard Time':
+            $tz = 'Asia/Colombo';
+            break;
+        case 'Nepal Standard Time':
+            $tz = 'Asia/Katmandu';
+            break;
+        case 'Central Asia Standard Time':
+            $tz = 'Asia/Almaty';
+            break;
+        case 'Bangladesh Standard Time':
+            $tz = 'Asia/Dhaka';
+            break;
+        case 'Ekaterinburg Standard Time':
+            $tz = 'Asia/Yekaterinburg';
+            break;
+        case 'Myanmar Standard Time':
+            $tz = 'Asia/Rangoon';
+            break;
+        case 'SE Asia Standard Time':
+            $tz = 'Asia/Bangkok';
+            break;
+        case 'N. Central Asia Standard Time':
+            $tz = 'Asia/Novosibirsk';
+            break;
+        case 'China Standard Time':
+            $tz = 'Asia/Shanghai';
+            break;
+        case 'North Asia Standard Time':
+            $tz = 'Asia/Krasnoyarsk';
+            break;
+        case 'Singapore Standard Time':
+            $tz = 'Asia/Singapore';
+            break;
+        case 'W. Australia Standard Time':
+            $tz = 'Australia/Perth';
+            break;
+        case 'Taipei Standard Time':
+            $tz = 'Asia/Taipei';
+            break;
+        case 'Ulaanbaatar Standard Time':
+            $tz = 'Asia/Ulaanbaatar';
+            break;
+        case 'North Asia East Standard Time':
+            $tz = 'Asia/Irkutsk';
+            break;
+        case 'Tokyo Standard Time':
+            $tz = 'Asia/Tokyo';
+            break;
+        case 'Korea Standard Time':
+            $tz = 'Asia/Seoul';
+            break;
+        case 'Cen. Australia Standard Time':
+            $tz = 'Australia/Adelaide';
+            break;
+        case 'AUS Central Standard Time':
+            $tz = 'Australia/Darwin';
+            break;
+        case 'E. Australia Standard Time':
+            $tz = 'Australia/Brisbane';
+            break;
+        case 'AUS Eastern Standard Time':
+            $tz = 'Australia/Sydney';
+            break;
+        case 'West Pacific Standard Time':
+            $tz = 'Pacific/Port_Moresby';
+            break;
+        case 'Tasmania Standard Time':
+            $tz = 'Australia/Hobart';
+            break;
+        case 'Yakutsk Standard Time':
+            $tz = 'Asia/Yakutsk';
+            break;
+        case 'Central Pacific Standard Time':
+            $tz = 'Pacific/Guadalcanal';
+            break;
+        case 'Vladivostok Standard Time':
+            $tz = 'Asia/Vladivostok';
+            break;
+        case 'New Zealand Standard Time':
+            $tz = 'Pacific/Auckland';
+            break;
+        case 'UTC+12':
+            $tz = 'Etc/GMT-12';
+            break;
+        case 'Fiji Standard Time':
+            $tz = 'Pacific/Fiji';
+            break;
+        case 'Magadan Standard Time':
+            $tz = 'Asia/Magadan';
+            break;
+        case 'Tonga Standard Time':
+            $tz = 'Pacific/Tongatapu';
+            break;
+        case 'Samoa Standard Time':
+            $tz = 'Pacific/Apia';
+            break;
+        case 'Line Islands Standard Time':
+            $tz = 'Pacific/Kiritimati';
             break;
     }
     return $tz;
