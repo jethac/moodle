@@ -4100,3 +4100,19 @@ function enrol_cohort_search_cohorts(course_enrolment_manager $manager, $offset 
     }
     return array('more' => !(bool)$limit, 'offset' => $offset, 'cohorts' => $cohorts);
 }
+
+/**
+ * Convert region timezone to php supported timezone
+ *
+ * @deprecated since Moodle 2.9 MDL-48603 - please do not use this function any more.
+ * @todo MDL-49111 This will be deleted in Moodle 3.1.
+ * @see calendar_map_windows_to_olson()
+ *
+ * @param string $tz value from ical file
+ * @return string $tz php supported timezone
+ */
+function calendar_normalize_tz($tz) {
+    debugging('calendar_normalize_tz() is deprecated, please use calendar_map_windows_to_olson() instead.', DEBUG_DEVELOPER);
+    require_once($CFG->dirroot . '/calendar/lib.php');
+    return calendar_map_windows_to_olson($tz);
+}

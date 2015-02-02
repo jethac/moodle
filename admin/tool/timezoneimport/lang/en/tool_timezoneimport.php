@@ -24,8 +24,13 @@
  */
 
 $string['configintrotimezones'] = 'This page will search for new information about world timezones (including daylight savings time rules) and update your local database with this information.  These locations will be checked, in order: {$a} Do you wish to update your timezones now?';
+$string['errorgettingmappingxml'] = 'Could not retrieve Windows->Olson mapping XML from {$a}';
+$string['errorunexpectedxmlstructure'] = 'Unexpected structure of Windows->Olson XML file';
 $string['importtimezones'] = 'Update complete list of timezones';
 $string['importtimezonescount'] = '{$a->count} entries imported from {$a->source}';
 $string['importtimezonesfailed'] = 'No sources found! (Bad news)';
+$string['importtimezonesmappings'] = 'Windows->Olson mappings imported from {$a}';
 $string['pluginname'] = 'Timezones updater';
+$string['timezonelocs'] = 'Timezone database locations';
+$string['timezonemappinglocs'] = 'Windows to Olson mapping locations';
 $string['updatetimezones'] = 'Update timezones';
