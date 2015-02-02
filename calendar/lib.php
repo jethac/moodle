@@ -1891,51 +1891,58 @@ function calendar_add_event_allowed($event) {
 }
 
 /**
- * Convert region timezone to php supported timezone
+ * Convert Windows timezones as found in iCal calendars to named Olson
+ * timezones.
  *
  * @param string $tz value from ical file
  * @return string $tz php supported timezone
  */
-function calendar_normalize_tz($tz) {
-    switch ($tz) {
-        case('CST'):
-        case('Central Time'):
-        case('Central Standard Time'):
-            $tz = 'America/Chicago';
-            break;
-        case('CET'):
-        case('Central European Time'):
-            $tz = 'Europe/Berlin';
-            break;
-        case('EST'):
-        case('Eastern Time'):
-        case('Eastern Standard Time'):
-            $tz = 'America/New_York';
-            break;
-        case('PST'):
-        case('Pacific Time'):
-        case('Pacific Standard Time'):
-            $tz = 'America/Los_Angeles';
-            break;
-        case('China Time'):
-        case('China Standard Time'):
-            $tz = 'Asia/Beijing';
-            break;
-        case('IST'):
-        case('India Time'):
-        case('India Standard Time'):
-            $tz = 'Asia/New_Delhi';
-            break;
-        case('JST');
-        case('Japan Time'):
-        case('Japan Standard Time'):
-            $tz = 'Asia/Tokyo';
-            break;
-        case('Romance Standard Time'):
-            $tz = 'Europe/Brussels';
-            break;
+function calendar_map_windows_to_olson($tz) {
+    global $DB, $CFG;
+
+    // Count the rows in the Windows->Olson table.
+    $rowcount = $DB->count_records('timezone_windows_to_olson');
+
+    if ($rowcount === 0) {
+
+        // No rows in the Windows->Olson table; it's a good time to refresh timezone information.
+        require_once($CFG->dirroot . '/admin/tool/timezoneimport/lib.php');
+
+        $timezones = array();
+        $importdone = false;
+        $importdone = tool_timezoneimport_import_olson($timezones);
+
+        if ($importdone) {
+            tool_timezoneimport_import_windows_mappings();
+        }
     }
-    return $tz;
+
+    // Perform a map. Territory 001 is the "global default", see
+    // notes ( http://cldr.unicode.org/development/development-process/design-proposals/extended-windows-olson-zid-mapping ).
+    $mappingrecords = $DB->get_records_sql(
+        "SELECT
+            {timezone_windows_to_olson}.id,
+            {timezone_windows_to_olson}.territory,
+            {timezone_windows_to_olson}.olsonid,
+            {timezone}.name
+            FROM
+            {timezone_windows_to_olson}
+            INNER JOIN {timezone} ON
+            {timezone_windows_to_olson}.olsonid = {timezone}.id
+            WHERE
+            {timezone_windows_to_olson}.name = :name AND
+            {timezone_windows_to_olson}.territory = '001'",
+        array('name' => $tz)
+    );
+
+    if (count($mappingrecords) === 0) {
+        // Map failed! Just spit out what we were given.
+        return $tz;
+    } else {
+        // Map succeeded.
+        reset($mappingrecords);
+        return current($mappingrecords)->name;
+    }
 }
 
 /**
@@ -2967,14 +2974,14 @@ function calendar_add_icalendar_event($event, $courseid, $subscriptionid, $timez
     $defaulttz = date_default_timezone_get();
     $tz = isset($event->properties['DTSTART'][0]->parameters['TZID']) ? $event->properties['DTSTART'][0]->parameters['TZID'] :
             $timezone;
-    $tz = calendar_normalize_tz($tz);
+    $tz = calendar_map_windows_to_olson($tz);
     $eventrecord->timestart = strtotime($event->properties['DTSTART'][0]->value . ' ' . $tz);
     if (empty($event->properties['DTEND'])) {
         $eventrecord->timeduration = 0; // no duration if no end time specified
     } else {
         $endtz = isset($event->properties['DTEND'][0]->parameters['TZID']) ? $event->properties['DTEND'][0]->parameters['TZID'] :
                 $timezone;
-        $endtz = calendar_normalize_tz($endtz);
+        $endtz = calendar_map_windows_to_olson($endtz);
         $eventrecord->timeduration = strtotime($event->properties['DTEND'][0]->value . ' ' . $endtz) - $eventrecord->timestart;
     }
 

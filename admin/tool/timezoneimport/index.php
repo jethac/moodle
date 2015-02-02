@@ -23,135 +23,112 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-    require_once('../../../config.php');
-    require_once($CFG->libdir.'/adminlib.php');
-    require_once($CFG->libdir.'/filelib.php');
-    require_once($CFG->libdir.'/olson.php');
+require_once('../../../config.php');
+require_once('lib.php');
+require_once($CFG->libdir . '/outputcomponents.php');
 
-    admin_externalpage_setup('tooltimezoneimport');
+admin_externalpage_setup('tooltimezoneimport');
 
-    $ok = optional_param('ok', 0, PARAM_BOOL);
+$ok = optional_param('ok', 0, PARAM_BOOL);
 
+// Print headings.
+$strimporttimezones = get_string('importtimezones', 'tool_timezoneimport');
+echo $OUTPUT->header();
+echo $OUTPUT->heading($strimporttimezones);
 
-/// Print headings
+if (!$ok or !confirm_sesskey()) {
 
-    $strimporttimezones = get_string('importtimezones', 'tool_timezoneimport');
+    $unicodeloc = 'http://unicode.org/repos/cldr/trunk/common/supplemental/windowsZones.xml';
 
-    echo $OUTPUT->header();
+    $tzlabels = array(
+        get_string('timezonelocs', 'tool_timezoneimport'),
+        get_string('timezonemappinglocs', 'tool_timezoneimport')
+    );
+    $tzlocs = array(
+        array(
+            $CFG->tempdir . '/olson.txt',
+            $CFG->tempdir . '/timezone.txt',
+            '<a href="https://download.moodle.org/timezone/">https://download.moodle.org/timezone/</a>',
+            '<a href="' . $CFG->wwwroot.'/lib/timezone.txt">' . $CFG->dirroot . '/lib/timezone.txt</a>'
+        ),
+        array(
+            $CFG->tempdir . '/windowsZones.xml',
+            '<a href="' . $unicodeloc . '">' . $unicodeloc . '</a>',
+            '<a href="' . $CFG->wwwroot . '/lib/timezonewindows.xml">' . $CFG->dirroot . '/lib/timezonewindows.xml</a>'
+        )
+    );
 
-    echo $OUTPUT->heading($strimporttimezones);
+    $message = '';
+    for ($i = 0; $i < count($tzlabels); $i++) {
 
-    if (!$ok or !confirm_sesskey()) {
-        $message = '<br /><br />';
-        $message .= $CFG->tempdir.'/olson.txt<br />';
-        $message .= $CFG->tempdir.'/timezone.txt<br />';
-        $message .= '<a href="https://download.moodle.org/timezone/">https://download.moodle.org/timezone/</a><br />';
-        $message .= '<a href="'.$CFG->wwwroot.'/lib/timezone.txt">'.$CFG->dirroot.'/lib/timezone.txt</a><br />';
-        $message .= '<br />';
-
-        $message = get_string("configintrotimezones", 'tool_timezoneimport', $message);
-
-        echo $OUTPUT->confirm($message, 'index.php?ok=1', new moodle_url('/admin/index.php'));
-
-        echo $OUTPUT->footer();
-        exit;
-    }
-
-
-/// Try to find a source of timezones to import from
-
-    $importdone = false;
-
-/// First, look for an Olson file locally
-
-    $source = $CFG->tempdir.'/olson.txt';
-    if (!$importdone and is_readable($source)) {
-        if ($timezones = olson_to_timezones($source)) {
-            update_timezone_records($timezones);
-            $importdone = $source;
+        $messageinner = '';
+        $locs = $tzlocs[$i];
+        for ($j = 0; $j < count($locs); $j++) {
+            $messageinner .= html_writer::tag('li', $locs[$j]);
         }
+        $message .= $OUTPUT->heading($tzlabels[$i], 5);
+        $message .= html_writer::tag('ol', $messageinner, array('class' => 'tzloclist'));
     }
 
-/// Next, look for a CSV file locally
+    $message = get_string("configintrotimezones", 'tool_timezoneimport', $message);
 
-    $source = $CFG->tempdir.'/timezone.txt';
-    if (!$importdone and is_readable($source)) {
-        if ($timezones = get_records_csv($source, 'timezone')) {
-            update_timezone_records($timezones);
-            $importdone = $source;
-        }
-    }
+    echo $OUTPUT->confirm($message, 'index.php?ok=1', new moodle_url('/admin/index.php'));
+    echo $OUTPUT->footer();
 
-/// Otherwise, let's try moodle.org's copy
-    $source = 'https://download.moodle.org/timezone/';
-    if (!$importdone && ($content=download_file_content($source))) {
-        if ($file = fopen($CFG->tempdir.'/timezone.txt', 'w')) {            // Make local copy
-            fwrite($file, $content);
-            fclose($file);
-            if ($timezones = get_records_csv($CFG->tempdir.'/timezone.txt', 'timezone')) {  // Parse it
-                update_timezone_records($timezones);
-                $importdone = $source;
-            }
-            unlink($CFG->tempdir.'/timezone.txt');
-        }
-    }
+    exit;
+}
 
+// Try to find a source of timezones to import from.
+$timezones = array();
+$importdone = tool_timezoneimport_import_olson($timezones);
 
-/// Final resort, use the copy included in Moodle
-    $source = $CFG->dirroot.'/lib/timezone.txt';
-    if (!$importdone and is_readable($source)) {  // Distribution file
-        if ($timezones = get_records_csv($source, 'timezone')) {
-            update_timezone_records($timezones);
-            $importdone = $source;
-        }
-    }
+if ($importdone) {
 
+    $mapsource = tool_timezoneimport_import_windows_mappings();
 
-/// That's it!
-
-    if ($importdone) {
         $a = new stdClass();
         $a->count = count($timezones);
         $a->source  = $importdone;
+
         echo $OUTPUT->notification(get_string('importtimezonescount', 'tool_timezoneimport', $a), 'notifysuccess');
-        echo $OUTPUT->continue_button(new moodle_url('/admin/index.php'));
 
-        $timezonelist = array();
-        foreach ($timezones as $timezone) {
-            if (is_array($timezone)) {
-                $timezone = (object)$timezone;
-            }
-            if (isset($timezonelist[$timezone->name])) {
-                $timezonelist[$timezone->name]++;
-            } else {
-                $timezonelist[$timezone->name] = 1;
-            }
+    echo $OUTPUT->notification(get_string('importtimezonesmappings', 'tool_timezoneimport', $mapsource), 'notifysuccess');
+
+    echo $OUTPUT->continue_button(new moodle_url('/admin/index.php'));
+
+    $timezonelist = array();
+    foreach ($timezones as $timezone) {
+        if (is_array($timezone)) {
+            $timezone = (object)$timezone;
         }
-        ksort($timezonelist);
-
-        $timezonetable = new html_table();
-        $timezonetable->head = array(
-            get_string('timezone', 'moodle'),
-            get_string('entries', 'moodle')
-        );
-        $rows = array();
-        foreach ($timezonelist as $name => $count) {
-            $row = new html_table_row(
-                array(
-                    new html_table_cell($name),
-                    new html_table_cell($count)
-                )
-            );
-            $rows[] = $row;
+        if (isset($timezonelist[$timezone->name])) {
+            $timezonelist[$timezone->name]++;
+        } else {
+            $timezonelist[$timezone->name] = 1;
         }
-        $timezonetable->data = $rows;
-        echo html_writer::table($timezonetable);
-
-    } else {
-        echo $OUTPUT->notification(get_string('importtimezonesfailed', 'tool_timezoneimport'));
-        echo $OUTPUT->continue_button(new moodle_url('/admin/index.php'));
     }
+    ksort($timezonelist);
+    $timezonetable = new html_table();
+    $timezonetable->head = array(
+        get_string('timezone', 'moodle'),
+        get_string('entries', 'moodle')
+    );
+    $rows = array();
+    foreach ($timezonelist as $name => $count) {
+        $row = new html_table_row(
+            array(
+                new html_table_cell($name),
+                new html_table_cell($count)
+            )
+        );
+        $rows[] = $row;
+    }
+    $timezonetable->data = $rows;
+    echo html_writer::table($timezonetable);
 
-    echo $OUTPUT->footer();
+} else {
+    echo $OUTPUT->heading(get_string('importtimezonesfailed', 'tool_timezoneimport'), 3);
+    echo $OUTPUT->continue_button(new moodle_url('/admin/index.php'));
+}
 
-
+echo $OUTPUT->footer();

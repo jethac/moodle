@@ -4177,5 +4177,37 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2015021100.00);
     }
 
+    if ($oldversion < 2015022000.00) {
+
+        // Define table timezone_windows_to_olson to be created.
+        $table = new xmldb_table('timezone_windows_to_olson');
+
+        // Adding fields to table timezone_windows_to_olson.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('territory', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('olsonid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table timezone_windows_to_olson.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('olsonid', XMLDB_KEY_FOREIGN, array('olsonid'), 'timezone', array('id'));
+
+        // Conditionally launch create table for timezone_windows_to_olson.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Define index name_idx (not unique) to be added to timezone_windows_to_olson.
+        $index = new xmldb_index('name_idx', XMLDB_INDEX_NOTUNIQUE, array('name', 'territory'));
+
+        // Conditionally launch add index name_idx.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2015022000.00);
+    }
+
     return true;
 }

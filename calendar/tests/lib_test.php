@@ -116,4 +116,37 @@ class core_calendar_lib_testcase extends advanced_testcase {
         $this->expectOutputRegex('/Error updating calendar subscription: The given iCal URL is invalid/');
         calendar_cron();
     }
+
+    /**
+     * Tests calendar_map_windows_to_olson() behaviour.
+     */
+    public function test_calendar_calendar_map_windows_to_olson() {
+
+        $mappedtz = calendar_map_windows_to_olson('Central Standard Time');
+        $this->assertEquals($mappedtz, 'America/Chicago');
+    }
+
+    /**
+     * Tests calendar_map_windows_to_olson() against existing calendar_normalize_tz()
+     * behavior.
+     */
+    public function test_calendar_calendar_bwcompat() {
+
+        $testdata = array(
+            'America/Chicago' => array('CST', 'Central Time', 'Central Standard Time'),
+            'Europe/Berlin' => array('CET', 'Central European Time'),
+            'America/New_York' => array('EST', 'Eastern Time', 'Eastern Standard Time'),
+            'America/Los_Angeles' => array('PST', 'Pacific Time', 'Pacific Standard Time'),
+            'Asia/Shanghai' => array('China Time', 'China Standard Time'),
+            'Asia/Kolkata' => array('IST', 'India Time', 'India Standard Time'),
+            'Asia/Tokyo' => array('JST', 'Japan Time', 'Japan Standard Time')
+        );
+        foreach ($testdata as $expected => $keys) {
+            foreach ($keys as $key) {
+                $mappedtz = calendar_map_windows_to_olson($key);
+                $this->assertEquals($expected, $mappedtz);
+            }
+        }
+
+    }
 }
