@@ -1640,6 +1640,25 @@ function upgrade_noncore($verbose) {
 }
 
 /**
+ * Upgrade/install timezone definitions.
+ * @return void
+ */
+function upgrade_timezones() {
+
+    global $CFG;
+
+    // Perform a timezone update.
+    require_once($CFG->dirroot . '/admin/tool/timezoneimport/lib.php');
+    $tzlist = array();
+    $tzsource = null;
+    $tzsource = tool_timezoneimport_import_olson($tzlist);
+    if ($tzsource) {
+        tool_timezoneimport_import_windows_mappings();
+    }
+
+}
+
+/**
  * Checks if the main tables have been installed yet or not.
  *
  * Note: we can not use caches here because they might be stale,

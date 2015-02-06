@@ -423,10 +423,6 @@ class phpunit_util extends testing_util {
         // So each time we reset the dataroot before running a test, the default files are still installed.
         self::save_original_data_files();
 
-        // install timezone info
-        $timezones = get_records_csv($CFG->libdir.'/timezone.txt', 'timezone');
-        update_timezone_records($timezones);
-
         // Store version hash in the database and in a file.
         self::store_versions_hash();
 

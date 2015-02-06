@@ -485,6 +485,9 @@ function install_cli_database(array $options, $interactive) {
     // install all plugins types, local, etc.
     upgrade_noncore(true);
 
+    // Upgrade timezones.
+    upgrade_timezones();
+
     // set up admin user password
     $DB->set_field('user', 'password', hash_internal_user_password($options['adminpass']), array('username' => 'admin'));
 

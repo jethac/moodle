@@ -443,6 +443,9 @@ if (during_initial_install()) {
     upgrade_finished("index.php?sessionstarted=1&amp;lang=$CFG->lang");
 }
 
+// Upgrade timezones - this should happen before the admin user is created.
+upgrade_timezones();
+
 // make sure admin user is created - this is the last step because we need
 // session to be working properly in order to edit admin account
  if (!empty($CFG->adminsetuppending)) {

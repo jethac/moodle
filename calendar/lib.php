@@ -1906,15 +1906,9 @@ function calendar_map_windows_to_olson($tz) {
     if ($rowcount === 0) {
 
         // No rows in the Windows->Olson table; it's a good time to refresh timezone information.
-        require_once($CFG->dirroot . '/admin/tool/timezoneimport/lib.php');
+        require_once($CFG->dirroot . '/lib/upgradelib.php');
+        upgrade_timezones();
 
-        $timezones = array();
-        $importdone = false;
-        $importdone = tool_timezoneimport_import_olson($timezones);
-
-        if ($importdone) {
-            tool_timezoneimport_import_windows_mappings();
-        }
     }
 
     // Perform a map. Territory 001 is the "global default", see
