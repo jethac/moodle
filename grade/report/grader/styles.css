@@ -194,6 +194,9 @@ table#user-grades .quickfeedback {
 table#user-grades .datesubmitted {
     font-size: .7em;
 }
+table#user-grades td.filler {
+    border: 0px none;
+}
 table#user-grades td.cell {
     padding-left: 5px;
     padding-right: 5px;
