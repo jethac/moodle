@@ -3250,19 +3250,6 @@ function fullname($user, $override=false) {
         return '';
     }
 
-    // Get all of the name fields.
-    $allnames = get_all_user_name_fields();
-    if ($CFG->debugdeveloper) {
-        foreach ($allnames as $allname) {
-            if (!array_key_exists($allname, $user)) {
-                // If all the user name fields are not set in the user object, then notify the programmer that it needs to be fixed.
-                debugging('You need to update your sql to include additional name fields in the user object.', DEBUG_DEVELOPER);
-                // Message has been sent, no point in sending the message multiple times.
-                break;
-            }
-        }
-    }
-
     if (!$override) {
         if (!empty($CFG->forcefirstname)) {
             $user->firstname = $CFG->forcefirstname;
@@ -3281,16 +3268,83 @@ function fullname($user, $override=false) {
     if (isset($CFG->fullnamedisplay)) {
         $template = $CFG->fullnamedisplay;
     }
+
+    // Create a temporary user object so we don't modify the values in $user.
+    $tempuserobj = new stdClass();
+
+    // Get all of the name fields and clone their values into the temporary user object.
+    // This is necessary in order to support overrides and when the template is set to 'language'.
+    $allnames = get_all_user_name_fields();
+    $debugtripped = false;
+    foreach ($allnames as $allname) {
+        if (!array_key_exists($allname, $user)) {
+            if ($CFG->debugdeveloper && !$debugtripped) {
+                // If all the user name fields are not set in the user object, then notify the programmer that it needs to be fixed.
+                debugging('You need to update your sql to include additional name fields in the user object.', DEBUG_DEVELOPER);
+
+                // Message has been sent, no point in sending the message multiple times.
+                $debugtripped = true;
+                continue;
+            }
+        } else {
+            // Copy the name field into $tempuserobj.
+            $tempuserobj->$allname = $user->$allname;
+        }
+    }
+
+    // Update the temporary user object with phonetic fields in ruby form if necessary.
+    $rubifyphonetics = !empty($CFG->fullnamedisplayrubyphonetics);
+    if ($rubifyphonetics) {
+
+        // Get ruby placeholder characters.
+        $rpl = get_string('rubyplaceholderleft', 'moodle');
+        $rpr = get_string('rubyplaceholderright', 'moodle');
+
+        $tempuserobj->firstname = $user->firstname;
+        $renderfirstnamephonetic =
+            isset($user->firstnamephonetic) &&
+            strlen($user->firstnamephonetic) > 0 &&
+            $user->firstname != $user->firstnamephonetic;
+        if ($renderfirstnamephonetic) {
+            $tempuserobj->firstname = html_writer::tag('rb', $tempuserobj->firstname);
+            $tempuserobj->firstname .= html_writer::tag('rp', $rpl);
+            $tempuserobj->firstname .= html_writer::tag('rt', $user->firstnamephonetic);
+            $tempuserobj->firstname .= html_writer::tag('rp', $rpr);
+
+            // Null out the phonetic field so that it can't be used later.
+            $tempuserobj->firstnamephonetic = '';
+
+            $tempuserobj->firstname = html_writer::tag('ruby', $tempuserobj->firstname);
+        }
+
+        $tempuserobj->lastname = $user->lastname;
+        $renderlastnamephonetic =
+            isset($user->lastnamephonetic) &&
+            strlen($user->lastnamephonetic) > 0 &&
+            $user->lastname != $user->lastnamephonetic;
+        if ($renderlastnamephonetic) {
+            $tempuserobj->lastname = html_writer::tag('rb', $tempuserobj->lastname);
+            $tempuserobj->lastname .= html_writer::tag('rp', $rpl);
+            $tempuserobj->lastname .= html_writer::tag('rt', $user->lastnamephonetic);
+            $tempuserobj->lastname .= html_writer::tag('rp', $rpr);
+
+            // Null out the phonetic field so that it can't be used later.
+            $tempuserobj->lastnamephonetic = '';
+
+            $tempuserobj->lastname = html_writer::tag('ruby', $tempuserobj->lastname);
+        }
+    }
+
     // If the template is empty, or set to language, return the language string.
     if ((empty($template) || $template == 'language') && !$override) {
-        return get_string('fullnamedisplay', null, $user);
+        return get_string('fullnamedisplay', null, $tempuserobj);
     }
 
     // Check to see if we are displaying according to the alternative full name format.
     if ($override) {
         if (empty($CFG->alternativefullnameformat) || $CFG->alternativefullnameformat == 'language') {
             // Default to show just the user names according to the fullnamedisplay string.
-            return get_string('fullnamedisplay', null, $user);
+            return get_string('fullnamedisplay', null, $tempuserobj);
         } else {
             // If the override is true, then change the template to use the complete name.
             $template = $CFG->alternativefullnameformat;
@@ -3308,12 +3362,12 @@ function fullname($user, $override=false) {
     $displayname = $template;
     // Switch in the actual data into the template.
     foreach ($requirednames as $altname) {
-        if (isset($user->$altname)) {
+        if (isset($tempuserobj->$altname)) {
             // Using empty() on the below if statement causes breakages.
-            if ((string)$user->$altname == '') {
+            if ((string)$tempuserobj->$altname == '') {
                 $displayname = str_replace($altname, 'EMPTY', $displayname);
             } else {
-                $displayname = str_replace($altname, $user->$altname, $displayname);
+                $displayname = str_replace($altname, $tempuserobj->$altname, $displayname);
             }
         } else {
             $displayname = str_replace($altname, 'EMPTY', $displayname);
@@ -3338,7 +3392,7 @@ function fullname($user, $override=false) {
     if (empty($displayname)) {
         // Going with just the first name if no alternate fields are filled out. May be changed later depending on what
         // people in general feel is a good setting to fall back on.
-        $displayname = $user->firstname;
+        $displayname = $tempuserobj->firstname;
     }
     return $displayname;
 }

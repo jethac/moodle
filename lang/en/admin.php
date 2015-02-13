@@ -540,6 +540,7 @@ $string['frontpagerestore'] = 'Front page restore';
 $string['frontpageroles'] = 'Front page roles';
 $string['frontpagesettings'] = 'Front page settings';
 $string['fullnamedisplay'] = 'Full name format';
+$string['fullnamedisplayrubyphonetics'] = 'Use ruby to display phonetic names';
 $string['fullnamedisplayprivate'] = 'Full name format - private';
 $string['fullnamedisplayrubyphonetics'] = 'Use ruby to display phonetic names';
 $string['gdrequired'] = 'The GD extension is now required by Moodle for image conversion.';
