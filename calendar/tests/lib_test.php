@@ -118,17 +118,45 @@ class core_calendar_lib_testcase extends advanced_testcase {
     }
 
     /**
-     * Tests calendar_map_windows_to_olson() behaviour.
+     * Tests calendar_map_windows_to_olson() behaviour. These tests will need to
+     * be updated as Windows->IANA mapping information changes.
+     *
+     * Update the version tag such that it is WindowsVersion.IANAVersion; these
+     * fields correspond to the otherVersion and typeVersion attributes on the
+     * mapTimezones element in windowsZones.xml.
+     *
+     * @version 7df0000.2015a
      */
     public function test_calendar_calendar_map_windows_to_olson() {
 
         $mappedtz = calendar_map_windows_to_olson('Central Standard Time');
-        $this->assertEquals($mappedtz, 'America/Chicago');
+        $this->assertEquals('America/Chicago', $mappedtz);
+
+        $mappedtz = calendar_map_windows_to_olson('Hawaiian Standard Time');
+        $this->assertEquals('Pacific/Honolulu', $mappedtz);
+
+        $mappedtz = calendar_map_windows_to_olson('US Mountain Standard Time');
+        $this->assertEquals('America/Phoenix', $mappedtz);
+
+        $mappedtz = calendar_map_windows_to_olson('Namibia Standard Time');
+        $this->assertEquals('Africa/Windhoek', $mappedtz);
+
+        $mappedtz = calendar_map_windows_to_olson('Singapore Standard Time');
+        $this->assertEquals('Asia/Singapore', $mappedtz);
+
+        $mappedtz = calendar_map_windows_to_olson('Tokyo Standard Time');
+        $this->assertEquals('Asia/Tokyo', $mappedtz);
+
+        $mappedtz = calendar_map_windows_to_olson('New Zealand Standard Time');
+        $this->assertEquals('Pacific/Auckland', $mappedtz);
+
     }
 
     /**
      * Tests calendar_map_windows_to_olson() against existing calendar_normalize_tz()
-     * behavior.
+     * behavior. The dataset in this test maps as closely to the switch statement
+     * that was in that function, albeit with corrections for Chinese and Indian
+     * timezones (correct as of February 20, 2015).
      */
     public function test_calendar_calendar_bwcompat() {
 
