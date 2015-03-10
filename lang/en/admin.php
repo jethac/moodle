@@ -233,6 +233,7 @@ $string['configfrontpageloggedin'] = 'The items selected above will be displayed
 $string['configfullnamedisplay'] = 'This defines how names are shown when they are displayed in full. The default value, "language", leaves it to the string "fullnamedisplay" in the current language pack to decide. Some languages have different name display conventions.
 
 For most mono-lingual sites the most efficient setting is "firstname lastname", but you may choose to hide surnames altogether. Placeholders that can be used are: firstname, lastname, firstnamephonetic, lastnamephonetic, middlename, and alternatename.';
+$string['configfullnamedisplayrubyphonetics'] = 'When enabled, names when displayed in full will be annotated with phonetic information if present.';
 $string['configgeoipfile'] = 'Location of GeoIP City binary data file. This file is not part of Moodle distribution and must be obtained separately from <a href="http://www.maxmind.com/">MaxMind</a>. You can either buy a commercial version or use the free version. Simply download <a href="http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz" >http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz</a> and extract it into "{$a}" directory on your server.';
 $string['configgetremoteaddrconf'] = 'If your server is behind a reverse proxy, you can use this setting to specify which HTTP headers can be trusted to contain the remote IP address. The headers are read in order, using the first one that is available.';
 $string['configgradebookroles'] = 'This setting allows you to control who appears on the gradebook.  Users need to have at least one of these roles in a course to be shown in the gradebook for that course.';
@@ -540,6 +541,7 @@ $string['frontpageroles'] = 'Front page roles';
 $string['frontpagesettings'] = 'Front page settings';
 $string['fullnamedisplay'] = 'Full name format';
 $string['fullnamedisplayprivate'] = 'Full name format - private';
+$string['fullnamedisplayrubyphonetics'] = 'Use ruby to display phonetic names';
 $string['gdrequired'] = 'The GD extension is now required by Moodle for image conversion.';
 $string['generalsettings'] = 'General settings';
 $string['geoipfile'] = 'GeoIP city data file';
