@@ -4270,5 +4270,41 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2015032000.00);
     }
 
+    if ($oldversion < 2015040200.01) {
+        $table = new xmldb_table('message');
+
+        // Define the deleted fields to be added to the message tables.
+        $field1 = new xmldb_field('useridfromdeleted', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0',
+            'useridfrom');
+        $field2 = new xmldb_field('useridtodeleted', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0',
+            'useridto');
+
+        // Conditionally launch add field useridfromdeleted.
+        if (!$dbman->field_exists($table, $field1)) {
+            $dbman->add_field($table, $field1);
+        }
+
+        // Conditionally launch add field useridtodeleted.
+        if (!$dbman->field_exists($table, $field2)) {
+            $dbman->add_field($table, $field2);
+        }
+
+        // Now add them to the message_read table.
+        $table = new xmldb_table('message_read');
+
+        // Conditionally launch add field useridfromdeleted.
+        if (!$dbman->field_exists($table, $field1)) {
+            $dbman->add_field($table, $field1);
+        }
+
+        // Conditionally launch add field useridtodeleted.
+        if (!$dbman->field_exists($table, $field2)) {
+            $dbman->add_field($table, $field2);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2015040200.01);
+    }
+
     return true;
 }
