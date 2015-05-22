@@ -226,7 +226,7 @@ case workshop::PHASE_SUBMISSION:
 
         $countsubmissions = $workshop->count_submissions('all', $groupid);
         $perpage = get_user_preferences('workshop_perpage', 10);
-        $pagingbar = new paging_bar($countsubmissions, $page, $perpage, $PAGE->url, 'page');
+        $pagingbar = new \core\output\paging_bar($countsubmissions, $page, $perpage, $PAGE->url, 'page');
 
         print_collapsible_region_start('', 'workshop-viewlet-allsubmissions', get_string('allsubmissions', 'workshop', $countsubmissions));
         echo $output->box_start('generalbox allsubmissions');
@@ -288,7 +288,7 @@ case workshop::PHASE_ASSESSMENT:
 
             // prepare paging bar
             $baseurl = new moodle_url($PAGE->url, array('sortby' => $sortby, 'sorthow' => $sorthow));
-            $pagingbar = new paging_bar($data->totalcount, $page, $perpage, $baseurl, 'page');
+            $pagingbar = new \core\output\paging_bar($data->totalcount, $page, $perpage, $baseurl, 'page');
 
             // grading report display options
             $reportopts                         = new stdclass();
@@ -437,7 +437,7 @@ case workshop::PHASE_EVALUATION:
 
             // prepare paging bar
             $baseurl = new moodle_url($PAGE->url, array('sortby' => $sortby, 'sorthow' => $sorthow));
-            $pagingbar = new paging_bar($data->totalcount, $page, $perpage, $baseurl, 'page');
+            $pagingbar = new \core\output\paging_bar($data->totalcount, $page, $perpage, $baseurl, 'page');
 
             // grading report display options
             $reportopts                         = new stdclass();
@@ -555,7 +555,7 @@ case workshop::PHASE_CLOSED:
 
             // prepare paging bar
             $baseurl = new moodle_url($PAGE->url, array('sortby' => $sortby, 'sorthow' => $sorthow));
-            $pagingbar = new paging_bar($data->totalcount, $page, $perpage, $baseurl, 'page');
+            $pagingbar = new \core\output\paging_bar($data->totalcount, $page, $perpage, $baseurl, 'page');
 
             // grading report display options
             $reportopts                         = new stdclass();

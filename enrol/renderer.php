@@ -618,7 +618,13 @@ class course_enrolment_table extends html_table implements renderable {
      */
     public function get_paging_bar() {
         if ($this->pagingbar == null) {
-            $this->pagingbar = new paging_bar($this->totalusers, $this->page, $this->perpage, $this->manager->get_moodlepage()->url, self::PAGEVAR);
+            $this->pagingbar = new \core\output\paging_bar(
+                $this->totalusers,
+                $this->page,
+                $this->perpage,
+                $this->manager->get_moodlepage()->url,
+                self::PAGEVAR
+            );
         }
         return $this->pagingbar;
     }

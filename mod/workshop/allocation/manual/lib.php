@@ -339,7 +339,7 @@ class workshop_manual_allocator implements workshop_allocator {
         $groupselector = $output->container(groups_print_activity_menu($this->workshop->cm, $PAGE->url, true), 'groupwidget');
 
         // prepare paging bar
-        $pagingbar              = new paging_bar($numofparticipants, $page, $perpage, $PAGE->url, 'page');
+        $pagingbar              = new \core\output\paging_bar($numofparticipants, $page, $perpage, $PAGE->url, 'page');
         $pagingbarout           = $output->render($pagingbar);
         $perpageselector        = $output->perpage_selector($perpage);
 

@@ -53,6 +53,93 @@ table.message .searchresults td {
 .message .contactselector .paging {
     z-index: 1;
     position: relative;
+
+    .controlname {
+        position: relative;
+        clear: both;
+    }
+    .controls {
+        display: block;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+
+        li {
+            display: block;
+            a {
+                display: block;
+                position: relative;
+
+                &.next,
+                &.previous,
+                &.first,
+                &.last {
+                    width: 14px;
+                    overflow: hidden;
+                    text-indent: 14px;
+                }
+            }
+        }
+    }
+    .paging-links {
+        display: block;
+        position: relative;
+        margin: 0 28px;
+        padding: 0;
+
+        li {
+            display: inline-block;
+            margin: 0 1px;
+        }
+    }
+}
+.dir-ltr .message .contactselector .paging {
+    .controls {
+        li {
+            a {
+                &.first {
+                    float: left;
+                    .icon-fast-backward();
+                }
+                &.previous {
+                    float: left;
+                    .icon-backward();
+                }
+                &.next {
+                    float: right;
+                    .icon-forward();
+                }
+                &.last {
+                    float: right;
+                    .icon-fast-forward();
+                }
+            }
+        }
+    }
+}
+.dir-rtl .message .contactselector .paging {
+    .controls {
+        li {
+            a {
+                &.last {
+                    float: left;
+                    .icon-fast-backward();
+                }
+                &.next {
+                    float: left;
+                    .icon-backward();
+                }
+                &.previous {
+                    float: right;
+                    .icon-forward();
+                }
+                &.first {
+                    float: right;
+                    .icon-fast-forward();
+                }
+            }
+        }
+    }
 }
 
 .message .message-contacts {

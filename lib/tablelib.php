@@ -1144,7 +1144,7 @@ class flexible_table {
             }
 
             if($this->use_pages) {
-                $pagingbar = new paging_bar($this->totalrows, $this->currpage, $this->pagesize, $this->baseurl);
+                $pagingbar = new \core\output\paging_bar($this->totalrows, $this->currpage, $this->pagesize, $this->baseurl);
                 $pagingbar->pagevar = $this->request[TABLE_VAR_PAGE];
                 echo $OUTPUT->render($pagingbar);
             }
@@ -1330,7 +1330,7 @@ class flexible_table {
 
         // Paging bar
         if ($this->use_pages) {
-            $pagingbar = new paging_bar($this->totalrows, $this->currpage, $this->pagesize, $this->baseurl);
+            $pagingbar = new \core\output\paging_bar($this->totalrows, $this->currpage, $this->pagesize, $this->baseurl);
             $pagingbar->pagevar = $this->request[TABLE_VAR_PAGE];
             echo $OUTPUT->render($pagingbar);
         }

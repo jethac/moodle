@@ -144,7 +144,7 @@ if ($logcount > 0) {
         );
     }
     echo $OUTPUT->heading(get_string('logsummary', 'portfolio'));
-    $pagingbar = new paging_bar($logcount, $page, $perpage, $CFG->wwwroot . '/user/portfoliologs.php?');
+    $pagingbar = new \core\output\paging_bar($logcount, $page, $perpage, $CFG->wwwroot . '/user/portfoliologs.php?');
     echo $OUTPUT->render($pagingbar);
     echo html_writer::table($table);
     echo $OUTPUT->render($pagingbar);

@@ -1,0 +1,53 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core/paging_bar
+
+    Moodle paging bar template.
+
+    The purpose of this template is to render a paging bar.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * message A cleaned string (use clean_text()) to display.
+
+    Example context (json):
+    { "message": "Your pants are on fire!" }
+}}
+<section class="pagination pagination-{{^size}}small{{/size}}{{#size}}{{size}}{{/size}}">
+    {{#type}}
+    <header class="controlname">{{type}}{{#pagecount}}<span class="pagecount">{{pagecount}}</span>{{/pagecount}}</header>
+    {{/type}}
+    <ul>
+    {{#first}}
+        <li{{#attrs}} {{{attr}}}{{#val}}="{{val}}"{{/val}}{{/attrs}}><a {{#href}}href="{{{href}}}"{{/href}}{{^href}}disabled{{/href}}>{{text}}</a></li>
+        <li class="disabled"><span>...</span></li>
+    {{/first}}
+    {{#links}}
+        <li{{#attrs}} {{{attr}}}{{#val}}="{{val}}"{{/val}}{{/attrs}}><a {{#href}}href="{{{href}}}"{{/href}}{{^href}}disabled{{/href}}>{{text}}</a></li>
+    {{/links}}
+    {{#last}}
+        <li class="disabled"><span>...</span></li>
+        <li{{#attrs}} {{{attr}}}{{#val}}="{{val}}"{{/val}}{{/attrs}}><a {{#href}}href="{{{href}}}"{{/href}}{{^href}}disabled{{/href}}>{{text}}</a></li>
+    {{/last}}
+    </ul>
+</section>

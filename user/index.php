@@ -600,7 +600,7 @@ if ($mode === MODE_USERDETAILS) {    // Print simple listing.
             }
             echo '</div>';
 
-            $pagingbar = new paging_bar($matchcount, intval($table->get_page_start() / $perpage), $perpage, $baseurl);
+            $pagingbar = new \core\output\paging_bar($matchcount, intval($table->get_page_start() / $perpage), $perpage, $baseurl);
             $pagingbar->pagevar = 'spage';
             echo $OUTPUT->render($pagingbar);
         }

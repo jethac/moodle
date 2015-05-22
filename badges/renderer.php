@@ -462,7 +462,7 @@ class core_badges_renderer extends plugin_renderer_base {
         $backpack = $badges->backpack;
         $mybackpack = new moodle_url('/badges/mybackpack.php');
 
-        $paging = new paging_bar($badges->totalcount, $badges->page, $badges->perpage, $this->page->url, 'page');
+        $paging = new \core\output\paging_bar($badges->totalcount, $badges->page, $badges->perpage, $this->page->url, 'page');
         $htmlpagingbar = $this->render($paging);
 
         // Set backpack connection string.
@@ -521,7 +521,7 @@ class core_badges_renderer extends plugin_renderer_base {
 
     // Displays the available badges.
     protected function render_badge_collection(badge_collection $badges) {
-        $paging = new paging_bar($badges->totalcount, $badges->page, $badges->perpage, $this->page->url, 'page');
+        $paging = new \core\output\paging_bar($badges->totalcount, $badges->page, $badges->perpage, $this->page->url, 'page');
         $htmlpagingbar = $this->render($paging);
         $table = new html_table();
         $table->attributes['class'] = 'collection';
@@ -564,7 +564,7 @@ class core_badges_renderer extends plugin_renderer_base {
 
     // Outputs table of badges with actions available.
     protected function render_badge_management(badge_management $badges) {
-        $paging = new paging_bar($badges->totalcount, $badges->page, $badges->perpage, $this->page->url, 'page');
+        $paging = new \core\output\paging_bar($badges->totalcount, $badges->page, $badges->perpage, $this->page->url, 'page');
 
         // New badge button.
         $htmlnew = '';
@@ -813,7 +813,13 @@ class core_badges_renderer extends plugin_renderer_base {
     // Renders a table with users who have earned the badge.
     // Based on stamps collection plugin.
     protected function render_badge_recipients(badge_recipients $recipients) {
-        $paging = new paging_bar($recipients->totalcount, $recipients->page, $recipients->perpage, $this->page->url, 'page');
+        $paging = new \core\output\paging_bar(
+            $recipients->totalcount,
+            $recipients->page,
+            $recipients->perpage,
+            $this->page->url,
+            'page'
+        );
         $htmlpagingbar = $this->render($paging);
         $table = new html_table();
         $table->attributes['class'] = 'generaltable boxaligncenter boxwidthwide';

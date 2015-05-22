@@ -2902,46 +2902,20 @@ EOD;
      * @return string the HTML to output.
      */
     public function paging_bar($totalcount, $page, $perpage, $baseurl, $pagevar = 'page') {
-        $pb = new paging_bar($totalcount, $page, $perpage, $baseurl, $pagevar);
+        $pb = new \core\output\paging_bar($totalcount, $page, $perpage, $baseurl, $pagevar);
         return $this->render($pb);
     }
 
     /**
      * Internal implementation of paging bar rendering.
      *
-     * @param paging_bar $pagingbar
+     * @param \core\output\paging_bar $pagingbar
      * @return string
      */
-    protected function render_paging_bar(paging_bar $pagingbar) {
-        $output = '';
-        $pagingbar = clone($pagingbar);
-        $pagingbar->prepare($this, $this->page, $this->target);
+    protected function render_paging_bar(\core\output\paging_bar $pagingbar) {
 
-        if ($pagingbar->totalcount > $pagingbar->perpage) {
-            $output .= get_string('page') . ':';
-
-            if (!empty($pagingbar->previouslink)) {
-                $output .= ' (' . $pagingbar->previouslink . ') ';
-            }
-
-            if (!empty($pagingbar->firstlink)) {
-                $output .= ' ' . $pagingbar->firstlink . ' ...';
-            }
-
-            foreach ($pagingbar->pagelinks as $link) {
-                $output .= "  $link";
-            }
-
-            if (!empty($pagingbar->lastlink)) {
-                $output .= ' ...' . $pagingbar->lastlink . ' ';
-            }
-
-            if (!empty($pagingbar->nextlink)) {
-                $output .= '  (' . $pagingbar->nextlink . ')';
-            }
-        }
-
-        return html_writer::tag('div', $output, array('class' => 'paging'));
+        $data = $pagingbar->export_for_template($this);
+        return (count($data->links) > 0) ? self::render_from_template('core/paging_bar', $data) : "";
     }
 
     /**

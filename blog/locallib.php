@@ -714,7 +714,7 @@ class blog_listing {
         }
 
         $entries = $this->get_entries($start, $limit);
-        $pagingbar = new paging_bar($totalentries, $page, $limit, $this->get_baseurl());
+        $pagingbar = new \core\output\paging_bar($totalentries, $page, $limit, $this->get_baseurl());
         $pagingbar->pagevar = 'blogpage';
         $blogheaders = blog_get_headers();
 

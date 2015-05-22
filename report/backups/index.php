@@ -100,7 +100,7 @@ if ($courseid) {
         // and we also display a message so they are aware that the backup happened but there were no logs.
         $baseurl = new moodle_url('/report/backups/index.php', array('courseid' => $courseid));
         $numberofbackups = $DB->count_records('backup_controllers', $params);
-        $pagingbar = new paging_bar($numberofbackups, $page, 1, $baseurl);
+        $pagingbar = new \core\output\paging_bar($numberofbackups, $page, 1, $baseurl);
 
         echo $OUTPUT->render($pagingbar);
         echo $OUTPUT->heading(get_string('logsofbackupexecutedon', 'report_backups', userdate($backup->timecreated)), 3);

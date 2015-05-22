@@ -425,9 +425,9 @@ EOF;
 
         $mpage = new moodle_page();
         $rbase = new renderer_base($mpage, "/");
-        $pbara = new paging_bar(40, 0, 5, 'index.php');
+        $pbara = new \core\output\paging_bar(40, 0, 5, 'index.php');
         $pbara->prepare($rbase, $mpage, "/");
-        $pbarb = new paging_bar(100, 5, 5, 'page');
+        $pbarb = new \core\output\paging_bar(100, 5, 5, 'page');
         $pbarb->maxdisplay = 5;
         $pbarb->prepare($rbase, $mpage, "/");
 
