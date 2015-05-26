@@ -797,3 +797,57 @@
         }
     }
 }
+
+/**
+ * Context headers on phones.
+ */
+@media (max-width: 767px) {
+    header#page-header {
+        display: block;
+        padding: 0;
+        margin: -20px -20px 0 -20px;
+
+        background-image: linear-gradient(to bottom, #fff, #eee);
+        background-position: 0 -32px;
+        background-repeat: repeat-x;
+
+        .page-header-image {
+            background: blue;
+            margin: 12px 12px 0 12px;
+            padding: 0;
+            img {
+                display: block;
+                width: 35px;
+                height: 35px;
+                margin: 0;
+            }
+        }
+    }
+
+    header#page-header .page-header-headings {
+        margin: 0;
+        padding: 0;
+        h1 {
+            margin: 8px 0 0 0;
+            padding: 0;
+            font-size: 1.1em;
+        }
+    }
+
+    header#page-header #page-navbar {
+        margin: 8px 0 0 0;
+        .breadcrumb-nav {
+            width: 100%;
+            margin: 0;
+            position: relative;
+            .breadcrumb {
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+                padding: 6px 12px;
+                margin: 0;
+                border-top: 1px solid #ddd;
+                border-bottom: 1px solid #ccc;
+            }
+        }
+    }
+}
