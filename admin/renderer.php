@@ -884,7 +884,7 @@ class core_admin_renderer extends plugin_renderer_base {
 
         foreach ($plugininfo as $type => $plugins) {
 
-            $header = new html_table_cell($pluginman->plugintype_name_plural($type));
+            $header = new \core\output\html_table_cell($pluginman->plugintype_name_plural($type));
             $header->header = true;
             $header->colspan = count($table->head);
             $header = new html_table_row(array($header));
@@ -893,7 +893,7 @@ class core_admin_renderer extends plugin_renderer_base {
             $numofhighlighted[$type] = 0;
 
             if (empty($plugins) and $options['full']) {
-                $msg = new html_table_cell(get_string('noneinstalled', 'core_plugin'));
+                $msg = new \core\output\html_table_cell(get_string('noneinstalled', 'core_plugin'));
                 $msg->colspan = count($table->head);
                 $row = new html_table_row(array($msg));
                 $row->attributes['class'] .= 'msg msg-noneinstalled';
@@ -914,20 +914,20 @@ class core_admin_renderer extends plugin_renderer_base {
                     $icon = $this->output->pix_icon('spacer', '', 'moodle', array('class' => 'smallicon pluginicon noicon'));
                 }
                 $displayname  = $icon . ' ' . $plugin->displayname;
-                $displayname = new html_table_cell($displayname);
+                $displayname = new \core\output\html_table_cell($displayname);
 
-                $rootdir = new html_table_cell($plugin->get_dir());
+                $rootdir = new \core\output\html_table_cell($plugin->get_dir());
 
                 if ($isstandard = $plugin->is_standard()) {
                     $row->attributes['class'] .= ' standard';
-                    $source = new html_table_cell(get_string('sourcestd', 'core_plugin'));
+                    $source = new \core\output\html_table_cell(get_string('sourcestd', 'core_plugin'));
                 } else {
                     $row->attributes['class'] .= ' extension';
-                    $source = new html_table_cell(get_string('sourceext', 'core_plugin'));
+                    $source = new \core\output\html_table_cell(get_string('sourceext', 'core_plugin'));
                 }
 
-                $versiondb = new html_table_cell($plugin->versiondb);
-                $versiondisk = new html_table_cell($plugin->versiondisk);
+                $versiondb = new \core\output\html_table_cell($plugin->versiondb);
+                $versiondisk = new \core\output\html_table_cell($plugin->versiondisk);
 
                 $statuscode = $plugin->get_status();
                 $row->attributes['class'] .= ' status-' . $statuscode;
@@ -940,9 +940,9 @@ class core_admin_renderer extends plugin_renderer_base {
                     }
                 }
 
-                $status = new html_table_cell($status);
+                $status = new \core\output\html_table_cell($status);
 
-                $requires = new html_table_cell($this->required_column($plugin, $pluginman, $version));
+                $requires = new \core\output\html_table_cell($this->required_column($plugin, $pluginman, $version));
 
                 $statusisboring = in_array($statuscode, array(
                         core_plugin_manager::PLUGIN_STATUS_NODB, core_plugin_manager::PLUGIN_STATUS_UPTODATE));
@@ -1231,7 +1231,7 @@ class core_admin_renderer extends plugin_renderer_base {
             if ($manageurl = $pluginclass::get_manage_url()) {
                 $heading = html_writer::link($manageurl, $heading);
             }
-            $header = new html_table_cell(html_writer::tag('span', $heading, array('id'=>'plugin_type_cell_'.$type)));
+            $header = new \core\output\html_table_cell(html_writer::tag('span', $heading, array('id'=>'plugin_type_cell_'.$type)));
             $header->header = true;
             $header->colspan = array_sum($table->headspan);
             $header = new html_table_row(array($header));
@@ -1239,7 +1239,7 @@ class core_admin_renderer extends plugin_renderer_base {
             $table->data[] = $header;
 
             if (empty($plugins)) {
-                $msg = new html_table_cell(get_string('noneinstalled', 'core_plugin'));
+                $msg = new \core\output\html_table_cell(get_string('noneinstalled', 'core_plugin'));
                 $msg->colspan = array_sum($table->headspan);
                 $row = new html_table_row(array($msg));
                 $row->attributes['class'] .= 'msg msg-noneinstalled';
@@ -1267,28 +1267,28 @@ class core_admin_renderer extends plugin_renderer_base {
                 }
                 $pluginname  = html_writer::tag('div', $icon . '' . $plugin->displayname . ' ' . $msg, array('class' => 'displayname')).
                                html_writer::tag('div', $plugin->component, array('class' => 'componentname'));
-                $pluginname  = new html_table_cell($pluginname);
+                $pluginname  = new \core\output\html_table_cell($pluginname);
 
                 if ($plugin->is_standard()) {
                     $row->attributes['class'] .= ' standard';
-                    $source = new html_table_cell(get_string('sourcestd', 'core_plugin'));
+                    $source = new \core\output\html_table_cell(get_string('sourcestd', 'core_plugin'));
                 } else {
                     $row->attributes['class'] .= ' extension';
-                    $source = new html_table_cell(get_string('sourceext', 'core_plugin'));
+                    $source = new \core\output\html_table_cell(get_string('sourceext', 'core_plugin'));
                 }
 
-                $version = new html_table_cell($plugin->versiondb);
-                $release = new html_table_cell($plugin->release);
+                $version = new \core\output\html_table_cell($plugin->versiondb);
+                $release = new \core\output\html_table_cell($plugin->release);
 
                 $isenabled = $plugin->is_enabled();
                 if (is_null($isenabled)) {
-                    $availability = new html_table_cell('');
+                    $availability = new \core\output\html_table_cell('');
                 } else if ($isenabled) {
                     $row->attributes['class'] .= ' enabled';
-                    $availability = new html_table_cell(get_string('pluginenabled', 'core_plugin'));
+                    $availability = new \core\output\html_table_cell(get_string('pluginenabled', 'core_plugin'));
                 } else {
                     $row->attributes['class'] .= ' disabled';
-                    $availability = new html_table_cell(get_string('plugindisabled', 'core_plugin'));
+                    $availability = new \core\output\html_table_cell(get_string('plugindisabled', 'core_plugin'));
                 }
 
                 $settingsurl = $plugin->get_settings_url();
@@ -1297,14 +1297,14 @@ class core_admin_renderer extends plugin_renderer_base {
                 } else {
                     $settings = '';
                 }
-                $settings = new html_table_cell($settings);
+                $settings = new \core\output\html_table_cell($settings);
 
                 if ($uninstallurl = $pluginman->get_uninstall_url($plugin->component, 'overview')) {
                     $uninstall = html_writer::link($uninstallurl, get_string('uninstall', 'core_plugin'));
                 } else {
                     $uninstall = '';
                 }
-                $uninstall = new html_table_cell($uninstall);
+                $uninstall = new \core\output\html_table_cell($uninstall);
 
                 $requriedby = $pluginman->other_plugins_that_require($plugin->component);
                 if ($requriedby) {
@@ -1321,7 +1321,7 @@ class core_admin_renderer extends plugin_renderer_base {
                     }
                 }
 
-                $notes = new html_table_cell($requiredby.$updateinfo);
+                $notes = new \core\output\html_table_cell($requiredby.$updateinfo);
 
                 $row->cells = array(
                     $pluginname, $source, $version, $release, $availability, $settings, $uninstall, $notes

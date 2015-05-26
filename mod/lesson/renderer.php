@@ -281,7 +281,7 @@ class mod_lesson_renderer extends plugin_renderer_base {
             $pagetable->data = array();
             $pagetable->id = 'lesson-' . $pageid;
 
-            $pageheading = new html_table_cell();
+            $pageheading = new \core\output\html_table_cell();
 
             $pageheading->text = format_string($page->title);
             if ($canedit) {
@@ -292,13 +292,13 @@ class mod_lesson_renderer extends plugin_renderer_base {
             $pageheading->scope = 'col';
             $pagetable->head = array($pageheading);
 
-            $cell = new html_table_cell();
+            $cell = new \core\output\html_table_cell();
             $cell->colspan = 2;
             $cell->style = 'text-align:left';
             $cell->text = $page->contents;
             $pagetable->data[] = new html_table_row(array($cell));
 
-            $cell = new html_table_cell();
+            $cell = new \core\output\html_table_cell();
             $cell->colspan = 2;
             $cell->style = 'text-align:center';
             $cell->text = '<strong>'.$qtypes[$page->qtype] . $page->option_description_string().'</strong>';

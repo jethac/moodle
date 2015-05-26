@@ -156,7 +156,7 @@ foreach ($rs as $backuprow) {
         $status = $strerror;
         $statusclass = 'backup-error'; // Red.
     }
-    $status = new html_table_cell($status);
+    $status = new \core\output\html_table_cell($status);
     $status->attributes = array('class' => $statusclass);
 
     // Create the row and add it to the table
@@ -177,7 +177,7 @@ $rs->close();
 
 // Check if we have any results and if not add a no records notification
 if (empty($table->data)) {
-    $cell = new html_table_cell($OUTPUT->notification(get_string('nologsfound')));
+    $cell = new \core\output\html_table_cell($OUTPUT->notification(get_string('nologsfound')));
     $cell->colspan = 6;
     $table->data[] = new html_table_row(array($cell));
 }

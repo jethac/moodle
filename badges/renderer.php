@@ -104,10 +104,10 @@ class core_badges_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('form', $formattributes);
         $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
 
-        $existingcell = new html_table_cell();
+        $existingcell = new \core\output\html_table_cell();
         $existingcell->text = $existinguc->display(true);
         $existingcell->attributes['class'] = 'existing';
-        $actioncell = new html_table_cell();
+        $actioncell = new \core\output\html_table_cell();
         $actioncell->text  = html_writer::start_tag('div', array());
         $actioncell->text .= html_writer::empty_tag('input', array(
                     'type' => 'submit',
@@ -117,7 +117,7 @@ class core_badges_renderer extends plugin_renderer_base {
                 );
         $actioncell->text .= html_writer::end_tag('div', array());
         $actioncell->attributes['class'] = 'actions';
-        $potentialcell = new html_table_cell();
+        $potentialcell = new \core\output\html_table_cell();
         $potentialcell->text = $potentialuc->display(true);
         $potentialcell->attributes['class'] = 'potential';
 

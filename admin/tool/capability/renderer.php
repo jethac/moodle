@@ -94,7 +94,7 @@ class tool_capability_renderer extends plugin_renderer_base {
 
         foreach ($capabilities as $capability) {
             $contexts = tool_capability_calculate_role_data($capability, $roles);
-            $captitle = new html_table_cell(get_capability_string($capability) . html_writer::span($capability));
+            $captitle = new \core\output\html_table_cell(get_capability_string($capability) . html_writer::span($capability));
             $captitle->header = true;
 
             $row = new html_table_row(array($captitle));
@@ -105,7 +105,7 @@ class tool_capability_renderer extends plugin_renderer_base {
                 } else {
                     $permission = CAP_INHERIT;
                 }
-                $cell = new html_table_cell($strpermissions[$permission]);
+                $cell = new \core\output\html_table_cell($strpermissions[$permission]);
                 $cell->attributes['class'] = $permissionclasses[$permission];
                 $row->cells[] = $cell;
             }

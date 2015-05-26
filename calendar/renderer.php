@@ -398,7 +398,7 @@ class core_calendar_renderer extends plugin_renderer_base {
 
         // Paddding (the first week may have blank days in the beginning)
         for($i = $display->minwday; $i < $startwday; ++$i) {
-            $cell = new html_table_cell('&nbsp;');
+            $cell = new \core\output\html_table_cell('&nbsp;');
             $cell->attributes = array('class'=>'nottoday dayblank');
             $row->cells[] = $cell;
         }
@@ -421,7 +421,7 @@ class core_calendar_renderer extends plugin_renderer_base {
             }
 
             // Reset vars
-            $cell = new html_table_cell();
+            $cell = new \core\output\html_table_cell();
             $dayhref = calendar_get_link_href(new moodle_url(CALENDAR_URL.'view.php', array('view' => 'day', 'course' => $calendar->courseid)), 0, 0, 0, $daytime);
 
             $cellclasses = array();
@@ -493,7 +493,7 @@ class core_calendar_renderer extends plugin_renderer_base {
 
         // Paddding (the last week may have blank days at the end)
         for($i = $dayweek; $i <= $display->maxwday; ++$i) {
-            $cell = new html_table_cell('&nbsp;');
+            $cell = new \core\output\html_table_cell('&nbsp;');
             $cell->attributes = array('class'=>'nottoday dayblank');
             $row->cells[] = $cell;
         }
@@ -611,7 +611,7 @@ class core_calendar_renderer extends plugin_renderer_base {
         $table->data  = array();
 
         if (empty($subscriptions)) {
-            $cell = new html_table_cell(get_string('nocalendarsubscriptions', 'calendar'));
+            $cell = new \core\output\html_table_cell(get_string('nocalendarsubscriptions', 'calendar'));
             $cell->colspan = 4;
             $table->data[] = new html_table_row(array($cell));
         }
@@ -627,14 +627,14 @@ class core_calendar_renderer extends plugin_renderer_base {
                 $lastupdated = userdate($sub->lastupdated, get_string('strftimedatetimeshort', 'langconfig'));
             }
 
-            $cell = new html_table_cell($this->subscription_action_form($sub, $courseid));
+            $cell = new \core\output\html_table_cell($this->subscription_action_form($sub, $courseid));
             $cell->colspan = 2;
             $type = $sub->eventtype . 'events';
 
             $table->data[] = new html_table_row(array(
-                new html_table_cell($label),
-                new html_table_cell($lastupdated),
-                new html_table_cell(get_string($type, 'calendar')),
+                new \core\output\html_table_cell($label),
+                new \core\output\html_table_cell($lastupdated),
+                new \core\output\html_table_cell(get_string($type, 'calendar')),
                 $cell
             ));
         }

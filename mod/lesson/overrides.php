@@ -226,10 +226,10 @@ foreach ($overrides as $override) {
         $hasinactive = true;
     }
 
-    $usergroupcell = new html_table_cell();
+    $usergroupcell = new \core\output\html_table_cell();
     $usergroupcell->rowspan = count($fields);
     $usergroupcell->text = $usergroupstr;
-    $actioncell = new html_table_cell();
+    $actioncell = new \core\output\html_table_cell();
     $actioncell->rowspan = count($fields);
     $actioncell->text = $iconstr;
 
@@ -239,10 +239,10 @@ foreach ($overrides as $override) {
         if ($i == 0) {
             $row->cells[] = $usergroupcell;
         }
-        $cell1 = new html_table_cell();
+        $cell1 = new \core\output\html_table_cell();
         $cell1->text = $fields[$i];
         $row->cells[] = $cell1;
-        $cell2 = new html_table_cell();
+        $cell2 = new \core\output\html_table_cell();
         $cell2->text = $values[$i];
         $row->cells[] = $cell2;
         if ($i == 0) {

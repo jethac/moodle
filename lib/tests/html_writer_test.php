@@ -180,7 +180,7 @@ class core_html_writer_testcase extends basic_testcase {
         $row->attributes['data-name'] = 'Fred';
         $row->class = 'this is a table row';
 
-        $cell = new html_table_cell();
+        $cell = new \core\output\html_table_cell();
 
         // The attribute will get overwritten by the ID.
         $cell->id = 'Jeremy';

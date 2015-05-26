@@ -139,8 +139,8 @@ class block_completionstatus extends block_base {
                     continue;
                 }
                 $row = new html_table_row();
-                $row->cells[0] = new html_table_cell($criteria->get_title());
-                $row->cells[1] = new html_table_cell($completion->get_status());
+                $row->cells[0] = new \core\output\html_table_cell($criteria->get_title());
+                $row->cells[1] = new \core\output\html_table_cell($completion->get_status());
                 $row->cells[1]->style = 'text-align: right;';
                 $srows[] = $row;
             }
@@ -152,8 +152,8 @@ class block_completionstatus extends block_base {
                 $a->second = count($activities);
 
                 $row = new html_table_row();
-                $row->cells[0] = new html_table_cell(get_string('activitiescompleted', 'completion'));
-                $row->cells[1] = new html_table_cell(get_string('firstofsecond', 'block_completionstatus', $a));
+                $row->cells[0] = new \core\output\html_table_cell(get_string('activitiescompleted', 'completion'));
+                $row->cells[1] = new \core\output\html_table_cell(get_string('firstofsecond', 'block_completionstatus', $a));
                 $row->cells[1]->style = 'text-align: right;';
                 $srows[] = $row;
             }
@@ -165,8 +165,8 @@ class block_completionstatus extends block_base {
                 $a->second = count($prerequisites);
 
                 $row = new html_table_row();
-                $row->cells[0] = new html_table_cell(get_string('dependenciescompleted', 'completion'));
-                $row->cells[1] = new html_table_cell(get_string('firstofsecond', 'block_completionstatus', $a));
+                $row->cells[0] = new \core\output\html_table_cell(get_string('dependenciescompleted', 'completion'));
+                $row->cells[1] = new \core\output\html_table_cell(get_string('firstofsecond', 'block_completionstatus', $a));
                 $row->cells[1]->style = 'text-align: right;';
                 $prows[] = $row;
 
@@ -204,7 +204,7 @@ class block_completionstatus extends block_base {
                 $content .= html_writer::tag('i', get_string('inprogress', 'completion'));
             }
 
-            $row->cells[0] = new html_table_cell($content);
+            $row->cells[0] = new \core\output\html_table_cell($content);
             $row->cells[0]->colspan = '2';
 
             $rows[] = $row;
@@ -218,13 +218,13 @@ class block_completionstatus extends block_base {
                 $content .= get_string('criteriarequiredany', 'completion');
             }
             $content .= ':';
-            $row->cells[0] = new html_table_cell($content);
+            $row->cells[0] = new \core\output\html_table_cell($content);
             $row->cells[0]->colspan = '2';
             $rows[] = $row;
 
             $row = new html_table_row();
-            $row->cells[0] = new html_table_cell(html_writer::tag('b', get_string('requiredcriteria', 'completion')));
-            $row->cells[1] = new html_table_cell(html_writer::tag('b', get_string('status')));
+            $row->cells[0] = new \core\output\html_table_cell(html_writer::tag('b', get_string('requiredcriteria', 'completion')));
+            $row->cells[1] = new \core\output\html_table_cell(html_writer::tag('b', get_string('status')));
             $row->cells[1]->style = 'text-align: right;';
             $rows[] = $row;
 

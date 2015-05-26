@@ -605,7 +605,7 @@ class grade_report_grader extends grade_report {
 
         $levels = count($this->gtree->levels) - 1;
 
-        $fillercell = new html_table_cell();
+        $fillercell = new \core\output\html_table_cell();
         $fillercell->header = true;
         $fillercell->attributes['scope'] = 'col';
         $fillercell->attributes['class'] = 'cell topleft';
@@ -623,7 +623,7 @@ class grade_report_grader extends grade_report {
         $headerrow = new html_table_row();
         $headerrow->attributes['class'] = 'heading';
 
-        $studentheader = new html_table_cell();
+        $studentheader = new \core\output\html_table_cell();
         $studentheader->attributes['class'] = 'header';
         $studentheader->scope = 'col';
         $studentheader->header = true;
@@ -636,7 +636,7 @@ class grade_report_grader extends grade_report {
         $headerrow->cells[] = $studentheader;
 
         foreach ($extrafields as $field) {
-            $fieldheader = new html_table_cell();
+            $fieldheader = new \core\output\html_table_cell();
             $fieldheader->attributes['class'] = 'header userfield user' . $field;
             $fieldheader->scope = 'col';
             $fieldheader->header = true;
@@ -654,7 +654,7 @@ class grade_report_grader extends grade_report {
             $userrow = new html_table_row();
             $userrow->id = 'fixed_user_'.$userid;
 
-            $usercell = new html_table_cell();
+            $usercell = new \core\output\html_table_cell();
             $usercell->attributes['class'] = 'header user';
 
             $usercell->header = true;
@@ -682,7 +682,7 @@ class grade_report_grader extends grade_report {
 
             $userrow->cells[] = $usercell;
 
-            $userreportcell = new html_table_cell();
+            $userreportcell = new \core\output\html_table_cell();
             $userreportcell->attributes['class'] = 'userreport';
             $userreportcell->header = false;
             if (has_capability('gradereport/'.$CFG->grade_profilereport.':view', $this->context)) {
@@ -704,7 +704,7 @@ class grade_report_grader extends grade_report {
             }
 
             foreach ($extrafields as $field) {
-                $fieldcell = new html_table_cell();
+                $fieldcell = new \core\output\html_table_cell();
                 $fieldcell->attributes['class'] = 'userfield user' . $field;
                 $fieldcell->header = false;
                 $fieldcell->text = $user->{$field};
@@ -791,7 +791,7 @@ class grade_report_grader extends grade_report {
 
                 // Element is a filler
                 if ($type == 'filler' or $type == 'fillerfirst' or $type == 'fillerlast') {
-                    $fillercell = new html_table_cell();
+                    $fillercell = new \core\output\html_table_cell();
                     $fillercell->attributes['class'] = $type . ' ' . $catlevel;
                     $fillercell->colspan = $colspan;
                     $fillercell->text = '&nbsp;';
@@ -801,7 +801,7 @@ class grade_report_grader extends grade_report {
                     $headingrow->cells[] = $fillercell;
                 } else if ($type == 'category') {
                     // Element is a category
-                    $categorycell = new html_table_cell();
+                    $categorycell = new \core\output\html_table_cell();
                     $categorycell->attributes['class'] = 'category ' . $catlevel;
                     $categorycell->colspan = $colspan;
                     $categorycell->text = $this->get_course_header($element);
@@ -828,7 +828,7 @@ class grade_report_grader extends grade_report {
 
                     $headerlink = $this->gtree->get_element_header($element, true, $showactivityicons, false, false, true);
 
-                    $itemcell = new html_table_cell();
+                    $itemcell = new \core\output\html_table_cell();
                     $itemcell->attributes['class'] = $type . ' ' . $catlevel . ' highlightable'. ' i'. $element['object']->id;
                     $itemcell->attributes['data-itemid'] = $element['object']->id;
 
@@ -906,7 +906,7 @@ class grade_report_grader extends grade_report {
                 $item =& $this->gtree->items[$itemid];
                 $grade = $this->grades[$userid][$item->id];
 
-                $itemcell = new html_table_cell();
+                $itemcell = new \core\output\html_table_cell();
 
                 $itemcell->id = 'u'.$userid.'i'.$itemid;
                 $itemcell->attributes['data-itemid'] = $itemid;
@@ -1190,7 +1190,7 @@ class grade_report_grader extends grade_report {
         if ($USER->gradeediting[$this->courseid]) {
             $controlsrow = new html_table_row();
             $controlsrow->attributes['class'] = 'controls';
-            $controlscell = new html_table_cell();
+            $controlscell = new \core\output\html_table_cell();
             $controlscell->attributes['class'] = 'header controls';
             $controlscell->colspan = $colspan;
             $controlscell->text = $this->get_lang_string('controls', 'grades');
@@ -1213,7 +1213,7 @@ class grade_report_grader extends grade_report {
         if ($this->get_pref('showranges')) {
             $rangerow = new html_table_row();
             $rangerow->attributes['class'] = 'range r'.$this->rowcount++;
-            $rangecell = new html_table_cell();
+            $rangecell = new \core\output\html_table_cell();
             $rangecell->attributes['class'] = 'header range';
             $rangecell->colspan = $colspan;
             $rangecell->header = true;
@@ -1248,7 +1248,7 @@ class grade_report_grader extends grade_report {
             if ($showaveragesgroup) {
                 $groupavgrow = new html_table_row();
                 $groupavgrow->attributes['class'] = 'groupavg r'.$this->rowcount++;
-                $groupavgcell = new html_table_cell();
+                $groupavgcell = new \core\output\html_table_cell();
                 $groupavgcell->attributes['class'] = 'header range';
                 $groupavgcell->colspan = $colspan;
                 $groupavgcell->header = true;
@@ -1263,7 +1263,7 @@ class grade_report_grader extends grade_report {
             if ($showaverages) {
                 $avgrow = new html_table_row();
                 $avgrow->attributes['class'] = 'avg r'.$this->rowcount++;
-                $avgcell = new html_table_cell();
+                $avgcell = new \core\output\html_table_cell();
                 $avgcell->attributes['class'] = 'header range';
                 $avgcell->colspan = $colspan;
                 $avgcell->header = true;
@@ -1294,7 +1294,7 @@ class grade_report_grader extends grade_report {
 
                 $eid = $this->gtree->get_item_eid($item);
                 $element = $this->gtree->locate_element($eid);
-                $itemcell = new html_table_cell();
+                $itemcell = new \core\output\html_table_cell();
                 $itemcell->attributes['class'] = 'controls icons i'.$itemid;
                 $itemcell->text = $this->get_icons($element);
                 $iconsrow->cells[] = $itemcell;
@@ -1320,7 +1320,7 @@ class grade_report_grader extends grade_report {
 
             foreach ($this->gtree->items as $itemid => $unused) {
                 $item =& $this->gtree->items[$itemid];
-                $itemcell = new html_table_cell();
+                $itemcell = new \core\output\html_table_cell();
                 $itemcell->attributes['class'] .= ' range i'. $itemid;
 
                 $hidden = '';
@@ -1442,7 +1442,7 @@ class grade_report_grader extends grade_report {
                 $item =& $this->gtree->items[$itemid];
 
                 if ($item->needsupdate) {
-                    $avgcell = new html_table_cell();
+                    $avgcell = new \core\output\html_table_cell();
                     $avgcell->attributes['class'] = 'i'. $itemid;
                     $avgcell->text = $OUTPUT->container(get_string('error'), 'gradingerror');
                     $avgrow->cells[] = $avgcell;
@@ -1486,7 +1486,7 @@ class grade_report_grader extends grade_report {
                 }
 
                 if (!isset($sumarray[$item->id]) || $meancount == 0) {
-                    $avgcell = new html_table_cell();
+                    $avgcell = new \core\output\html_table_cell();
                     $avgcell->attributes['class'] = 'i'. $itemid;
                     $avgcell->text = '-';
                     $avgrow->cells[] = $avgcell;
@@ -1501,7 +1501,7 @@ class grade_report_grader extends grade_report {
                         $numberofgrades = " ($meancount)";
                     }
 
-                    $avgcell = new html_table_cell();
+                    $avgcell = new \core\output\html_table_cell();
                     $avgcell->attributes['class'] = 'i'. $itemid;
                     $avgcell->text = $gradehtml.$numberofgrades;
                     $avgrow->cells[] = $avgcell;

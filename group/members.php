@@ -104,7 +104,7 @@ $groupinforow = array();
 
 // Check if there is a picture to display.
 if (!empty($group->picture)) {
-    $picturecell = new html_table_cell();
+    $picturecell = new \core\output\html_table_cell();
     $picturecell->attributes['class'] = 'left side picture';
     $picturecell->text = print_group_picture($group, $course->id, true, true, false);
     $groupinforow[] = $picturecell;
@@ -120,7 +120,7 @@ if (!empty($group->description)) {
     $options = new stdClass;
     $options->overflowdiv = true;
 
-    $contentcell = new html_table_cell();
+    $contentcell = new \core\output\html_table_cell();
     $contentcell->attributes['class'] = 'content';
     $contentcell->text = format_text($group->description, $group->descriptionformat, $options);
     $groupinforow[] = $contentcell;

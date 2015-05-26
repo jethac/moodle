@@ -622,7 +622,7 @@ class core_backup_renderer extends plugin_renderer_base {
                 $table->data[] = $row;
             }
             if ($component->has_more_results()) {
-                $cell = new html_table_cell(get_string('moreresults', 'backup'));
+                $cell = new \core\output\html_table_cell(get_string('moreresults', 'backup'));
                 $cell->colspan = 3;
                 $cell->attributes['class'] = 'notifyproblem';
                 $row = new html_table_row(array($cell));
@@ -630,7 +630,7 @@ class core_backup_renderer extends plugin_renderer_base {
                 $table->data[] = $row;
             }
         } else {
-            $cell = new html_table_cell(get_string('nomatchingcourses', 'backup'));
+            $cell = new \core\output\html_table_cell(get_string('nomatchingcourses', 'backup'));
             $cell->colspan = 3;
             $cell->attributes['class'] = 'notifyproblem';
             $row = new html_table_row(array($cell));
@@ -698,7 +698,7 @@ class core_backup_renderer extends plugin_renderer_base {
             $table->data[] = $row;
         }
         if ($component->has_more_results()) {
-            $cell = new html_table_cell(get_string('moreresults', 'backup'));
+            $cell = new \core\output\html_table_cell(get_string('moreresults', 'backup'));
             $cell->colspan = 3;
             $cell->attributes['class'] = 'notifyproblem';
             $row = new html_table_row(array($cell));
@@ -748,7 +748,7 @@ class core_backup_renderer extends plugin_renderer_base {
                 $table->data[] = $row;
             }
             if ($component->has_more_results()) {
-                $cell = new html_table_cell(get_string('moreresults', 'backup'));
+                $cell = new \core\output\html_table_cell(get_string('moreresults', 'backup'));
                 $cell->attributes['class'] = 'notifyproblem';
                 $cell->colspan = 3;
                 $row = new html_table_row(array($cell));
@@ -756,7 +756,7 @@ class core_backup_renderer extends plugin_renderer_base {
                 $table->data[] = $row;
             }
         } else {
-            $cell = new html_table_cell(get_string('nomatchingcourses', 'backup'));
+            $cell = new \core\output\html_table_cell(get_string('nomatchingcourses', 'backup'));
             $cell->colspan = 3;
             $cell->attributes['class'] = 'notifyproblem';
             $row = new html_table_row(array($cell));

@@ -69,15 +69,15 @@ class core_webservice_renderer extends plugin_renderer_base {
         $label = html_writer::tag('label', get_string('serviceusers', 'webservice'),
                         array('for' => 'removeselect'));
         $label = html_writer::tag('p', $label);
-        $authoriseduserscell = new html_table_cell($label .
+        $authoriseduserscell = new \core\output\html_table_cell($label .
                         $options->alloweduserselector->display(true));
         $authoriseduserscell->id = 'existingcell';
-        $buttonscell = new html_table_cell($addbutton . html_writer::empty_tag('br') . $removebutton);
+        $buttonscell = new \core\output\html_table_cell($addbutton . html_writer::empty_tag('br') . $removebutton);
         $buttonscell->id = 'buttonscell';
         $label = html_writer::tag('label', get_string('potusers', 'webservice'),
                         array('for' => 'addselect'));
         $label = html_writer::tag('p', $label);
-        $otheruserscell = new html_table_cell($label .
+        $otheruserscell = new \core\output\html_table_cell($label .
                         $options->potentialuserselector->display(true));
         $otheruserscell->id = 'potentialcell';
 

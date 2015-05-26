@@ -68,10 +68,10 @@ class tool_customlang_renderer extends plugin_renderer_base {
         foreach ($translator->strings as $string) {
             $cells = array();
             // component name
-            $cells[0] = new html_table_cell($string->component);
+            $cells[0] = new \core\output\html_table_cell($string->component);
             $cells[0]->attributes['class'] = 'component';
             // string identification code
-            $cells[1] = new html_table_cell(html_writer::tag('div', s($string->stringid), array('class' => 'stringid')));
+            $cells[1] = new \core\output\html_table_cell(html_writer::tag('div', s($string->stringid), array('class' => 'stringid')));
             $cells[1]->attributes['class'] = 'stringid';
             // master translation of the string
             $master = html_writer::tag('div', s($string->master), array('class' => 'preformatted'));
@@ -80,7 +80,7 @@ class tool_customlang_renderer extends plugin_renderer_base {
                 $master .= html_writer::tag('div', $this->help_icon('placeholder', 'tool_customlang',
                         get_string('placeholderwarning', 'tool_customlang')), array('class' => 'placeholderinfo'));
             }
-            $cells[2] = new html_table_cell($master);
+            $cells[2] = new \core\output\html_table_cell($master);
             $cells[2]->attributes['class'] = 'standard master';
             // local customization of the string
             $textareaattributes = array('name'=>'cust['.$string->id.']', 'cols'=>40, 'rows'=>3);
@@ -88,7 +88,7 @@ class tool_customlang_renderer extends plugin_renderer_base {
                $textareaattributes['style'] = 'min-height:' . (int) 4*$minheight . 'em;';
             }
             $textarea = html_writer::tag('textarea', s($string->local), $textareaattributes);
-            $cells[3] = new html_table_cell($textarea);
+            $cells[3] = new \core\output\html_table_cell($textarea);
             if (!is_null($string->local) and $string->outdated) {
                 $mark  = html_writer::empty_tag('input', array('type' => 'checkbox', 'id' => 'update_' . $string->id,
                                                                'name' => 'updates[]', 'value' => $string->id));
@@ -99,7 +99,7 @@ class tool_customlang_renderer extends plugin_renderer_base {
             } else {
                 $mark  = '';
             }
-            $cells[3] = new html_table_cell($textarea."\n".$mark);
+            $cells[3] = new \core\output\html_table_cell($textarea."\n".$mark);
             $cells[3]->attributes['class'] = 'local';
             $cells[3]->id = 'id_'.$string->id;
             if (!is_null($string->local)) {
@@ -122,7 +122,7 @@ class tool_customlang_renderer extends plugin_renderer_base {
             if ($string->original !== $string->master) {
                 $cells = array();
                 // original of the string
-                $cells[2] = new html_table_cell(html_writer::tag('div', s($string->original), array('class' => 'preformatted')));
+                $cells[2] = new \core\output\html_table_cell(html_writer::tag('div', s($string->original), array('class' => 'preformatted')));
                 $cells[2]->attributes['class'] = 'standard original';
                 $row = new html_table_row($cells);
                 $table->data[] = $row;

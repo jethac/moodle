@@ -1501,6 +1501,8 @@ class html_writer {
      * @return string HTML code
      */
     public static function table(html_table $table) {
+        global $OUTPUT;
+
         // prepare table data and populate missing properties with reasonable defaults
         if (!empty($table->align)) {
             foreach ($table->align as $key => $aa) {
@@ -1588,7 +1590,7 @@ class html_writer {
                 // Convert plain string headings into html_table_cell objects
                 if (!($heading instanceof html_table_cell)) {
                     $headingtext = $heading;
-                    $heading = new html_table_cell();
+                    $heading = new \core\output\html_table_cell();
                     $heading->text = $headingtext;
                     $heading->header = true;
                 }
@@ -1652,8 +1654,8 @@ class html_writer {
                         $newrow = new html_table_row();
 
                         foreach ($row as $cell) {
-                            if (!($cell instanceof html_table_cell)) {
-                                $cell = new html_table_cell($cell);
+                            if (!($cell instanceof \core\output\html_table_cell)) {
+                                $cell = new \core\output\html_table_cell($cell);
                             }
                             $newrow->cells[] = $cell;
                         }
@@ -1685,8 +1687,8 @@ class html_writer {
                             mtrace("A cell with key ($key) was found after the last key ($lastkey)");
                         }
 
-                        if (!($cell instanceof html_table_cell)) {
-                            $mycell = new html_table_cell();
+                        if (!($cell instanceof \core\output\html_table_cell)) {
+                            $mycell = new \core\output\html_table_cell();
                             $mycell->text = $cell;
                             $cell = $mycell;
                         }
@@ -1717,11 +1719,15 @@ class html_writer {
                                 'abbr' => $cell->abbr,
                                 'scope' => $cell->scope,
                             ));
+
+                        /*
                         $tagtype = 'td';
                         if ($cell->header === true) {
                             $tagtype = 'th';
                         }
                         $output .= html_writer::tag($tagtype, $cell->text, $tdattributes) . "\n";
+                        */
+                        $output .= $OUTPUT->render($cell);
                     }
                 }
                 $output .= html_writer::end_tag('tr') . "\n";
@@ -2093,14 +2099,14 @@ class html_table {
      * $t->data = array($row1, $row2);
      *
      * Example with array of html_table_row objects: (used for more fine-grained control)
-     * $cell1 = new html_table_cell();
+     * $cell1 = new \core\output\html_table_cell();
      * $cell1->text = 'Harry Potter';
      * $cell1->colspan = 2;
      * $row1 = new html_table_row();
      * $row1->cells[] = $cell1;
-     * $cell2 = new html_table_cell();
+     * $cell2 = new \core\output\html_table_cell();
      * $cell2->text = 'Hermione Granger';
-     * $cell3 = new html_table_cell();
+     * $cell3 = new \core\output\html_table_cell();
      * $cell3->text = '100 %';
      * $row2 = new html_table_row();
      * $row2->cells = array($cell2, $cell3);
@@ -2222,79 +2228,12 @@ class html_table_row {
         $this->attributes['class'] = '';
         $cells = (array)$cells;
         foreach ($cells as $cell) {
-            if ($cell instanceof html_table_cell) {
+            if ($cell instanceof \core\output\html_table_cell) {
                 $this->cells[] = $cell;
             } else {
-                $this->cells[] = new html_table_cell($cell);
+                $this->cells[] = new \core\output\html_table_cell($cell);
             }
         }
-    }
-}
-
-/**
- * Component representing a table cell.
- *
- * @copyright 2009 Nicolas Connault
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @since Moodle 2.0
- * @package core
- * @category output
- */
-class html_table_cell {
-
-    /**
-     * @var string Value to use for the id attribute of the cell.
-     */
-    public $id = null;
-
-    /**
-     * @var string The contents of the cell.
-     */
-    public $text;
-
-    /**
-     * @var string Abbreviated version of the contents of the cell.
-     */
-    public $abbr = null;
-
-    /**
-     * @var int Number of columns this cell should span.
-     */
-    public $colspan = null;
-
-    /**
-     * @var int Number of rows this cell should span.
-     */
-    public $rowspan = null;
-
-    /**
-     * @var string Defines a way to associate header cells and data cells in a table.
-     */
-    public $scope = null;
-
-    /**
-     * @var bool Whether or not this cell is a header cell.
-     */
-    public $header = null;
-
-    /**
-     * @var string Value to use for the style attribute of the table cell
-     */
-    public $style = null;
-
-    /**
-     * @var array Attributes of additional HTML attributes for the <td> element
-     */
-    public $attributes = array();
-
-    /**
-     * Constructs a table cell
-     *
-     * @param string $text
-     */
-    public function __construct($text = null) {
-        $this->text = $text;
-        $this->attributes['class'] = '';
     }
 }
 

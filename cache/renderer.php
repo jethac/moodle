@@ -96,7 +96,7 @@ class core_cache_renderer extends plugin_renderer_base {
             }
 
             $isready = $store['isready'] && $store['requirementsmet'];
-            $readycell = new html_table_cell;
+            $readycell = new \core\output\html_table_cell;
             if ($isready) {
                 $readycell->text = $this->output->pix_icon('i/valid', '1');
             }
@@ -355,11 +355,11 @@ class core_cache_renderer extends plugin_renderer_base {
                 $actions[] = html_writer::link($url, get_string('delete', 'cache'));
             }
             $table->data[] = new html_table_row(array(
-                new html_table_cell($lock['name']),
-                new html_table_cell($lock['type']),
-                new html_table_cell($lock['default'] ? $tick : ''),
-                new html_table_cell($lock['uses']),
-                new html_table_cell(join(' ', $actions))
+                new \core\output\html_table_cell($lock['name']),
+                new \core\output\html_table_cell($lock['type']),
+                new \core\output\html_table_cell($lock['default'] ? $tick : ''),
+                new \core\output\html_table_cell($lock['uses']),
+                new \core\output\html_table_cell(join(' ', $actions))
             ));
         }
 

@@ -42,13 +42,13 @@ class tool_messageinbound_renderer extends plugin_renderer_base {
         global $CFG;
 
         $table = new html_table();
-        $handlername = new html_table_cell(get_string('name', 'tool_messageinbound') . "\n" .
+        $handlername = new \core\output\html_table_cell(get_string('name', 'tool_messageinbound') . "\n" .
                 html_writer::tag('span', get_string('classname', 'tool_messageinbound'), array('class' => 'handler-function')));
 
         // Prepare some of the rows with additional styling.
-        $enabled = new html_table_cell(get_string('enabled', 'tool_messageinbound'));
+        $enabled = new \core\output\html_table_cell(get_string('enabled', 'tool_messageinbound'));
         $enabled->attributes['class'] = 'state';
-        $edit = new html_table_cell(get_string('edit', 'tool_messageinbound'));
+        $edit = new \core\output\html_table_cell(get_string('edit', 'tool_messageinbound'));
         $edit->attributes['class'] = 'edit';
         $table->head  = array(
                 $handlername,
@@ -75,7 +75,7 @@ class tool_messageinbound_renderer extends plugin_renderer_base {
 
         $editurlbase = new moodle_url('/admin/tool/messageinbound/index.php');
         foreach ($handlers as $handler) {
-            $handlername = new html_table_cell($handler->name . "\n" .
+            $handlername = new \core\output\html_table_cell($handler->name . "\n" .
                     html_writer::tag('span', $handler->classname, array('class' => 'handler-function')));
             $handlername->header = true;
 
@@ -84,9 +84,9 @@ class tool_messageinbound_renderer extends plugin_renderer_base {
                     get_string('edithandler', 'tool_messageinbound', $handler->classname)));
 
             // Prepare some of the rows with additional styling.
-            $enabled = new html_table_cell($handler->enabled ? $yes : $no);
+            $enabled = new \core\output\html_table_cell($handler->enabled ? $yes : $no);
             $enabled->attributes['class'] = 'state';
-            $edit = new html_table_cell($editlink);
+            $edit = new \core\output\html_table_cell($editlink);
             $edit->attributes['class'] = 'edit';
 
             // Add the row.

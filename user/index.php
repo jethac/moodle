@@ -287,7 +287,7 @@ $formatmenu = array( '0' => get_string('brief'),
                      '1' => get_string('userdetails'));
 $select = new single_select($baseurl, 'mode', $formatmenu, $mode, null, 'formatmenu');
 $select->set_label(get_string('userlist'));
-$userlistcell = new html_table_cell();
+$userlistcell = new \core\output\html_table_cell();
 $userlistcell->attributes['class'] = 'right';
 $userlistcell->text = $OUTPUT->render($select);
 $controlstable->data[0]->cells[] = $userlistcell;
@@ -300,11 +300,11 @@ if ($currentgroup and (!$isseparategroups or has_capability('moodle/site:accessa
         if (!empty($group->description) or (!empty($group->picture) and empty($group->hidepicture))) {
             $groupinfotable = new html_table();
             $groupinfotable->attributes['class'] = 'groupinfobox';
-            $picturecell = new html_table_cell();
+            $picturecell = new \core\output\html_table_cell();
             $picturecell->attributes['class'] = 'left side picture';
             $picturecell->text = print_group_picture($group, $course->id, true, true, false);
 
-            $contentcell = new html_table_cell();
+            $contentcell = new \core\output\html_table_cell();
             $contentcell->attributes['class'] = 'content';
 
             $contentheading = $group->name;
@@ -630,11 +630,11 @@ if ($mode === MODE_USERDETAILS) {    // Print simple listing.
                 $table->attributes['class'] = 'userinfobox';
 
                 $row = new html_table_row();
-                $row->cells[0] = new html_table_cell();
+                $row->cells[0] = new \core\output\html_table_cell();
                 $row->cells[0]->attributes['class'] = 'left side';
 
                 $row->cells[0]->text = $OUTPUT->user_picture($user, array('size' => 100, 'courseid' => $course->id));
-                $row->cells[1] = new html_table_cell();
+                $row->cells[1] = new \core\output\html_table_cell();
                 $row->cells[1]->attributes['class'] = 'content';
 
                 $row->cells[1]->text = $OUTPUT->container(fullname($user, has_capability('moodle/site:viewfullnames', $context)), 'username');
@@ -682,7 +682,7 @@ if ($mode === MODE_USERDETAILS) {    // Print simple listing.
 
                 $row->cells[1]->text .= $OUTPUT->container_end();
 
-                $row->cells[2] = new html_table_cell();
+                $row->cells[2] = new \core\output\html_table_cell();
                 $row->cells[2]->attributes['class'] = 'links';
                 $row->cells[2]->text = '';
 

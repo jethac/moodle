@@ -2873,6 +2873,19 @@ EOD;
     }
 
     /**
+     * Render a table cell.
+     *
+     * @param \core\output\html_table_cell $cell the cell to print out
+     * @return string the HTML to output.
+     */
+    protected function render_html_table_cell(\core\output\html_table_cell $cell) {
+
+        $data = $cell->export_for_template($this);
+        return self::render_from_template('core/html_table_cell', $data);
+
+    }
+
+    /**
      * Returns HTML to display a continue button that goes to a particular URL.
      *
      * @param string|moodle_url $url The url the button goes to.

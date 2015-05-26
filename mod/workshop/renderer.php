@@ -314,7 +314,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
                 $classes .= ' nonactive';
             }
             $table->colclasses[] = $classes;
-            $cell = new html_table_cell();
+            $cell = new \core\output\html_table_cell();
             $cell->text = $this->helper_user_plan_tasks($phase->tasks);
             $row->cells[] = $cell;
         }
@@ -470,7 +470,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
                 }
                 // column #1 - participant - spans over all rows
                 if ($tr == 0) {
-                    $cell = new html_table_cell();
+                    $cell = new \core\output\html_table_cell();
                     $cell->text = $this->helper_grading_report_participant($participant, $userinfo);
                     $cell->rowspan = $numoftrs;
                     $cell->attributes['class'] = 'participant';
@@ -478,7 +478,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
                 }
                 // column #2 - submission - spans over all rows
                 if ($tr == 0) {
-                    $cell = new html_table_cell();
+                    $cell = new \core\output\html_table_cell();
                     $cell->text = $this->helper_grading_report_submission($participant);
                     $cell->rowspan = $numoftrs;
                     $cell->attributes['class'] = 'submission';
@@ -488,7 +488,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
                 if ($tr % $spanreceived == 0) {
                     $idx = intval($tr / $spanreceived);
                     $assessment = self::array_nth($participant->reviewedby, $idx);
-                    $cell = new html_table_cell();
+                    $cell = new \core\output\html_table_cell();
                     $cell->text = $this->helper_grading_report_assessment($assessment, $options->showreviewernames, $userinfo,
                             get_string('gradereceivedfrom', 'workshop'));
                     $cell->rowspan = $spanreceived;
@@ -502,7 +502,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
                 }
                 // column #4 - total grade for submission
                 if ($options->showsubmissiongrade and $tr == 0) {
-                    $cell = new html_table_cell();
+                    $cell = new \core\output\html_table_cell();
                     $cell->text = $this->helper_grading_report_grade($participant->submissiongrade, $participant->submissiongradeover);
                     $cell->rowspan = $numoftrs;
                     $cell->attributes['class'] = 'submissiongrade';
@@ -512,7 +512,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
                 if ($tr % $spangiven == 0) {
                     $idx = intval($tr / $spangiven);
                     $assessment = self::array_nth($participant->reviewerof, $idx);
-                    $cell = new html_table_cell();
+                    $cell = new \core\output\html_table_cell();
                     $cell->text = $this->helper_grading_report_assessment($assessment, $options->showauthornames, $userinfo,
                             get_string('gradegivento', 'workshop'));
                     $cell->rowspan = $spangiven;
@@ -526,7 +526,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
                 }
                 // column #6 - total grade for assessment
                 if ($options->showgradinggrade and $tr == 0) {
-                    $cell = new html_table_cell();
+                    $cell = new \core\output\html_table_cell();
                     $cell->text = $this->helper_grading_report_grade($participant->gradinggrade);
                     $cell->rowspan = $numoftrs;
                     $cell->attributes['class'] = 'gradinggrade';

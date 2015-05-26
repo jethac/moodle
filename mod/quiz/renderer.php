@@ -627,7 +627,7 @@ class mod_quiz_renderer extends plugin_renderer_base {
             // Add a section headings if we need one here.
             $heading = $attemptobj->get_heading_before_slot($slot);
             if ($heading) {
-                $cell = new html_table_cell(format_string($heading));
+                $cell = new \core\output\html_table_cell(format_string($heading));
                 $cell->header = true;
                 $cell->colspan = $tablewidth;
                 $table->data[] = array($cell);

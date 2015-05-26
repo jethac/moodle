@@ -241,7 +241,7 @@ class cohort_upload_form extends moodleform {
         $previewdrows = $this->get_previewed_rows();
         foreach ($previewdrows as $idx) {
             $line = $this->processeddata[$idx];
-            $cells = array(new html_table_cell($idx));
+            $cells = array(new \core\output\html_table_cell($idx));
             $context = context::instance_by_id($line['data']['contextid']);
             foreach ($columns as $key => $value) {
                 if ($key === 'contextid') {
@@ -250,7 +250,7 @@ class cohort_upload_form extends moodleform {
                 } else {
                     $text = s($line['data'][$key]);
                 }
-                $cells[] = new html_table_cell($text);
+                $cells[] = new \core\output\html_table_cell($text);
             }
             $text = '';
             if ($line['errors']) {
@@ -259,11 +259,11 @@ class cohort_upload_form extends moodleform {
             if ($line['warnings']) {
                 $text .= html_writer::div(join('<br>', $line['warnings']));
             }
-            $cells[] = new html_table_cell($text);
+            $cells[] = new \core\output\html_table_cell($text);
             $table->data[] = new html_table_row($cells);
         }
         if ($notdisplayed = count($this->processeddata) - count($previewdrows) - 1) {
-            $cell = new html_table_cell(get_string('displayedrows', 'cohort',
+            $cell = new \core\output\html_table_cell(get_string('displayedrows', 'cohort',
                 (object)array('displayed' => count($previewdrows), 'total' => count($this->processeddata) - 1)));
             $cell->colspan = count($columns) + 2;
             $table->data[] = new html_table_row(array($cell));

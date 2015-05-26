@@ -89,7 +89,7 @@ foreach ($courses as $course) {
     $course = (object)$course;
     if ($prevcat !== $course->categoryid) {
         $row = new html_table_row();
-        $cell = new html_table_cell($icon . s($course->categoryname));
+        $cell = new \core\output\html_table_cell($icon . s($course->categoryname));
         $cell->header = true;
         $cell->attributes['class'] = 'categoryname';
         $cell->colspan = 4;

@@ -181,7 +181,7 @@ foreach ($modinfo->sections as $sectionnum=>$section) {
         if ($prevsecctionnum != $sectionnum) {
             $sectionrow = new html_table_row();
             $sectionrow->attributes['class'] = 'section';
-            $sectioncell = new html_table_cell();
+            $sectioncell = new \core\output\html_table_cell();
             $sectioncell->colspan = count($outlinetable->head);
 
             $sectiontitle = get_section_name($course, $sectionnum);
@@ -197,7 +197,7 @@ foreach ($modinfo->sections as $sectionnum=>$section) {
         $modulename = get_string('modulename', $cm->modname);
 
         $reportrow = new html_table_row();
-        $activitycell = new html_table_cell();
+        $activitycell = new \core\output\html_table_cell();
         $activitycell->attributes['class'] = 'activity';
 
         $activityicon = $OUTPUT->pix_icon('icon', $modulename, $cm->modname, array('class'=>'icon'));
@@ -211,7 +211,7 @@ foreach ($modinfo->sections as $sectionnum=>$section) {
 
         $reportrow->cells[] = $activitycell;
 
-        $numviewscell = new html_table_cell();
+        $numviewscell = new \core\output\html_table_cell();
         $numviewscell->attributes['class'] = 'numviews';
 
         if (!empty($views[$cm->id]->numviews)) {
@@ -224,7 +224,7 @@ foreach ($modinfo->sections as $sectionnum=>$section) {
 
         if ($CFG->useblogassociations) {
             require_once($CFG->dirroot.'/blog/lib.php');
-            $blogcell = new html_table_cell();
+            $blogcell = new \core\output\html_table_cell();
             $blogcell->attributes['class'] = 'blog';
             if ($blogcount = blog_get_associated_count($course->id, $cm->id)) {
                 $blogurl = new moodle_url('/blog/index.php', array('modid' => $cm->id));
@@ -236,7 +236,7 @@ foreach ($modinfo->sections as $sectionnum=>$section) {
         }
 
         if ($showlastaccess) {
-            $lastaccesscell = new html_table_cell();
+            $lastaccesscell = new \core\output\html_table_cell();
             $lastaccesscell->attributes['class'] = 'lastaccess';
 
             if (isset($views[$cm->id]->lasttime)) {

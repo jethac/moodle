@@ -159,11 +159,11 @@ class mod_choice_renderer extends plugin_renderer_base {
         ksort($choices->options);
 
         $columns = array();
-        $celldefault = new html_table_cell();
+        $celldefault = new \core\output\html_table_cell();
         $celldefault->attributes['class'] = 'data';
 
         // This extra cell is needed in order to support accessibility for screenreader. MDL-30816
-        $accessiblecell = new html_table_cell();
+        $accessiblecell = new \core\output\html_table_cell();
         $accessiblecell->scope = 'row';
         $accessiblecell->text = get_string('choiceoptions', 'choice');
         $columns['options'][] = $accessiblecell;
@@ -204,7 +204,7 @@ class mod_choice_renderer extends plugin_renderer_base {
         $columns = array();
 
         // This extra cell is needed in order to support accessibility for screenreader. MDL-30816
-        $accessiblecell = new html_table_cell();
+        $accessiblecell = new \core\output\html_table_cell();
         $accessiblecell->text = get_string('userchoosethisoption', 'choice');
         $accessiblecell->header = true;
         $accessiblecell->scope = 'row';
@@ -212,7 +212,7 @@ class mod_choice_renderer extends plugin_renderer_base {
         $columns[] = $accessiblecell;
 
         foreach ($choices->options as $optionid => $options) {
-            $cell = new html_table_cell();
+            $cell = new \core\output\html_table_cell();
             $cell->attributes['class'] = 'data';
 
             if ($choices->showunanswered || $optionid > 0) {
@@ -301,7 +301,7 @@ class mod_choice_renderer extends plugin_renderer_base {
         $columns = array();
         $rows = array();
 
-        $headercelldefault = new html_table_cell();
+        $headercelldefault = new \core\output\html_table_cell();
         $headercelldefault->scope = 'row';
         $headercelldefault->header = true;
         $headercelldefault->attributes = array('class'=>'header data');
@@ -326,7 +326,7 @@ class mod_choice_renderer extends plugin_renderer_base {
         $userpercentageheader->text = get_string('numberofuserinpercentage', 'choice');
         $rows['userpercentage'][] = $userpercentageheader;
 
-        $contentcelldefault = new html_table_cell();
+        $contentcelldefault = new \core\output\html_table_cell();
         $contentcelldefault->attributes = array('class'=>'data');
 
         foreach ($choices->options as $optionid => $option) {
@@ -399,7 +399,7 @@ class mod_choice_renderer extends plugin_renderer_base {
         $table->summary = get_string('responsesto', 'choice', format_string($choices->name));
         $table->data = array();
 
-        $columnheaderdefault = new html_table_cell();
+        $columnheaderdefault = new \core\output\html_table_cell();
         $columnheaderdefault->scope = 'col';
 
         $tableheadertext = clone($columnheaderdefault);
@@ -419,10 +419,10 @@ class mod_choice_renderer extends plugin_renderer_base {
         $count = 0;
         ksort($choices->options);
 
-        $columndefault = new html_table_cell();
+        $columndefault = new \core\output\html_table_cell();
         $columndefault->attributes['class'] = 'data';
 
-        $colheaderdefault = new html_table_cell();
+        $colheaderdefault = new \core\output\html_table_cell();
         $colheaderdefault->scope = 'row';
         $colheaderdefault->header = true;
         $colheaderdefault->attributes['class'] = 'header data';

@@ -62,10 +62,10 @@ class core_message_renderer extends plugin_renderer_base {
             $row->attributes['class'] = 'messageoutputs';
 
             // Name
-            $name = new html_table_cell(get_string('pluginname', 'message_'.$processor->name));
+            $name = new \core\output\html_table_cell(get_string('pluginname', 'message_'.$processor->name));
 
             // Enable
-            $enable = new html_table_cell();
+            $enable = new \core\output\html_table_cell();
             $enable->attributes['class'] = 'mdl-align';
             if (!$processor->available) {
                 $enable->text = html_writer::nonempty_tag('span', get_string('outputnotavailable', 'message'), array('class' => 'error'));
@@ -92,7 +92,7 @@ class core_message_renderer extends plugin_renderer_base {
                 ));
             }
             // Settings
-            $settings = new html_table_cell();
+            $settings = new \core\output\html_table_cell();
             if ($processor->available && $processor->hassettings) {
                 $settingsurl = new moodle_url('settings.php', array('section' => 'messagesetting'.$processor->name));
                 $settings->text = html_writer::link($settingsurl, get_string('settings', 'message'));
@@ -145,7 +145,7 @@ class core_message_renderer extends plugin_renderer_base {
 
             // Provider Name
             $providername = get_string('messageprovider:'.$provider->name, $provider->component);
-            $row->cells[] = new html_table_cell($providername);
+            $row->cells[] = new \core\output\html_table_cell($providername);
             $providersettingprefix = $provider->component.'_'.$provider->name.'_';
             $disableprovidersetting = $providersettingprefix.'disable';
             $providerdisabled = !empty($preferences->$disableprovidersetting);
@@ -198,12 +198,12 @@ class core_message_renderer extends plugin_renderer_base {
                         $cellcontent .= html_writer::end_tag('div');
                     }
                 }
-                $row->cells[] = new html_table_cell($cellcontent);
+                $row->cells[] = new \core\output\html_table_cell($cellcontent);
             }
             $disableprovider = html_writer::checkbox($disableprovidersetting, 1, !$providerdisabled, '',
                     array('id' => $disableprovidersetting, 'class' => 'messagedisable'));
             $disableprovider = html_writer::tag('div', $disableprovider);
-            $row->cells[] = new html_table_cell($disableprovider);
+            $row->cells[] = new \core\output\html_table_cell($disableprovider);
             $table->data[] = $row;
         }
 
@@ -281,7 +281,7 @@ class core_message_renderer extends plugin_renderer_base {
                 $provideradded = true;
                 $headerrow = new html_table_row();
                 $providername = get_string('messageprovider:'.$provider->name, $provider->component);
-                $providercell = new html_table_cell($providername);
+                $providercell = new \core\output\html_table_cell($providername);
                 $providercell->header = true;
                 $providercell->colspan = $numprocs;
                 $providercell->attributes['class'] = 'c0';
@@ -290,7 +290,7 @@ class core_message_renderer extends plugin_renderer_base {
 
                 foreach (array('loggedin', 'loggedoff') as $state) {
                     $optionrow = new html_table_row();
-                    $optionname = new html_table_cell(get_string($state.'description', 'message'));
+                    $optionname = new \core\output\html_table_cell(get_string($state.'description', 'message'));
                     $optionname->attributes['class'] = 'c0';
                     $optionrow->cells = array($optionname);
                     foreach ($readyprocessors as $processor) {
@@ -308,7 +308,7 @@ class core_message_renderer extends plugin_renderer_base {
                                 continue;
                             }
                             $cellcontent = html_writer::nonempty_tag('div', get_string($permitted, 'message'), array('class' => 'dimmed_text'));
-                            $optioncell = new html_table_cell($cellcontent);
+                            $optioncell = new \core\output\html_table_cell($cellcontent);
                             $optioncell->rowspan = 2;
                             $optioncell->attributes['class'] = 'disallowed';
                         } else {
@@ -341,7 +341,7 @@ class core_message_renderer extends plugin_renderer_base {
                             $label = get_string('sendingviawhen', 'message', $labelparams);
                             $cellcontent = html_writer::label($label, $elementname, true, array('class' => 'accesshide'));
                             $cellcontent .= html_writer::checkbox($elementname, 1, $checked, '', array_merge(array('id' => $elementname, 'class' => 'notificationpreference'), $disabled));
-                            $optioncell = new html_table_cell($cellcontent);
+                            $optioncell = new \core\output\html_table_cell($cellcontent);
                             $optioncell->attributes['class'] = 'mdl-align';
                         }
                         $optionrow->cells[] = $optioncell;

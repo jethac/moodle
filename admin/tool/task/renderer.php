@@ -71,20 +71,20 @@ class tool_task_renderer extends plugin_renderer_base {
                 $editlink = $this->render(new pix_icon('t/locked', get_string('scheduledtaskchangesdisabled', 'tool_task')));
             }
 
-            $namecell = new html_table_cell($task->get_name() . "\n" . html_writer::tag('span', '\\'.get_class($task), array('class' => 'task-class')));
+            $namecell = new \core\output\html_table_cell($task->get_name() . "\n" . html_writer::tag('span', '\\'.get_class($task), array('class' => 'task-class')));
             $namecell->header = true;
 
             $component = $task->get_component();
             $plugininfo = null;
             list($type, $plugin) = core_component::normalize_component($component);
             if ($type === 'core') {
-                $componentcell = new html_table_cell(get_string('corecomponent', 'tool_task'));
+                $componentcell = new \core\output\html_table_cell(get_string('corecomponent', 'tool_task'));
             } else {
                 if ($plugininfo = core_plugin_manager::instance()->get_plugin_info($component)) {
                     $plugininfo->init_display_name();
-                    $componentcell = new html_table_cell($plugininfo->displayname);
+                    $componentcell = new \core\output\html_table_cell($plugininfo->displayname);
                 } else {
-                    $componentcell = new html_table_cell($component);
+                    $componentcell = new \core\output\html_table_cell($component);
                 }
             }
 
@@ -106,16 +106,16 @@ class tool_task_renderer extends plugin_renderer_base {
             $row = new html_table_row(array(
                         $namecell,
                         $componentcell,
-                        new html_table_cell($editlink),
-                        new html_table_cell($lastrun),
-                        new html_table_cell($nextrun),
-                        new html_table_cell($task->get_minute()),
-                        new html_table_cell($task->get_hour()),
-                        new html_table_cell($task->get_day()),
-                        new html_table_cell($task->get_day_of_week()),
-                        new html_table_cell($task->get_month()),
-                        new html_table_cell($task->get_fail_delay()),
-                        new html_table_cell($customised)));
+                        new \core\output\html_table_cell($editlink),
+                        new \core\output\html_table_cell($lastrun),
+                        new \core\output\html_table_cell($nextrun),
+                        new \core\output\html_table_cell($task->get_minute()),
+                        new \core\output\html_table_cell($task->get_hour()),
+                        new \core\output\html_table_cell($task->get_day()),
+                        new \core\output\html_table_cell($task->get_day_of_week()),
+                        new \core\output\html_table_cell($task->get_month()),
+                        new \core\output\html_table_cell($task->get_fail_delay()),
+                        new \core\output\html_table_cell($customised)));
 
             if ($disabled) {
                 $row->attributes['class'] = 'disabled';

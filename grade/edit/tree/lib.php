@@ -176,7 +176,7 @@ class grade_edit_tree {
         /// print the list items now
         if ($this->moving == $eid) {
             // do not diplay children
-            $cell = new html_table_cell();
+            $cell = new \core\output\html_table_cell();
             $cell->colspan = 12;
             $cell->attributes['class'] = $element['type'] . ' moving column-name level' .
                 ($level + 1) . ' level' . ($level % 2 ? 'even' : 'odd');
@@ -231,7 +231,7 @@ class grade_edit_tree {
                         $aurl->params($first);
                     }
 
-                    $cell = new html_table_cell();
+                    $cell = new \core\output\html_table_cell();
                     $cell->colspan = 12;
                     $cell->attributes['class'] = 'movehere level' . ($level + 1) . ' level' . ($level % 2 ? 'even' : 'odd');
 
@@ -299,7 +299,7 @@ class grade_edit_tree {
                 $row->attributes['class'] .= ' ' . $class;
             }
 
-            $headercell = new html_table_cell();
+            $headercell = new \core\output\html_table_cell();
             $headercell->header = true;
             $headercell->scope = 'row';
             $headercell->attributes['title'] = $object->stripped_name;
@@ -320,7 +320,7 @@ class grade_edit_tree {
             $returnrows = array_merge($returnrows, $html_children);
 
             // Print a coloured row to show the end of the category across the table
-            $endcell = new html_table_cell();
+            $endcell = new \core\output\html_table_cell();
             $endcell->colspan = (19 - $level);
             $endcell->attributes['class'] = 'emptyrow colspan ' . $levelclass;
 
@@ -603,14 +603,14 @@ abstract class grade_edit_tree_column {
     }
 
     public function __construct() {
-        $this->headercell = new html_table_cell();
+        $this->headercell = new \core\output\html_table_cell();
         $this->headercell->header = true;
         $this->headercell->attributes['class'] = 'header';
 
-        $this->categorycell = new html_table_cell();
+        $this->categorycell = new \core\output\html_table_cell();
         $this->categorycell->attributes['class']  = 'cell';
 
-        $this->itemcell = new html_table_cell();
+        $this->itemcell = new \core\output\html_table_cell();
         $this->itemcell->attributes['class'] = 'cell';
 
         if (preg_match('/^grade_edit_tree_column_(\w*)$/', get_class($this), $matches)) {

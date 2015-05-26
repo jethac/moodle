@@ -60,15 +60,15 @@ class tool_filetypes_renderer extends plugin_renderer_base {
             $table = new html_table();
             $headings = new html_table_row();
             $headings->cells = array();
-            $headings->cells[] = new html_table_cell(get_string('extension', 'tool_filetypes'));
+            $headings->cells[] = new \core\output\html_table_cell(get_string('extension', 'tool_filetypes'));
             if (!$restricted) {
                 $headings->cells[] =
-                        new html_table_cell(html_writer::span(get_string('edit'), 'accesshide'));
+                        new \core\output\html_table_cell(html_writer::span(get_string('edit'), 'accesshide'));
             }
-            $headings->cells[] = new html_table_cell(get_string('source', 'tool_filetypes'));
-            $headings->cells[] = new html_table_cell(get_string('mimetype', 'tool_filetypes'));
-            $headings->cells[] = new html_table_cell(get_string('groups', 'tool_filetypes'));
-            $headings->cells[] = new html_table_cell(get_string('displaydescription', 'tool_filetypes'));
+            $headings->cells[] = new \core\output\html_table_cell(get_string('source', 'tool_filetypes'));
+            $headings->cells[] = new \core\output\html_table_cell(get_string('mimetype', 'tool_filetypes'));
+            $headings->cells[] = new \core\output\html_table_cell(get_string('groups', 'tool_filetypes'));
+            $headings->cells[] = new \core\output\html_table_cell(get_string('displaydescription', 'tool_filetypes'));
             foreach ($headings->cells as $cell) {
                 $cell->header = true;
             }
@@ -82,7 +82,7 @@ class tool_filetypes_renderer extends plugin_renderer_base {
 
                 // First cell has icon and extension.
                 $icon = $this->pix_icon('f/' . $filetype['icon'], '');
-                $row->cells[] = new html_table_cell($icon . ' ' . html_writer::span(s($extension)));
+                $row->cells[] = new \core\output\html_table_cell($icon . ' ' . html_writer::span(s($extension)));
 
                 // Reset URL and button if needed.
                 $reverturl = new \moodle_url('/admin/tool/filetypes/revert.php',
@@ -97,17 +97,17 @@ class tool_filetypes_renderer extends plugin_renderer_base {
                 if (!empty($filetype['deleted'])) {
                     // Show deleted standard types differently.
                     if (!$restricted) {
-                        $row->cells[] = new html_table_cell('');
+                        $row->cells[] = new \core\output\html_table_cell('');
                     }
-                    $source = new html_table_cell(get_string('source_deleted', 'tool_filetypes') .
+                    $source = new \core\output\html_table_cell(get_string('source_deleted', 'tool_filetypes') .
                             ' ' . $revertbutton);
                     $source->attributes = array('class' => 'nonstandard');
                     $row->cells[] = $source;
 
                     // Other cells are blank.
-                    $row->cells[] = new html_table_cell('');
-                    $row->cells[] = new html_table_cell('');
-                    $row->cells[] = new html_table_cell('');
+                    $row->cells[] = new \core\output\html_table_cell('');
+                    $row->cells[] = new \core\output\html_table_cell('');
+                    $row->cells[] = new \core\output\html_table_cell('');
                     $row->attributes = array('class' => 'deleted');
                 } else {
                     if (!$restricted) {
@@ -121,7 +121,7 @@ class tool_filetypes_renderer extends plugin_renderer_base {
                                 array('extension' => $extension));
                         $deletebutton = html_writer::link($deleteurl, $this->pix_icon('t/delete',
                                 get_string('deletea', 'tool_filetypes', s($extension))));
-                        $row->cells[] = new html_table_cell($editbutton . '&nbsp;' . $deletebutton);
+                        $row->cells[] = new \core\output\html_table_cell($editbutton . '&nbsp;' . $deletebutton);
                     }
 
                     // Source.
@@ -133,7 +133,7 @@ class tool_filetypes_renderer extends plugin_renderer_base {
                     } else {
                         $sourcestring .= 'standard';
                     }
-                    $source = new html_table_cell(get_string($sourcestring, 'tool_filetypes') .
+                    $source = new \core\output\html_table_cell(get_string($sourcestring, 'tool_filetypes') .
                             ($sourcestring === 'source_modified' ? ' ' . $revertbutton : ''));
                     if ($sourcestring !== 'source_standard') {
                         $source->attributes = array('class' => 'nonstandard');
@@ -147,11 +147,11 @@ class tool_filetypes_renderer extends plugin_renderer_base {
                         $mimetype .= html_writer::div(html_writer::tag('i',
                                 get_string('defaulticon', 'tool_filetypes')));
                     }
-                    $row->cells[] = new html_table_cell($mimetype);
+                    $row->cells[] = new \core\output\html_table_cell($mimetype);
 
                     // Groups.
                     $groups = !empty($filetype['groups']) ? implode(', ', $filetype['groups']) : '';
-                    $row->cells[] = new html_table_cell(s($groups));
+                    $row->cells[] = new \core\output\html_table_cell(s($groups));
 
                     // Description.
                     $description = get_mimetype_description(array('filename' => 'a.' . $extension));
@@ -160,7 +160,7 @@ class tool_filetypes_renderer extends plugin_renderer_base {
                     if ($description === $filetype['type']) {
                         $description = '';
                     }
-                    $row->cells[] = new html_table_cell($description);
+                    $row->cells[] = new \core\output\html_table_cell($description);
                 }
 
                 $table->data[] = $row;

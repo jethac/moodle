@@ -1,0 +1,44 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core/html_table_cell
+
+    Moodle html_table_cell template.
+
+    The purpose of this template is to render a html_table_cell.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * text          Cell content.
+    * type          (optional) td or th.
+    * attributes    (optional) Array of name / value pairs. The value can be omitted for shorthand attributes.
+
+    Example context (json):
+    {
+        "attributes": [
+            { "name": "src", "value": "http://moodle.com/wp-content/themes/moodle/images/logo-hat2.png" },
+            { "name": "class", "value": "iconsmall" }
+        ]
+    }
+
+}}
+<{{^type}}td{{/type}}{{#type}}{{type}}{{/type}}{{#attributes}} {{{name}}}{{#value}}="{{value}}"{{/value}}{{/attributes}}>{{{text}}}</{{^type}}td{{/type}}{{#type}}{{type}}{{/type}}>

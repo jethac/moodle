@@ -634,12 +634,12 @@ class page_wiki_comments extends page_wiki {
 
             $t = new html_table();
             $t->id = 'wiki-comments';
-            $cell1 = new html_table_cell($OUTPUT->user_picture($user, array('popup' => true)));
-            $cell2 = new html_table_cell(get_string('bynameondate', 'forum', $by));
-            $cell3 = new html_table_cell();
+            $cell1 = new \core\output\html_table_cell($OUTPUT->user_picture($user, array('popup' => true)));
+            $cell2 = new \core\output\html_table_cell(get_string('bynameondate', 'forum', $by));
+            $cell3 = new \core\output\html_table_cell();
             $cell3->atributtes ['width'] = "80%";
-            $cell4 = new html_table_cell();
-            $cell5 = new html_table_cell();
+            $cell4 = new \core\output\html_table_cell();
+            $cell5 = new \core\output\html_table_cell();
 
             $row1 = new html_table_row();
             $row1->cells[] = $cell1;
@@ -686,7 +686,7 @@ class page_wiki_comments extends page_wiki {
             }
 
             if ($candelete || $canedit) {
-                $cell6 = new html_table_cell($editicon.$deleteicon);
+                $cell6 = new \core\output\html_table_cell($editicon.$deleteicon);
                 $row3 = new html_table_row();
                 $row3->cells[] = $cell5;
                 $row3->cells[] = $cell6;

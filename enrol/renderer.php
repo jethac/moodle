@@ -566,7 +566,7 @@ class course_enrolment_table extends html_table implements renderable {
             if ($hasbulkops) {
                 // Add a checkbox into the first column.
                 $input = html_writer::empty_tag('input', array('type' => 'checkbox', 'name' => 'bulkuser[]', 'value' => $userid));
-                $row->cells[] = new html_table_cell($input);
+                $row->cells[] = new \core\output\html_table_cell($input);
             }
             foreach ($this->fields as $field => $label) {
                 if (is_array($label)) {
@@ -579,12 +579,12 @@ class course_enrolment_table extends html_table implements renderable {
                     if (empty($bits)) {
                         $bits[] = '&nbsp;';
                     }
-                    $row->cells[] = new html_table_cell(join(' ', $bits));
+                    $row->cells[] = new \core\output\html_table_cell(join(' ', $bits));
                 } else {
                     if (!array_key_exists($field, $user)) {
                         $user[$field] = '&nbsp;';
                     }
-                    $row->cells[] = new html_table_cell($user[$field]);
+                    $row->cells[] = new \core\output\html_table_cell($user[$field]);
                 }
             }
             $this->data[] = $row;

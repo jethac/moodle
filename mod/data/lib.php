@@ -568,12 +568,12 @@ function data_generate_default_template(&$data, $template, $recordid=0, $form=fa
             );
         }
         if ($template == 'listtemplate') {
-            $cell = new html_table_cell('##edit##  ##more##  ##delete##  ##approve##  ##disapprove##  ##export##');
+            $cell = new \core\output\html_table_cell('##edit##  ##more##  ##delete##  ##approve##  ##disapprove##  ##export##');
             $cell->colspan = 2;
             $cell->attributes['class'] = 'controls';
             $table->data[] = new html_table_row(array($cell));
         } else if ($template == 'singletemplate') {
-            $cell = new html_table_cell('##edit##  ##delete##  ##approve##  ##disapprove##  ##export##');
+            $cell = new \core\output\html_table_cell('##edit##  ##delete##  ##approve##  ##disapprove##  ##export##');
             $cell->colspan = 2;
             $cell->attributes['class'] = 'controls';
             $table->data[] = new html_table_row(array($cell));
