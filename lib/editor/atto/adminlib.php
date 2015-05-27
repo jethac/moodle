@@ -240,7 +240,7 @@ class editor_atto_subplugins_setting extends admin_setting {
             }
 
             // Add a row to the table.
-            $row = new html_table_row(array($displayname, $version, $toolbarconfig, $settings, $uninstall));
+            $row = new \core\output\html_table_row(array($displayname, $version, $toolbarconfig, $settings, $uninstall));
             $table->data[] = $row;
         }
         $return .= html_writer::table($table);

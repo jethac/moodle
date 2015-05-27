@@ -30,15 +30,17 @@
     Context variables required for this template:
     * text          Cell content.
     * type          (optional) td or th.
+    * classes       (optional) CSS classes as a space-separated list.
     * attributes    (optional) Array of name / value pairs. The value can be omitted for shorthand attributes.
 
     Example context (json):
     {
+        "text": "I'm a table cell!",
+        "type": "th",
         "attributes": [
-            { "name": "src", "value": "http://moodle.com/wp-content/themes/moodle/images/logo-hat2.png" },
-            { "name": "class", "value": "iconsmall" }
+            { "name": "class", "value": "mytablecell" }
         ]
     }
 
 }}
-<{{^type}}td{{/type}}{{#type}}{{type}}{{/type}}{{#attributes}} {{{name}}}{{#value}}="{{value}}"{{/value}}{{/attributes}}>{{{text}}}</{{^type}}td{{/type}}{{#type}}{{type}}{{/type}}>
+<{{^type}}td{{/type}}{{#type}}{{type}}{{/type}} {{#classes}}class="{{classes}}"{{/classes}}{{#attributes}} {{#value}}{{{name}}}="{{value}}"{{/value}}{{/attributes}}>{{{text}}}</{{^type}}td{{/type}}{{#type}}{{type}}{{/type}}>

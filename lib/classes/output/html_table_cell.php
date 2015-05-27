@@ -114,6 +114,9 @@ class html_table_cell implements \renderable, \templatable {
             'style'
         );
         foreach ($attributenames as $name) {
+            if (is_null($this->$name))
+                continue;
+
             $obj = new stdClass();
             $obj->name = $name;
             $obj->value = $this->$name;

@@ -5584,7 +5584,7 @@ class admin_setting_manageenrols extends admin_setting {
             }
 
             // Add a row to the table.
-            $row = new html_table_row(array($icon.$displayname, $usage, $version, $hideshow, $updown, $settings, $test, $uninstall));
+            $row = new \core\output\html_table_row(array($icon.$displayname, $usage, $version, $hideshow, $updown, $settings, $test, $uninstall));
             if ($class) {
                 $row->attributes['class'] = $class;
             }
@@ -6138,7 +6138,7 @@ class admin_setting_manageauths extends admin_setting {
             }
 
             // Add a row to the table.
-            $row = new html_table_row(array($displayname, $usercount, $hideshow, $updown, $settings, $test, $uninstall));
+            $row = new \core\output\html_table_row(array($displayname, $usercount, $hideshow, $updown, $settings, $test, $uninstall));
             if ($class) {
                 $row->attributes['class'] = $class;
             }
@@ -6318,7 +6318,7 @@ class admin_setting_manageeditors extends admin_setting {
             }
 
             // Add a row to the table.
-            $row = new html_table_row(array($displayname, $hideshow, $updown, $settings, $uninstall));
+            $row = new \core\output\html_table_row(array($displayname, $hideshow, $updown, $settings, $uninstall));
             if ($class) {
                 $row->attributes['class'] = $class;
             }
@@ -6559,7 +6559,7 @@ class admin_setting_manageformats extends admin_setting {
             if ($uninstallurl = core_plugin_manager::instance()->get_uninstall_url('format_'.$format->name, 'manage')) {
                 $uninstall = html_writer::link($uninstallurl, $txt->uninstall);
             }
-            $row = new html_table_row(array($strformatname, $hideshow, $updown, $uninstall, $settings));
+            $row = new \core\output\html_table_row(array($strformatname, $hideshow, $updown, $uninstall, $settings));
             if ($class) {
                 $row->attributes['class'] = $class;
             }

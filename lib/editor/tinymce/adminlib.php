@@ -181,7 +181,7 @@ class tiynce_subplugins_settings extends admin_setting {
             }
 
             // Add a row to the table.
-            $row = new html_table_row(array($displayname, $buttons, $version, $hideshow, $settings, $uninstall));
+            $row = new \core\output\html_table_row(array($displayname, $buttons, $version, $hideshow, $settings, $uninstall));
             if ($class) {
                 $row->attributes['class'] = $class;
             }

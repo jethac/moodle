@@ -170,7 +170,7 @@ class core_html_writer_testcase extends basic_testcase {
     }
 
     public function test_table() {
-        $row = new html_table_row();
+        $row = new \core\output\html_table_row();
 
         // The attribute will get overwritten by the ID.
         $row->id = 'Bob';

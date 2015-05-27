@@ -2886,6 +2886,32 @@ EOD;
     }
 
     /**
+     * Render a table row.
+     *
+     * @param \core\output\html_table_cell $cell the cell to print out
+     * @return string the HTML to output.
+     */
+    protected function render_html_table_row(\core\output\html_table_row $row) {
+
+        $data = $row->export_for_template($this);
+        return self::render_from_template('core/html_table_row', $data);
+
+    }
+
+    /**
+     * Render a table.
+     *
+     * @param \core\output\html_table_cell $cell the cell to print out
+     * @return string the HTML to output.
+     */
+    protected function render_html_table(\core\output\html_table $table) {
+
+        $data = $table->export_for_template($this);
+        return self::render_from_template('core/html_table', $data);
+
+    }
+
+    /**
      * Returns HTML to display a continue button that goes to a particular URL.
      *
      * @param string|moodle_url $url The url the button goes to.
