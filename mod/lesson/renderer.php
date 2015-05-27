@@ -296,13 +296,13 @@ class mod_lesson_renderer extends plugin_renderer_base {
             $cell->colspan = 2;
             $cell->style = 'text-align:left';
             $cell->text = $page->contents;
-            $pagetable->data[] = new html_table_row(array($cell));
+            $pagetable->data[] = new \core\output\html_table_row(array($cell));
 
             $cell = new \core\output\html_table_cell();
             $cell->colspan = 2;
             $cell->style = 'text-align:center';
             $cell->text = '<strong>'.$qtypes[$page->qtype] . $page->option_description_string().'</strong>';
-            $pagetable->data[] = new html_table_row(array($cell));
+            $pagetable->data[] = new \core\output\html_table_row(array($cell));
 
             $pagetable = $page->display_answers($pagetable);
 

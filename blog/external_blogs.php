@@ -97,7 +97,7 @@ if (!empty($blogs)) {
         $deletelink = new moodle_url('/blog/external_blogs.php', array('delete' => $blog->id, 'sesskey'=>sesskey()));
         $deleteicon = $OUTPUT->action_icon($deletelink, new pix_icon('t/delete', get_string('deleteexternalblog', 'blog')));
 
-        $table->data[] = new html_table_row(array($blog->name,
+        $table->data[] = new \core\output\html_table_row(array($blog->name,
                                                   $blog->url,
                                                   userdate($blog->timefetched),
                                                   $validicon,

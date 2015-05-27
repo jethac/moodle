@@ -181,7 +181,7 @@ class grade_edit_tree {
             $cell->attributes['class'] = $element['type'] . ' moving column-name level' .
                 ($level + 1) . ' level' . ($level % 2 ? 'even' : 'odd');
             $cell->text = $object->name.' ('.get_string('move').')';
-            return array(new html_table_row(array($cell)));
+            return array(new \core\output\html_table_row(array($cell)));
         }
 
         if ($element['type'] == 'category') {
@@ -238,7 +238,7 @@ class grade_edit_tree {
                     $icon = new pix_icon('movehere', $strmovehere, null, array('class'=>'movetarget'));
                     $cell->text = $OUTPUT->action_icon($aurl, $icon);
 
-                    $moveto = new html_table_row(array($cell));
+                    $moveto = new \core\output\html_table_row(array($cell));
                 }
 
                 $newparents = $parents;
@@ -292,7 +292,7 @@ class grade_edit_tree {
                 $courseclass = 'coursecategory';
             }
 
-            $row = new html_table_row();
+            $row = new \core\output\html_table_row();
             $row->id = 'grade-item-' . $eid;
             $row->attributes['class'] = $courseclass . ' category ' . $dimmed;
             foreach ($rowclasses as $class) {
@@ -324,7 +324,7 @@ class grade_edit_tree {
             $endcell->colspan = (19 - $level);
             $endcell->attributes['class'] = 'emptyrow colspan ' . $levelclass;
 
-            $returnrows[] = new html_table_row(array($endcell));
+            $returnrows[] = new \core\output\html_table_row(array($endcell));
 
         } else { // Dealing with a grade item
 
@@ -341,7 +341,7 @@ class grade_edit_tree {
             }
 
             $dimmed = ($item->is_hidden()) ? "dimmed_text" : "";
-            $gradeitemrow = new html_table_row();
+            $gradeitemrow = new \core\output\html_table_row();
             $gradeitemrow->id = 'grade-item-' . $eid;
             $gradeitemrow->attributes['class'] = $categoryitemclass . ' item ' . $dimmed;
             foreach ($rowclasses as $class) {

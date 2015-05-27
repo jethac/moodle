@@ -125,7 +125,7 @@ if (!$ratings) {
         // but we don't.
         $rating->id = $rating->userid;
 
-        $row = new html_table_row();
+        $row = new \core\output\html_table_row();
         $row->attributes['class'] = 'ratingitemheader';
         if ($course && $course->id) {
             $row->cells[] = $OUTPUT->user_picture($rating, array('courseid' => $course->id));

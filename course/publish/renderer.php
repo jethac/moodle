@@ -124,7 +124,7 @@ class core_publish_renderer extends plugin_renderer_base {
                         get_string('advertised', 'hub') : get_string('shared', 'hub'),
                 $hubname, userdate($publication->timepublished,
                         get_string('strftimedatetimeshort')), $status, $operations);
-            $row = new html_table_row($cells);
+            $row = new \core\output\html_table_row($cells);
             $table->data[] = $row;
         }
 

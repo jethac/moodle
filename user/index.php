@@ -205,7 +205,7 @@ if (isset($hiddenfields['lastaccess'])) {
 $controlstable = new html_table();
 $controlstable->attributes['class'] = 'controls';
 $controlstable->cellspacing = 0;
-$controlstable->data[] = new html_table_row();
+$controlstable->data[] = new \core\output\html_table_row();
 
 // Print my course menus.
 if ($mycourses = enrol_get_my_courses()) {
@@ -321,7 +321,7 @@ if ($currentgroup and (!$isseparategroups or has_capability('moodle/site:accessa
             $options = array('overflowdiv' => true);
             $formatteddesc = format_text($group->description, $group->descriptionformat, $options);
             $contentcell->text = $OUTPUT->heading($contentheading, 3) . $formatteddesc;
-            $groupinfotable->data[] = new html_table_row(array($picturecell, $contentcell));
+            $groupinfotable->data[] = new \core\output\html_table_row(array($picturecell, $contentcell));
             echo html_writer::table($groupinfotable);
         }
     }
@@ -629,7 +629,7 @@ if ($mode === MODE_USERDETAILS) {    // Print simple listing.
                 $table = new html_table();
                 $table->attributes['class'] = 'userinfobox';
 
-                $row = new html_table_row();
+                $row = new \core\output\html_table_row();
                 $row->cells[0] = new \core\output\html_table_cell();
                 $row->cells[0]->attributes['class'] = 'left side';
 

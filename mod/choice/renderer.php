@@ -199,7 +199,7 @@ class mod_choice_renderer extends plugin_renderer_base {
         }
 
         $table->head = $columns['options'];
-        $table->data[] = new html_table_row($columns['usernumber']);
+        $table->data[] = new \core\output\html_table_row($columns['usernumber']);
 
         $columns = array();
 
@@ -246,7 +246,7 @@ class mod_choice_renderer extends plugin_renderer_base {
             $columns[] = $cell;
             $count++;
         }
-        $row = new html_table_row($columns);
+        $row = new \core\output\html_table_row($columns);
         $table->data[] = $row;
 
         $html .= html_writer::tag('div', html_writer::table($table), array('class'=>'response'));
@@ -371,9 +371,9 @@ class mod_choice_renderer extends plugin_renderer_base {
         }
 
         $table->head = $rows['header'];
-        $trgraph = new html_table_row($rows['graph']);
-        $trusernumber = new html_table_row($rows['usernumber']);
-        $truserpercentage = new html_table_row($rows['userpercentage']);
+        $trgraph = new \core\output\html_table_row($rows['graph']);
+        $trusernumber = new \core\output\html_table_row($rows['usernumber']);
+        $truserpercentage = new \core\output\html_table_row($rows['userpercentage']);
         $table->data = array($trgraph, $trusernumber, $truserpercentage);
 
         $header = html_writer::tag('h3',format_string(get_string("responses", "choice")));
@@ -464,7 +464,7 @@ class mod_choice_renderer extends plugin_renderer_base {
             $datacellpercentage->text = format_float($percentageamount,1). '%';
 
 
-            $row = new html_table_row();
+            $row = new \core\output\html_table_row();
             $row->cells = array($colheader, $datacellnumber, $datacellpercentage, $graphcell);
             $rows[] = $row;
         }

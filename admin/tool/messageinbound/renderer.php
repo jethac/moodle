@@ -90,7 +90,7 @@ class tool_messageinbound_renderer extends plugin_renderer_base {
             $edit->attributes['class'] = 'edit';
 
             // Add the row.
-            $row = new html_table_row(array(
+            $row = new \core\output\html_table_row(array(
                         $handlername,
                         format_text($handler->description, FORMAT_MARKDOWN, $descriptionoptions),
                         $enabled,

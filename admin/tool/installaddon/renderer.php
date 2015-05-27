@@ -365,7 +365,7 @@ class tool_installaddon_renderer extends plugin_renderer_base {
                 $msginfo = get_string('validationmsg_'.$message->msgcode.'_info', 'tool_installaddon', $message->addinfo);
             }
 
-            $row = new html_table_row(array($msgstatus, $msgtext.$msghelp, $msginfo));
+            $row = new \core\output\html_table_row(array($msgstatus, $msgtext.$msghelp, $msginfo));
             $row->attributes['class'] = 'level-'.$message->level.' '.$message->msgcode;
 
             $table->data[] = $row;

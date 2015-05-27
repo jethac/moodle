@@ -103,7 +103,7 @@ class tool_task_renderer extends plugin_renderer_base {
                 $nextrun = $asap;
             }
 
-            $row = new html_table_row(array(
+            $row = new \core\output\html_table_row(array(
                         $namecell,
                         $componentcell,
                         new \core\output\html_table_cell($editlink),

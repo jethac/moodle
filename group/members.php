@@ -130,7 +130,7 @@ if (!empty($group->description)) {
 if (!empty($groupinforow)) {
     $groupinfotable = new html_table();
     $groupinfotable->attributes['class'] = 'groupinfobox';
-    $groupinfotable->data[] = new html_table_row($groupinforow);
+    $groupinfotable->data[] = new \core\output\html_table_row($groupinforow);
     echo html_writer::table($groupinfotable);
 }
 

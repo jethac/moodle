@@ -285,7 +285,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
         $table->attributes['class'] = 'userplan';
         $table->head = array();
         $table->colclasses = array();
-        $row = new html_table_row();
+        $row = new \core\output\html_table_row();
         $row->attributes['class'] = 'phasetasks';
         foreach ($plan->phases as $phasecode => $phase) {
             $title = html_writer::tag('span', $phase->title);
@@ -464,7 +464,7 @@ class mod_workshop_renderer extends plugin_renderer_base {
             }
 
             for ($tr = 0; $tr < $numoftrs; $tr++) {
-                $row = new html_table_row();
+                $row = new \core\output\html_table_row();
                 if ($published) {
                     $row->attributes['class'] = 'published';
                 }

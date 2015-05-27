@@ -67,7 +67,7 @@ foreach ($files as $component => $xmlpath) {
             $license .= ' '.$lib->licenseversion;
         }
 
-        $table->data[] = new html_table_row(array($lib->name, $version, $location, $license));
+        $table->data[] = new \core\output\html_table_row(array($lib->name, $version, $location, $license));
     }
 }
 

@@ -85,7 +85,7 @@ class core_register_renderer extends plugin_renderer_base {
 
             //add button cells
             $cells = array($hublinkcell, $unregisterbuttonhtml);
-            $row = new html_table_row($cells);
+            $row = new \core\output\html_table_row($cells);
             $table->data[] = $row;
         }
 

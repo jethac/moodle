@@ -394,7 +394,7 @@ class core_calendar_renderer extends plugin_renderer_base {
         $week = 1;
         $dayweek = $startwday;
 
-        $row = new html_table_row(array());
+        $row = new \core\output\html_table_row(array());
 
         // Paddding (the first week may have blank days in the beginning)
         for($i = $display->minwday; $i < $startwday; ++$i) {
@@ -415,7 +415,7 @@ class core_calendar_renderer extends plugin_renderer_base {
             if($dayweek > $display->maxwday) {
                 // We need to change week (table row)
                 $table->data[] = $row;
-                $row = new html_table_row(array());
+                $row = new \core\output\html_table_row(array());
                 $dayweek = $display->minwday;
                 ++$week;
             }
@@ -613,7 +613,7 @@ class core_calendar_renderer extends plugin_renderer_base {
         if (empty($subscriptions)) {
             $cell = new \core\output\html_table_cell(get_string('nocalendarsubscriptions', 'calendar'));
             $cell->colspan = 4;
-            $table->data[] = new html_table_row(array($cell));
+            $table->data[] = new \core\output\html_table_row(array($cell));
         }
         $strnever = new lang_string('never', 'calendar');
         foreach ($subscriptions as $sub) {
@@ -631,7 +631,7 @@ class core_calendar_renderer extends plugin_renderer_base {
             $cell->colspan = 2;
             $type = $sub->eventtype . 'events';
 
-            $table->data[] = new html_table_row(array(
+            $table->data[] = new \core\output\html_table_row(array(
                 new \core\output\html_table_cell($label),
                 new \core\output\html_table_cell($lastupdated),
                 new \core\output\html_table_cell(get_string($type, 'calendar')),

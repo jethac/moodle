@@ -641,10 +641,10 @@ class page_wiki_comments extends page_wiki {
             $cell4 = new \core\output\html_table_cell();
             $cell5 = new \core\output\html_table_cell();
 
-            $row1 = new html_table_row();
+            $row1 = new \core\output\html_table_row();
             $row1->cells[] = $cell1;
             $row1->cells[] = $cell2;
-            $row2 = new html_table_row();
+            $row2 = new \core\output\html_table_row();
             $row2->cells[] = $cell3;
 
             if ($format != 'html') {
@@ -687,7 +687,7 @@ class page_wiki_comments extends page_wiki {
 
             if ($candelete || $canedit) {
                 $cell6 = new \core\output\html_table_cell($editicon.$deleteicon);
-                $row3 = new html_table_row();
+                $row3 = new \core\output\html_table_row();
                 $row3->cells[] = $cell5;
                 $row3->cells[] = $cell6;
                 $t->data[] = $row3;

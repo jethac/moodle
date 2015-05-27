@@ -88,7 +88,7 @@ $prevcat = null;
 foreach ($courses as $course) {
     $course = (object)$course;
     if ($prevcat !== $course->categoryid) {
-        $row = new html_table_row();
+        $row = new \core\output\html_table_row();
         $cell = new \core\output\html_table_cell($icon . s($course->categoryname));
         $cell->header = true;
         $cell->attributes['class'] = 'categoryname';
@@ -100,7 +100,7 @@ foreach ($courses as $course) {
     $editbtn = $OUTPUT->single_button(new moodle_url('/mnet/service/enrol/course.php',
                                       array('host'=>$host->id, 'course'=>$course->id, 'usecache'=>0, 'sesskey'=>sesskey())),
                                       get_string('editenrolments', 'mnetservice_enrol'), 'get');
-    $row = new html_table_row();
+    $row = new \core\output\html_table_row();
     $row->cells = array(
         s($course->shortname),
         s($course->fullname),

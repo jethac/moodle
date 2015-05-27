@@ -116,7 +116,7 @@ class tool_customlang_renderer extends plugin_renderer_base {
                 $cells[0]->rowspan = $cells[1]->rowspan = $cells[3]->rowspan = 2;
             }
 
-            $row = new html_table_row($cells);
+            $row = new \core\output\html_table_row($cells);
             $table->data[] = $row;
 
             if ($string->original !== $string->master) {
@@ -124,7 +124,7 @@ class tool_customlang_renderer extends plugin_renderer_base {
                 // original of the string
                 $cells[2] = new \core\output\html_table_cell(html_writer::tag('div', s($string->original), array('class' => 'preformatted')));
                 $cells[2]->attributes['class'] = 'standard original';
-                $row = new html_table_row($cells);
+                $row = new \core\output\html_table_row($cells);
                 $table->data[] = $row;
             }
         }

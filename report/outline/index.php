@@ -179,7 +179,7 @@ foreach ($modinfo->sections as $sectionnum=>$section) {
             continue;
         }
         if ($prevsecctionnum != $sectionnum) {
-            $sectionrow = new html_table_row();
+            $sectionrow = new \core\output\html_table_row();
             $sectionrow->attributes['class'] = 'section';
             $sectioncell = new \core\output\html_table_cell();
             $sectioncell->colspan = count($outlinetable->head);
@@ -196,7 +196,7 @@ foreach ($modinfo->sections as $sectionnum=>$section) {
         $dimmed = $cm->visible ? '' : 'class="dimmed"';
         $modulename = get_string('modulename', $cm->modname);
 
-        $reportrow = new html_table_row();
+        $reportrow = new \core\output\html_table_row();
         $activitycell = new \core\output\html_table_cell();
         $activitycell->attributes['class'] = 'activity';
 

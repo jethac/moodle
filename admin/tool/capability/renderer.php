@@ -97,7 +97,7 @@ class tool_capability_renderer extends plugin_renderer_base {
             $captitle = new \core\output\html_table_cell(get_capability_string($capability) . html_writer::span($capability));
             $captitle->header = true;
 
-            $row = new html_table_row(array($captitle));
+            $row = new \core\output\html_table_row(array($captitle));
 
             foreach ($roles as $role) {
                 if (isset($contexts[$contextid]->rolecapabilities[$role->id])) {

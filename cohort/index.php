@@ -173,7 +173,7 @@ foreach($cohorts['cohorts'] as $cohort) {
     }
     $line[] = implode(' ', $buttons);
 
-    $data[] = $row = new html_table_row($line);
+    $data[] = $row = new \core\output\html_table_row($line);
     if (!$cohort->visible) {
         $row->attributes['class'] = 'dimmed_text';
     }

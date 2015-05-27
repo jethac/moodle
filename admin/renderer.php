@@ -887,7 +887,7 @@ class core_admin_renderer extends plugin_renderer_base {
             $header = new \core\output\html_table_cell($pluginman->plugintype_name_plural($type));
             $header->header = true;
             $header->colspan = count($table->head);
-            $header = new html_table_row(array($header));
+            $header = new \core\output\html_table_row(array($header));
             $header->attributes['class'] = 'plugintypeheader type-' . $type;
 
             $numofhighlighted[$type] = 0;
@@ -895,7 +895,7 @@ class core_admin_renderer extends plugin_renderer_base {
             if (empty($plugins) and $options['full']) {
                 $msg = new \core\output\html_table_cell(get_string('noneinstalled', 'core_plugin'));
                 $msg->colspan = count($table->head);
-                $row = new html_table_row(array($msg));
+                $row = new \core\output\html_table_row(array($msg));
                 $row->attributes['class'] .= 'msg msg-noneinstalled';
                 $table->data[] = $header;
                 $table->data[] = $row;
@@ -905,7 +905,7 @@ class core_admin_renderer extends plugin_renderer_base {
             $plugintyperows = array();
 
             foreach ($plugins as $name => $plugin) {
-                $row = new html_table_row();
+                $row = new \core\output\html_table_row();
                 $row->attributes['class'] = 'type-' . $plugin->type . ' name-' . $plugin->type . '_' . $plugin->name;
 
                 if ($this->page->theme->resolve_image_location('icon', $plugin->type . '_' . $plugin->name, null)) {
@@ -1172,7 +1172,7 @@ class core_admin_renderer extends plugin_renderer_base {
      * @return string HTML code
      */
     public function plugins_control_panel(core_plugin_manager $pluginman, array $options = array()) {
-        global $CFG;
+        global $CFG, $OUTPUT;
 
         $plugininfo = $pluginman->get_plugins();
 
@@ -1209,7 +1209,7 @@ class core_admin_renderer extends plugin_renderer_base {
             return '';
         }
 
-        $table = new html_table();
+        $table = new \core\output\html_table();
         $table->id = 'plugins-control-panel';
         $table->head = array(
             get_string('displayname', 'core_plugin'),
@@ -1234,21 +1234,21 @@ class core_admin_renderer extends plugin_renderer_base {
             $header = new \core\output\html_table_cell(html_writer::tag('span', $heading, array('id'=>'plugin_type_cell_'.$type)));
             $header->header = true;
             $header->colspan = array_sum($table->headspan);
-            $header = new html_table_row(array($header));
+            $header = new \core\output\html_table_row(array($header));
             $header->attributes['class'] = 'plugintypeheader type-' . $type;
             $table->data[] = $header;
 
             if (empty($plugins)) {
                 $msg = new \core\output\html_table_cell(get_string('noneinstalled', 'core_plugin'));
                 $msg->colspan = array_sum($table->headspan);
-                $row = new html_table_row(array($msg));
+                $row = new \core\output\html_table_row(array($msg));
                 $row->attributes['class'] .= 'msg msg-noneinstalled';
                 $table->data[] = $row;
                 continue;
             }
 
             foreach ($plugins as $name => $plugin) {
-                $row = new html_table_row();
+                $row = new \core\output\html_table_row();
                 $row->attributes['class'] = 'type-' . $plugin->type . ' name-' . $plugin->type . '_' . $plugin->name;
 
                 if ($this->page->theme->resolve_image_location('icon', $plugin->type . '_' . $plugin->name)) {
@@ -1330,7 +1330,7 @@ class core_admin_renderer extends plugin_renderer_base {
             }
         }
 
-        return html_writer::table($table);
+        return $OUTPUT->render($table);//html_writer::table($table);
     }
 
     /**

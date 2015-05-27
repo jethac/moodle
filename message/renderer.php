@@ -58,7 +58,7 @@ class core_message_renderer extends plugin_renderer_base {
         );
 
         foreach ($processors as $processor) {
-            $row = new html_table_row();
+            $row = new \core\output\html_table_row();
             $row->attributes['class'] = 'messageoutputs';
 
             // Name
@@ -139,7 +139,7 @@ class core_message_renderer extends plugin_renderer_base {
 
         // Generate the matrix of settings for each provider and processor
         foreach ($providers as $provider) {
-            $row = new html_table_row();
+            $row = new \core\output\html_table_row();
             $row->attributes['class'] = 'defaultmessageoutputs';
             $row->cells = array();
 
@@ -279,7 +279,7 @@ class core_message_renderer extends plugin_renderer_base {
                     continue;
                 }
                 $provideradded = true;
-                $headerrow = new html_table_row();
+                $headerrow = new \core\output\html_table_row();
                 $providername = get_string('messageprovider:'.$provider->name, $provider->component);
                 $providercell = new \core\output\html_table_cell($providername);
                 $providercell->header = true;
@@ -289,7 +289,7 @@ class core_message_renderer extends plugin_renderer_base {
                 $table->data[] = $headerrow;
 
                 foreach (array('loggedin', 'loggedoff') as $state) {
-                    $optionrow = new html_table_row();
+                    $optionrow = new \core\output\html_table_row();
                     $optionname = new \core\output\html_table_cell(get_string($state.'description', 'message'));
                     $optionname->attributes['class'] = 'c0';
                     $optionrow->cells = array($optionname);

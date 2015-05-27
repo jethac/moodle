@@ -571,17 +571,17 @@ function data_generate_default_template(&$data, $template, $recordid=0, $form=fa
             $cell = new \core\output\html_table_cell('##edit##  ##more##  ##delete##  ##approve##  ##disapprove##  ##export##');
             $cell->colspan = 2;
             $cell->attributes['class'] = 'controls';
-            $table->data[] = new html_table_row(array($cell));
+            $table->data[] = new \core\output\html_table_row(array($cell));
         } else if ($template == 'singletemplate') {
             $cell = new \core\output\html_table_cell('##edit##  ##delete##  ##approve##  ##disapprove##  ##export##');
             $cell->colspan = 2;
             $cell->attributes['class'] = 'controls';
-            $table->data[] = new html_table_row(array($cell));
+            $table->data[] = new \core\output\html_table_row(array($cell));
         } else if ($template == 'asearchtemplate') {
-            $row = new html_table_row(array(get_string('authorfirstname', 'data').': ', '##firstname##'));
+            $row = new \core\output\html_table_row(array(get_string('authorfirstname', 'data').': ', '##firstname##'));
             $row->attributes['class'] = 'searchcontrols';
             $table->data[] = $row;
-            $row = new html_table_row(array(get_string('authorlastname', 'data').': ', '##lastname##'));
+            $row = new \core\output\html_table_row(array(get_string('authorlastname', 'data').': ', '##lastname##'));
             $row->attributes['class'] = 'searchcontrols';
             $table->data[] = $row;
         }

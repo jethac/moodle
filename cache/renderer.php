@@ -115,7 +115,7 @@ class core_cache_renderer extends plugin_renderer_base {
                 $lock = get_string($store['lock']['name'], 'cache');
             }
 
-            $row = new html_table_row(array(
+            $row = new \core\output\html_table_row(array(
                 $storename,
                 get_string('pluginname', 'cachestore_'.$store['plugin']),
                 $readycell,
@@ -187,7 +187,7 @@ class core_cache_renderer extends plugin_renderer_base {
                 $htmlactions[] = $this->output->action_link($action['url'], $action['text']);
             }
 
-            $row = new html_table_row(array(
+            $row = new \core\output\html_table_row(array(
                 $plugin['name'],
                 ($plugin['requirementsmet']) ? $this->output->pix_icon('i/valid', '1') : '',
                 $plugin['instances'],
@@ -251,7 +251,7 @@ class core_cache_renderer extends plugin_renderer_base {
                 $mapping = '<em>'.$none.'</em>';
             }
 
-            $row = new html_table_row(array(
+            $row = new \core\output\html_table_row(array(
                 $definition['name'],
                 get_string('mode_'.$definition['mode'], 'cache'),
                 $definition['component'],
@@ -354,7 +354,7 @@ class core_cache_renderer extends plugin_renderer_base {
                 $url = new moodle_url('/cache/admin.php', array('lock' => $lock['name'], 'action' => 'deletelock', 'sesskey' => sesskey()));
                 $actions[] = html_writer::link($url, get_string('delete', 'cache'));
             }
-            $table->data[] = new html_table_row(array(
+            $table->data[] = new \core\output\html_table_row(array(
                 new \core\output\html_table_cell($lock['name']),
                 new \core\output\html_table_cell($lock['type']),
                 new \core\output\html_table_cell($lock['default'] ? $tick : ''),

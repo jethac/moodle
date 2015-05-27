@@ -559,7 +559,7 @@ class course_enrolment_table extends html_table implements renderable {
         $hasbulkops = !empty($this->bulkoperations);
         foreach ($users as $userid=>$user) {
             $user = (array)$user;
-            $row = new html_table_row();
+            $row = new \core\output\html_table_row();
             $row->attributes = array('class' => 'userinforow');
             $row->id = 'user_'.$userid;
             $row->cells = array();

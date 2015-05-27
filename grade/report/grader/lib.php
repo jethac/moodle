@@ -612,15 +612,15 @@ class grade_report_grader extends grade_report {
         $fillercell->text = html_writer::span(get_string('participants'), 'accesshide');
         $fillercell->colspan = $colspan;
         $fillercell->rowspan = $levels;
-        $row = new html_table_row(array($fillercell));
+        $row = new \core\output\html_table_row(array($fillercell));
         $rows[] = $row;
 
         for ($i = 1; $i < $levels; $i++) {
-            $row = new html_table_row();
+            $row = new \core\output\html_table_row();
             $rows[] = $row;
         }
 
-        $headerrow = new html_table_row();
+        $headerrow = new \core\output\html_table_row();
         $headerrow->attributes['class'] = 'heading';
 
         $studentheader = new \core\output\html_table_cell();
@@ -651,7 +651,7 @@ class grade_report_grader extends grade_report {
 
         $suspendedstring = null;
         foreach ($this->users as $userid => $user) {
-            $userrow = new html_table_row();
+            $userrow = new \core\output\html_table_row();
             $userrow->id = 'fixed_user_'.$userid;
 
             $usercell = new \core\output\html_table_cell();
@@ -763,7 +763,7 @@ class grade_report_grader extends grade_report {
         $strerror = get_string('error');
 
         foreach ($this->gtree->get_levels() as $key => $row) {
-            $headingrow = new html_table_row();
+            $headingrow = new \core\output\html_table_row();
             $headingrow->attributes['class'] = 'heading_name_row';
 
             foreach ($row as $columnkey => $element) {
@@ -896,7 +896,7 @@ class grade_report_grader extends grade_report {
                 unset($hidingaffected);
             }
 
-            $itemrow = new html_table_row();
+            $itemrow = new \core\output\html_table_row();
             $itemrow->id = 'user_'.$userid;
 
             $fullname = fullname($user);
@@ -1188,7 +1188,7 @@ class grade_report_grader extends grade_report {
         global $USER;
 
         if ($USER->gradeediting[$this->courseid]) {
-            $controlsrow = new html_table_row();
+            $controlsrow = new \core\output\html_table_row();
             $controlsrow->attributes['class'] = 'controls';
             $controlscell = new \core\output\html_table_cell();
             $controlscell->attributes['class'] = 'header controls';
@@ -1211,7 +1211,7 @@ class grade_report_grader extends grade_report {
         global $CFG, $USER;
 
         if ($this->get_pref('showranges')) {
-            $rangerow = new html_table_row();
+            $rangerow = new \core\output\html_table_row();
             $rangerow->attributes['class'] = 'range r'.$this->rowcount++;
             $rangecell = new \core\output\html_table_cell();
             $rangecell->attributes['class'] = 'header range';
@@ -1246,7 +1246,7 @@ class grade_report_grader extends grade_report {
 
         if ($groupavg) {
             if ($showaveragesgroup) {
-                $groupavgrow = new html_table_row();
+                $groupavgrow = new \core\output\html_table_row();
                 $groupavgrow->attributes['class'] = 'groupavg r'.$this->rowcount++;
                 $groupavgcell = new \core\output\html_table_cell();
                 $groupavgcell->attributes['class'] = 'header range';
@@ -1261,7 +1261,7 @@ class grade_report_grader extends grade_report {
             $straverage = get_string('overallaverage', 'grades');
 
             if ($showaverages) {
-                $avgrow = new html_table_row();
+                $avgrow = new \core\output\html_table_row();
                 $avgrow->attributes['class'] = 'avg r'.$this->rowcount++;
                 $avgcell = new \core\output\html_table_cell();
                 $avgcell->attributes['class'] = 'header range';
@@ -1285,7 +1285,7 @@ class grade_report_grader extends grade_report {
     public function get_right_icons_row($rows=array()) {
         global $USER;
         if ($USER->gradeediting[$this->courseid]) {
-            $iconsrow = new html_table_row();
+            $iconsrow = new \core\output\html_table_row();
             $iconsrow->attributes['class'] = 'controls';
 
             foreach ($this->gtree->items as $itemid => $unused) {
@@ -1315,7 +1315,7 @@ class grade_report_grader extends grade_report {
         if ($this->get_pref('showranges')) {
             $rangesdisplaytype   = $this->get_pref('rangesdisplaytype');
             $rangesdecimalpoints = $this->get_pref('rangesdecimalpoints');
-            $rangerow = new html_table_row();
+            $rangerow = new \core\output\html_table_row();
             $rangerow->attributes['class'] = 'heading range';
 
             foreach ($this->gtree->items as $itemid => $unused) {
@@ -1435,7 +1435,7 @@ class grade_report_grader extends grade_report {
 
             $ungradedcounts = $DB->get_records_sql($sql, $params);
 
-            $avgrow = new html_table_row();
+            $avgrow = new \core\output\html_table_row();
             $avgrow->attributes['class'] = 'avg';
 
             foreach ($this->gtree->items as $itemid => $unused) {

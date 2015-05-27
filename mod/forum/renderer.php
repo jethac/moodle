@@ -98,7 +98,7 @@ class mod_forum_renderer extends plugin_renderer_base {
 
         $table = new html_table();
         $table->attributes['class'] = 'subscribertable boxaligncenter';
-        $table->data = array(new html_table_row(array($existingcell, $actioncell, $potentialcell)));
+        $table->data = array(new \core\output\html_table_row(array($existingcell, $actioncell, $potentialcell)));
         $output .= html_writer::table($table);
 
         $output .= html_writer::end_tag('form');

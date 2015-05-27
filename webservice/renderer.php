@@ -82,7 +82,7 @@ class core_webservice_renderer extends plugin_renderer_base {
         $otheruserscell->id = 'potentialcell';
 
         $cells = array($authoriseduserscell, $buttonscell, $otheruserscell);
-        $row = new html_table_row($cells);
+        $row = new \core\output\html_table_row($cells);
         $table->data[] = $row;
         $formcontent .= html_writer::table($table);
 

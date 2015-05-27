@@ -260,13 +260,13 @@ class cohort_upload_form extends moodleform {
                 $text .= html_writer::div(join('<br>', $line['warnings']));
             }
             $cells[] = new \core\output\html_table_cell($text);
-            $table->data[] = new html_table_row($cells);
+            $table->data[] = new \core\output\html_table_row($cells);
         }
         if ($notdisplayed = count($this->processeddata) - count($previewdrows) - 1) {
             $cell = new \core\output\html_table_cell(get_string('displayedrows', 'cohort',
                 (object)array('displayed' => count($previewdrows), 'total' => count($this->processeddata) - 1)));
             $cell->colspan = count($columns) + 2;
-            $table->data[] = new html_table_row(array($cell));
+            $table->data[] = new \core\output\html_table_row(array($cell));
         }
         echo html_writer::table($table);
     }

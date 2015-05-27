@@ -58,7 +58,7 @@ class tool_filetypes_renderer extends plugin_renderer_base {
         if (count($combined) > 1) {
             // Display the file type table if any file types exist (other than 'xxx').
             $table = new html_table();
-            $headings = new html_table_row();
+            $headings = new \core\output\html_table_row();
             $headings->cells = array();
             $headings->cells[] = new \core\output\html_table_cell(get_string('extension', 'tool_filetypes'));
             if (!$restricted) {
@@ -77,7 +77,7 @@ class tool_filetypes_renderer extends plugin_renderer_base {
                 if ($extension === 'xxx') {
                     continue;
                 }
-                $row = new html_table_row();
+                $row = new \core\output\html_table_row();
                 $row->cells = array();
 
                 // First cell has icon and extension.

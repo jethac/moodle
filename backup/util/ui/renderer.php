@@ -609,7 +609,7 @@ class core_backup_renderer extends plugin_renderer_base {
         $table->data = array();
         if ($component->get_count() !== 0) {
             foreach ($component->get_results() as $course) {
-                $row = new html_table_row();
+                $row = new \core\output\html_table_row();
                 $row->attributes['class'] = 'rcs-course';
                 if (!$course->visible) {
                     $row->attributes['class'] .= ' dimmed';
@@ -625,7 +625,7 @@ class core_backup_renderer extends plugin_renderer_base {
                 $cell = new \core\output\html_table_cell(get_string('moreresults', 'backup'));
                 $cell->colspan = 3;
                 $cell->attributes['class'] = 'notifyproblem';
-                $row = new html_table_row(array($cell));
+                $row = new \core\output\html_table_row(array($cell));
                 $row->attributes['class'] = 'rcs-course';
                 $table->data[] = $row;
             }
@@ -633,7 +633,7 @@ class core_backup_renderer extends plugin_renderer_base {
             $cell = new \core\output\html_table_cell(get_string('nomatchingcourses', 'backup'));
             $cell->colspan = 3;
             $cell->attributes['class'] = 'notifyproblem';
-            $row = new html_table_row(array($cell));
+            $row = new \core\output\html_table_row(array($cell));
             $row->attributes['class'] = 'rcs-course';
             $table->data[] = $row;
         }
@@ -685,7 +685,7 @@ class core_backup_renderer extends plugin_renderer_base {
         $table->head = array('', get_string('shortnamecourse'), get_string('fullnamecourse'));
         $table->data = array();
         foreach ($component->get_results() as $course) {
-            $row = new html_table_row();
+            $row = new \core\output\html_table_row();
             $row->attributes['class'] = 'ics-course';
             if (!$course->visible) {
                 $row->attributes['class'] .= ' dimmed';
@@ -701,7 +701,7 @@ class core_backup_renderer extends plugin_renderer_base {
             $cell = new \core\output\html_table_cell(get_string('moreresults', 'backup'));
             $cell->colspan = 3;
             $cell->attributes['class'] = 'notifyproblem';
-            $row = new html_table_row(array($cell));
+            $row = new \core\output\html_table_row(array($cell));
             $row->attributes['class'] = 'rcs-course';
             $table->data[] = $row;
         }
@@ -735,7 +735,7 @@ class core_backup_renderer extends plugin_renderer_base {
 
         if ($component->get_count() !== 0) {
             foreach ($component->get_results() as $category) {
-                $row = new html_table_row();
+                $row = new \core\output\html_table_row();
                 $row->attributes['class'] = 'rcs-course';
                 if (!$category->visible) {
                     $row->attributes['class'] .= ' dimmed';
@@ -751,7 +751,7 @@ class core_backup_renderer extends plugin_renderer_base {
                 $cell = new \core\output\html_table_cell(get_string('moreresults', 'backup'));
                 $cell->attributes['class'] = 'notifyproblem';
                 $cell->colspan = 3;
-                $row = new html_table_row(array($cell));
+                $row = new \core\output\html_table_row(array($cell));
                 $row->attributes['class'] = 'rcs-course';
                 $table->data[] = $row;
             }
@@ -759,7 +759,7 @@ class core_backup_renderer extends plugin_renderer_base {
             $cell = new \core\output\html_table_cell(get_string('nomatchingcourses', 'backup'));
             $cell->colspan = 3;
             $cell->attributes['class'] = 'notifyproblem';
-            $row = new html_table_row(array($cell));
+            $row = new \core\output\html_table_row(array($cell));
             $row->attributes['class'] = 'rcs-course';
             $table->data[] = $row;
         }

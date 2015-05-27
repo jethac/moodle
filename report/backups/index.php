@@ -171,7 +171,7 @@ foreach ($rs as $backuprow) {
         $status,
         userdate($backuprow->nextstarttime, $strftimedatetime)
     );
-    $table->data[] = new html_table_row($cells);
+    $table->data[] = new \core\output\html_table_row($cells);
 }
 $rs->close();
 
@@ -179,7 +179,7 @@ $rs->close();
 if (empty($table->data)) {
     $cell = new \core\output\html_table_cell($OUTPUT->notification(get_string('nologsfound')));
     $cell->colspan = 6;
-    $table->data[] = new html_table_row(array($cell));
+    $table->data[] = new \core\output\html_table_row(array($cell));
 }
 
 $automatedbackupsenabled = get_config('backup', 'backup_auto_active');

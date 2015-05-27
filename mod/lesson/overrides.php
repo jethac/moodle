@@ -234,7 +234,7 @@ foreach ($overrides as $override) {
     $actioncell->text = $iconstr;
 
     for ($i = 0; $i < count($fields); ++$i) {
-        $row = new html_table_row();
+        $row = new \core\output\html_table_row();
         $row->attributes['class'] = $class;
         if ($i == 0) {
             $row->cells[] = $usergroupcell;
