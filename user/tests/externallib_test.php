@@ -195,6 +195,205 @@ class core_user_externallib_testcase extends externallib_advanced_testcase {
     }
 
     /**
+     * Compare two users, making sure that $user2 contains at least
+     * as many fields as $user1 with the same contents.
+     */
+    protected function compare_users($user1, $user2) {
+        global $USER, $CFG;
+
+        $this->assertEquals($user1->username, $user2['username']);
+        if (!empty($user1->idnumber)) {
+            $this->assertEquals($user1->idnumber, $user2['idnumber']);
+        }
+        $this->assertEquals($user1->firstname, $user2['firstname']);
+        $this->assertEquals($user1->lastname, $user2['lastname']);
+        if ($user1->email != $USER->email) { // Don't check the tmp modified $USER email.
+            $this->assertEquals($user1->email, $user2['email']);
+        }
+        if (!empty($user1->address)) {
+            $this->assertEquals($user1->address, $user2['address']);
+        }
+        if (!empty($user1->phone1)) {
+            $this->assertEquals($user1->phone1, $user2['phone1']);
+        }
+        if (!empty($user1->phone2)) {
+            $this->assertEquals($user1->phone2, $user2['phone2']);
+        }
+        if (!empty($user1->icq)) {
+            $this->assertEquals($user1->icq, $user2['icq']);
+        }
+        if (!empty($user1->skype)) {
+            $this->assertEquals($user1->skype, $user2['skype']);
+        }
+        if (!empty($user1->yahoo)) {
+            $this->assertEquals($user1->yahoo, $user2['yahoo']);
+        }
+        if (!empty($user1->aim)) {
+            $this->assertEquals($user1->aim, $user2['aim']);
+        }
+        if (!empty($user1->msn)) {
+            $this->assertEquals($user1->msn, $user2['msn']);
+        }
+        if (!empty($user1->department)) {
+            $this->assertEquals($user1->department, $user2['department']);
+        }
+        if (!empty($user1->institution)) {
+            $this->assertEquals($user1->institution, $user2['institution']);
+        }
+        if (!empty($user1->description)) {
+            $this->assertEquals($user1->description, $user2['description']);
+        }
+        if (!empty($user1->descriptionformat)) {
+            $this->assertEquals(FORMAT_HTML, $user2['descriptionformat']);
+        }
+        if (!empty($user1->city)) {
+            $this->assertEquals($user1->city, $user2['city']);
+        }
+        if (!empty($user1->country)) {
+            $this->assertEquals($user1->country, $user2['country']);
+        }
+        if (!empty($user1->url)) {
+            $this->assertEquals($user1->url, $user2['url']);
+        }
+        if (!empty($CFG->usetags) and !empty($user1->interests)) {
+            $this->assertEquals(implode(', ', $user1->interests), $user2['interests']);
+        }
+
+    }
+
+    /**
+     * Test get_users using 'loose' mode.
+     */
+    public function test_get_users_loose() {
+        global $USER, $CFG;
+
+        $this->resetAfterTest(true);
+
+        $course = self::getDataGenerator()->create_course();
+
+        $userdata = array(
+            array(
+                'username' => 'jethac',
+                'idnumber' => '2024164',
+                'firstname' => 'Jetha',
+                'lastname' => 'Chan',
+            ),
+            array(
+                'username' => 'grug',
+                'idnumber' => '2024165',
+                'firstname' => 'Dave',
+                'lastname' => 'Cooper',
+            ),
+            array(
+                'username' => 'jokely',
+                'idnumber' => '2024166',
+                'firstname' => 'John',
+                'lastname' => 'Okely',
+            ),
+        );
+        $common = array(
+            'address' => 'Level 2, 18 Richardson Street, West Perth 6005 WA',
+            'phone1' => '+61 8 9467 4167',
+            'institution' => 'Moodle Pty Ltd',
+            'department' => 'Team Beards',
+            'description' => 'We miss ping-pong.',
+            'descriptionformat' => FORMAT_MOODLE,
+            'city' => 'Perth',
+            'url' => 'http://moodle.org',
+            'country' => 'au'
+        );
+        $generatedusers = array();
+        $user1 = null;
+        foreach ($userdata as $userrow) {
+            $user = self::getDataGenerator()->create_user(array_merge($common, $userrow));
+            if (is_null($user1)) {
+                $user1 = $user;
+            }
+            $generatedusers[$user->id] = $user;
+        }
+
+        $context = context_course::instance($course->id);
+        $roleid = $this->assignUserCapability('moodle/user:viewdetails', $context->id);
+
+        // Enrol the users in the course.
+        foreach ($generatedusers as $user) {
+            $this->getDataGenerator()->enrol_user($user->id, $course->id, $roleid);
+        }
+        $this->getDataGenerator()->enrol_user($USER->id, $course->id, $roleid);
+
+        // Call as admin and receive all possible fields.
+        $this->setAdminUser();
+
+        // Look for users whose first names start with J or whose last names start with C.
+        $searchparams = array(
+            array('key' => 'invalidkey', 'value' => 'invalidkey'),
+            array('key' => 'firstname', 'value' => $user1->firstname[0] . '%'),
+            array('key' => 'lastname', 'value' => $user1->lastname[0] . '%')
+        );
+
+        // Call the external function in loose (OR) mode.
+        $result = core_user_external::get_users($searchparams, core_user_external::LOOSE);
+
+        // We need to execute the return values cleaning process to simulate the web service server.
+        $result = external_api::clean_returnvalue(core_user_external::get_users_returns(), $result);
+
+        // Check we retrieve the good total number of enrolled users + no error on capability.
+        $expectedreturnedusers = 3;
+        $returnedusers = $result['users'];
+        $this->assertEquals($expectedreturnedusers, count($returnedusers));
+
+        // Check that the users returned from the API are the same as the users as generated.
+        foreach ($returnedusers as $returneduser) {
+            $generateduser = ($returneduser['id'] == $USER->id) ?
+                                $USER : $generatedusers[$returneduser['id']];
+
+            $this->compare_users($generateduser, $returneduser);
+        }
+
+        // Call the external function in strict (AND) mode.
+        $result = core_user_external::get_users($searchparams, core_user_external::STRICT);
+
+        // We need to execute the return values cleaning process to simulate the web service server.
+        $result = external_api::clean_returnvalue(core_user_external::get_users_returns(), $result);
+
+        // Check we retrieve the good total number of enrolled users + no error on capability.
+        $expectedreturnedusers = 1;
+        $returnedusers = $result['users'];
+        $this->assertEquals($expectedreturnedusers, count($returnedusers));
+
+        // Check that the users returned from the API are the same as the users as generated.
+        foreach ($returnedusers as $returneduser) {
+            $generateduser = ($returneduser['id'] == $USER->id) ?
+                                $USER : $generatedusers[$returneduser['id']];
+
+            $this->compare_users($generateduser, $returneduser);
+        }
+
+        // Test the invalid key warning.
+        $warnings = $result['warnings'];
+        $this->assertEquals(count($warnings), 1);
+        $warning = array_pop($warnings);
+        $this->assertEquals($warning['item'], 'invalidkey');
+        $this->assertEquals($warning['warningcode'], 'invalidfieldparameter');
+
+        // Test sending twice the same search field.
+        try {
+            $searchparams = array(
+            array('key' => 'firstname', 'value' => 'Canard'),
+            array('key' => 'email', 'value' => $user1->email),
+            array('key' => 'firstname', 'value' => $user1->firstname));
+
+            // Call the external function.
+            $result = core_user_external::get_users($searchparams);
+            $this->fail('Expecting \'keyalreadyset\' moodle_exception to be thrown.');
+        } catch (moodle_exception $e) {
+            $this->assertEquals('keyalreadyset', $e->errorcode);
+        } catch (Exception $e) {
+            $this->fail('Expecting \'keyalreadyset\' moodle_exception to be thrown.');
+        }
+    }
+
+    /**
      * Test get_users_by_field
      */
     public function test_get_users_by_field() {

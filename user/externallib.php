@@ -535,6 +535,11 @@ class core_user_external extends external_api {
         return new external_multiple_structure(self::user_description());
     }
 
+    /** Named constant for use with get_users(), indicates that criteria should be grouped using AND mode. */
+    const STRICT = 'strict';
+
+    /** Named constant for use with get_users(), indicates that criteria should be grouped using OR mode. */
+    const LOOSE = 'loose';
 
     /**
      * Returns description of get_users() parameters.
@@ -561,13 +566,29 @@ class core_user_external extends external_api {
                     ), 'the key/value pairs to be considered in user search. Values can not be empty.
                         Specify different keys only once (fullname => \'user1\', auth => \'manual\', ...) -
                         key occurences are forbidden.
-                        The search is executed with AND operator on the criterias. Invalid criterias (keys) are ignored,
-                        the search is still executed on the valid criterias.
+                        The search is executed with AND or OR operator on the criteria depending upon the mode requested. Invalid
+                        criteria (keys) are ignored, the search is still executed on the valid criteria.
                         You can search without criteria, but the function is not designed for it.
                         It could very slow or timeout. The function is designed to search some specific users.'
+                ),
+                'mode' => new external_value(
+                    PARAM_ALPHA,
+                    'search mode - self::STRICT to group criteria using AND, self::LOOSE to use OR',
+                    VALUE_OPTIONAL,
+                    self::STRICT
                 )
             )
         );
+    }
+
+    /**
+     * Can this function be called directly from ajax?
+     *
+     * @return boolean
+     * @since Moodle 3.0
+     */
+    public static function get_users_is_allowed_from_ajax() {
+        return true;
     }
 
     /**
@@ -575,16 +596,17 @@ class core_user_external extends external_api {
      *
      * @throws moodle_exception
      * @param array $criteria the allowed array keys are id/lastname/firstname/idnumber/username/email/auth.
+     * @param string $mode self::STRICT matches criteria using AND, self::LOOSE matches using OR
      * @return array An array of arrays containing user profiles.
      * @since Moodle 2.5
      */
-    public static function get_users($criteria = array()) {
+    public static function get_users($criteria = array(), $mode = self::STRICT) {
         global $CFG, $USER, $DB;
 
         require_once($CFG->dirroot . "/user/lib.php");
 
         $params = self::validate_parameters(self::get_users_parameters(),
-                array('criteria' => $criteria));
+                array('criteria' => $criteria, 'mode' => $mode));
 
         // Validate the criteria and retrieve the users.
         $users = array();
@@ -594,6 +616,10 @@ class core_user_external extends external_api {
 
         // Do not retrieve deleted users.
         $sql = ' deleted = 0';
+
+        $cleanedmode = clean_param($params['mode'], PARAM_TEXT);
+
+        $criteriasql = array();
 
         foreach ($params['criteria'] as $criteriaindex => $criteria) {
 
@@ -646,27 +672,41 @@ class core_user_external extends external_api {
             if (!$invalidcriteria) {
                 $cleanedvalue = clean_param($criteria['value'], $paramtype);
 
-                $sql .= ' AND ';
-
                 // Create the SQL.
                 switch ($criteria['key']) {
                     case 'id':
                     case 'idnumber':
                     case 'username':
                     case 'auth':
-                        $sql .= $criteria['key'] . ' = :' . $criteria['key'];
+                        $criteriasql[] = $criteria['key'] . ' = :' . $criteria['key'];
                         $sqlparams[$criteria['key']] = $cleanedvalue;
                         break;
                     case 'email':
                     case 'lastname':
                     case 'firstname':
-                        $sql .= $DB->sql_like($criteria['key'], ':' . $criteria['key'], false);
+                        $criteriasql[] = $DB->sql_like($criteria['key'], ':' . $criteria['key'], false);
                         $sqlparams[$criteria['key']] = $cleanedvalue;
                         break;
                     default:
                         break;
                 }
             }
+        }
+
+        if (count($criteriasql) > 0) {
+            $sql .= ' AND (';
+            switch($cleanedmode) {
+                case self::LOOSE:
+                    $sql .= implode(" OR ", $criteriasql);
+                    break;
+
+                // Default to using AND, matching old behaviour.
+                case self::STRICT:
+                default:
+                    $sql .= implode(' AND ', $criteriasql);
+                    break;
+            }
+            $sql .= ')';
         }
 
         $users = $DB->get_records_select('user', $sql, $sqlparams, 'id ASC');
