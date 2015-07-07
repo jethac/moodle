@@ -1,0 +1,58 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core/navbar
+
+    Moodle navbar template.
+
+    The purpose of this template is to render a navbar / breadcrumb bar.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * message A cleaned string (use clean_text()) to display.
+
+    Example context (json):
+    {
+        "items": [
+            {
+                "href": "http://www.moodle.org",
+                "title": "Moodle",
+                "first": true
+            },
+            {
+                "title": "Middle"
+            },
+            {
+                "title": "Templates",
+                "last": true
+            }
+        ]
+    }
+}}
+<nav class="breadcrumb-nav">
+    <span class="accesshide">{{#str}}pagepath{{/str}}</span>
+    <ul class="breadcrumb">
+        {{#items}}
+        <li>{{#href}}<a href="{{href}}">{{/href}}{{^href}}<span tabindex="0">{{/href}}{{title}}{{#href}}</a>{{/href}}{{^href}}</span>{{/href}}{{^last}} <span class="divider"> <span class="accesshide"><span class="arrow_text">/</span>&nbsp;</span><span class="arrow sep">▶</span> </span>{{/last}}</li>
+        {{/items}}
+    </ul>
+</nav>
