@@ -2329,6 +2329,7 @@ class core_moodlelib_testcase extends advanced_testcase {
         // Create a user to test the name display on.
         $record = array();
         $record['firstname'] = 'Scott';
+        $record['middlename'] = 'Prescott';
         $record['lastname'] = 'Fletcher';
         $record['firstnamephonetic'] = 'スコット';
         $record['lastnamephonetic'] = 'フレチャー';
@@ -2339,6 +2340,10 @@ class core_moodlelib_testcase extends advanced_testcase {
         $originalcfg = new stdClass();
         $originalcfg->fullnamedisplay = $CFG->fullnamedisplay;
         $originalcfg->alternativefullnameformat = $CFG->alternativefullnameformat;
+        $originalcfg->fullnamedisplayrubyphonetics = $CFG->fullnamedisplayrubyphonetics;
+
+        // Disable ruby phonetics initially for this test.
+        $CFG->fullnamedisplayrubyphonetics = false;
 
         // Testing existing fullnamedisplay settings.
         $CFG->fullnamedisplay = 'firstname';
@@ -2453,6 +2458,88 @@ class core_moodlelib_testcase extends advanced_testcase {
             $this->assertSame($expectedname, $testname);
         }
 
+        // Turn on ruby phonetics.
+        $CFG->fullnamedisplayrubyphonetics = true;
+
+        // Get some ruby lang strings.
+        $rubyplaceholderleft = get_string('rubyplaceholderleft');
+        $rubyplaceholderright = get_string('rubyplaceholderright');
+
+        // Re-add some data from the user fields.
+        $user->firstnamephonetic = $record['firstnamephonetic'];
+        $user->lastnamephonetic = $record['lastnamephonetic'];
+        $user->middlename = $record['middlename'];
+
+        // Ruby test 1: First name.
+        $CFG->fullnamedisplay = 'firstname';
+        $testname = fullname($user);
+        $expected = "<ruby>" .
+                        "<rb>$user->firstname</rb>" .
+                        "<rp>$rubyplaceholderleft</rp>" .
+                        "<rt>$user->firstnamephonetic</rt>" .
+                        "<rp>$rubyplaceholderright</rp>" .
+                    "</ruby>";
+        $this->assertSame($expected, $testname);
+
+        // Ruby test 2: Last name.
+        $CFG->fullnamedisplay = 'lastname';
+        $testname = fullname($user);
+        $expected = "<ruby>" .
+                        "<rb>$user->lastname</rb>" .
+                        "<rp>$rubyplaceholderleft</rp>" .
+                        "<rt>$user->lastnamephonetic</rt>" .
+                        "<rp>$rubyplaceholderright</rp>" .
+                    "</ruby>";
+        $this->assertSame($expected, $testname);
+
+        // Ruby test 3: First name with last name.
+        $CFG->fullnamedisplay = 'firstname lastname';
+        $testname = fullname($user);
+        $expected = "<ruby>" .
+                        "<rb>$user->firstname</rb>" .
+                        "<rp>$rubyplaceholderleft</rp>" .
+                        "<rt>$user->firstnamephonetic</rt>" .
+                        "<rp>$rubyplaceholderright</rp>" .
+                        "</ruby> <ruby>" .
+                        "<rb>$user->lastname</rb>" .
+                        "<rp>$rubyplaceholderleft</rp>" .
+                        "<rt>$user->lastnamephonetic</rt>" .
+                        "<rp>$rubyplaceholderright</rp>" .
+                    "</ruby>";
+        $this->assertSame($expected, $testname);
+
+        // Ruby test 4: Lang string.
+        $CFG->fullnamedisplay = 'language';
+        $testname = fullname($user);
+        $expected = "<ruby>" .
+                        "<rb>$user->firstname</rb>" .
+                        "<rp>$rubyplaceholderleft</rp>" .
+                        "<rt>$user->firstnamephonetic</rt>" .
+                        "<rp>$rubyplaceholderright</rp>" .
+                        "</ruby> <ruby>" .
+                        "<rb>$user->lastname</rb>" .
+                        "<rp>$rubyplaceholderleft</rp>" .
+                        "<rt>$user->lastnamephonetic</rt>" .
+                        "<rp>$rubyplaceholderright</rp>" .
+                    "</ruby>";
+        $this->assertSame($expected, $testname);
+
+        // Ruby test 5: Customising the alternativefullnameformat setting with all additional name fields.
+        $CFG->alternativefullnameformat = 'firstname middlename lastname firstnamephonetic lastnamephonetic alternatename';
+        $testname = fullname($user, true);
+        $expected = "<ruby>" .
+                        "<rb>$user->firstname</rb>" .
+                        "<rp>$rubyplaceholderleft</rp>" .
+                        "<rt>$user->firstnamephonetic</rt>" .
+                        "<rp>$rubyplaceholderright</rp>" .
+                        "</ruby> $user->middlename <ruby>" .
+                        "<rb>$user->lastname</rb>" .
+                        "<rp>$rubyplaceholderleft</rp>" .
+                        "<rt>$user->lastnamephonetic</rt>" .
+                        "<rp>$rubyplaceholderright</rp></ruby>" .
+                        " $user->alternatename";
+        $this->assertSame($expected, $testname);
+
         // Test debugging message displays when
         // fullnamedisplay setting is "normal".
         $CFG->fullnamedisplay = 'firstname lastname';
@@ -2466,6 +2553,7 @@ class core_moodlelib_testcase extends advanced_testcase {
         // Tidy up after we finish testing.
         $CFG->fullnamedisplay = $originalcfg->fullnamedisplay;
         $CFG->alternativefullnameformat = $originalcfg->alternativefullnameformat;
+        $CFG->fullnamedisplayrubyphonetics = $originalcfg->fullnamedisplayrubyphonetics;
     }
 
     public function test_get_all_user_name_fields() {
