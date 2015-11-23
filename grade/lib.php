@@ -3103,7 +3103,12 @@ abstract class grade_helper {
                 $fieldvalue = $field->default;
             }
         } else {
-            $fieldvalue = $user->{$field->shortname};
+            // Special handling for fullname().
+            if ($field->shortname === 'fullname') {
+                $fieldvalue = fullname($user);
+            } else {
+                $fieldvalue = $user->{$field->shortname};
+            }
         }
         return $fieldvalue;
     }
