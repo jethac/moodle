@@ -4361,6 +4361,51 @@ final class accesslib_test extends advanced_testcase {
     }
 
     /**
+     * Tests that a capability which is no longer defined in db/access.php is removed even when the
+     * capabilities cache does not contain it.
+     *
+     * @covers ::capabilities_cleanup
+     */
+    public function test_capabilities_cleanup_unknown_to_cache(): void {
+        global $DB;
+
+        $syscontext = context_system::instance();
+        $studentrole = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
+        $capname = 'mod/page:legacycapability';
+
+        // Warm the capabilities cache while the capability is still unknown, then store it directly
+        // in the database, as an upgrade step is entitled to do while caches are disabled.
+        get_all_capabilities();
+        $DB->insert_record('capabilities', (object) [
+            'name' => $capname,
+            'captype' => 'write',
+            'contextlevel' => CONTEXT_MODULE,
+            'component' => 'mod_page',
+            'riskbitmask' => 0,
+        ]);
+        $DB->insert_record('role_capabilities', (object) [
+            'contextid' => $syscontext->id,
+            'roleid' => $studentrole->id,
+            'capability' => $capname,
+            'permission' => CAP_ALLOW,
+            'timemodified' => time(),
+            'modifierid' => 0,
+        ]);
+
+        // The capability is not defined by the component any more.
+        $filecaps = load_capability_def('mod_page');
+        $this->assertArrayNotHasKey($capname, $filecaps);
+        $this->assertArrayHasKey('mod/page:view', $filecaps);
+
+        $this->assertSame(1, capabilities_cleanup('mod_page', $filecaps));
+
+        $this->assertFalse($DB->record_exists('capabilities', ['name' => $capname]));
+        $this->assertFalse($DB->record_exists('role_capabilities', ['capability' => $capname]));
+        // Capabilities still defined in db/access.php must be kept.
+        $this->assertTrue($DB->record_exists('capabilities', ['name' => 'mod/page:view']));
+    }
+
+    /**
      * Tests reset_role_capabilities function.
      *
      * @covers ::reset_role_capabilities
