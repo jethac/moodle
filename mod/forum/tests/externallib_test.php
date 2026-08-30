@@ -1333,6 +1333,20 @@ final class externallib_test extends externallib_advanced_testcase {
         $this->assertEquals(FORMAT_HTML, $dbpost->messageformat);
         $this->assertEquals('<div class="text_to_html">with some https://example.com link</div>', $dbpost->message);
 
+        // The inpage reply form sends the contents of a plain textarea (FORMAT_PLAIN). Any character with a meaning
+        // in HTML must be escaped by the conversion, so nothing typed by the user is lost. See MDL-71123.
+        $createdpost = mod_forum_external::add_discussion_post(
+            $discussion->firstpost,
+            'interesting subject',
+            "one a<b two\nthree",
+            $options,
+            FORMAT_PLAIN
+        );
+        $createdpost = external_api::clean_returnvalue(mod_forum_external::add_discussion_post_returns(), $createdpost);
+        $dbpost = $DB->get_record('forum_posts', ['id' => $createdpost['postid']]);
+        $this->assertEquals(FORMAT_HTML, $dbpost->messageformat);
+        $this->assertEquals("one a&lt;b two<br />\nthree", $dbpost->message);
+
         // Test inline and regular attachment in post
         // Create a file in a draft area for inline attachments.
         $draftidinlineattach = file_get_unused_draft_itemid();
