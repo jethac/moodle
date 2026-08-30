@@ -65,7 +65,7 @@ define([
                 sesskey: M.cfg.sesskey,
                 parentsubject: currentSubject.data('replySubject'),
                 canreplyprivately: $(e.currentTarget).data('can-reply-privately'),
-                postformat: InPageReply.CONTENT_FORMATS.MOODLE,
+                postformat: InPageReply.CONTENT_FORMATS.PLAIN,
                 throttlingwarningmsg: throttlingwarningmsg
             };
 
