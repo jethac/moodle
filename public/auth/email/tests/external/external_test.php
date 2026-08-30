@@ -26,6 +26,7 @@ use auth_email_external;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since       Moodle 3.2
  */
+#[\PHPUnit\Framework\Attributes\CoversMethod(\auth_email_external::class, 'signup_user')]
 final class external_test extends \core_external\tests\externallib_testcase {
     /** @var int custom profile field1 ID. */
     protected $field1;
@@ -199,5 +200,60 @@ final class external_test extends \core_external\tests\externallib_testcase {
         // Do not pass the required profile fields.
         $this->expectException('invalid_parameter_exception');
         $result = auth_email_external::signup_user($username, $password, $firstname, $lastname, $email, $city,  $country);
+    }
+
+    /**
+     * Test that the sign-up data is not validated when the captcha check fails.
+     *
+     * Otherwise the returned warnings disclose whether the submitted username or email address belongs
+     * to an existing account, which lets a bot enumerate the accounts registered on the site.
+     */
+    public function test_signup_user_failed_captcha(): void {
+        global $CFG, $DB;
+
+        $CFG->recaptchapublickey = 'publickey';
+        $CFG->recaptchaprivatekey = 'privatekey';
+        set_config('recaptcha', 1, 'auth_email');
+
+        $existinguser = $this->getDataGenerator()->create_user([
+            'username' => 'pepe',
+            'email' => 'myemail@no.zbc',
+        ]);
+
+        $customprofilefields = [
+            [
+                'type' => 'text',
+                'name' => 'profile_field_frogname',
+                'value' => 'random text',
+            ],
+            [
+                'type' => 'textarea',
+                'name' => 'profile_field_sometext',
+                'value' => json_encode([
+                    'text' => 'blah blah',
+                    'format' => FORMAT_HTML,
+                ]),
+            ],
+        ];
+
+        // An empty captcha response fails the check without contacting the captcha provider.
+        $result = auth_email_external::signup_user(
+            $existinguser->username,
+            'abc',
+            'Pepe',
+            'Pérez',
+            $existinguser->email,
+            'Bcn',
+            'ES',
+            '',
+            '',
+            $customprofilefields,
+        );
+        $result = \core_external\external_api::clean_returnvalue(auth_email_external::signup_user_returns(), $result);
+
+        $this->assertFalse($result['success']);
+        $this->assertCount(1, $result['warnings']);
+        $this->assertEquals('recaptcharesponse', $result['warnings'][0]['item']);
+        $this->assertEquals(1, $DB->count_records('user', ['username' => $existinguser->username]));
     }
 }
