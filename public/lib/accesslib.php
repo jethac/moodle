@@ -2438,14 +2438,14 @@ function update_capabilities($component = 'moodle') {
 }
 
 /**
- * Deletes cached capabilities that are no longer needed by the component.
+ * Deletes stored capabilities that are no longer needed by the component.
  * Also unassigns these capabilities from any roles that have them.
  * NOTE: this function is called from lib/db/upgrade.php
  *
  * @access private
  * @param string $component examples: 'moodle', 'mod_forum', 'block_activity_results'
  * @param array $newcapdef array of the new capability definitions that will be
- *                     compared with the cached capabilities
+ *                     compared with the stored capabilities
  * @return int number of deprecated capabilities that have been removed
  */
 function capabilities_cleanup($component, $newcapdef = null) {
@@ -2453,32 +2453,47 @@ function capabilities_cleanup($component, $newcapdef = null) {
 
     $removedcount = 0;
 
-    if ($cachedcaps = get_cached_capabilities($component)) {
-        foreach ($cachedcaps as $cachedcap) {
-            if (empty($newcapdef) ||
-                        array_key_exists($cachedcap->name, $newcapdef) === false) {
+    // What is stored in the database is what has to be cleaned up. The capabilities cache is not
+    // reliable here because it may have been built before the capabilities were stored, for example
+    // when an upgrade step wrote to the database directly.
+    $storedcaps = $DB->get_records('capabilities', ['component' => $component], '', 'id, name');
+    $obsoletecaps = [];
+    foreach ($storedcaps as $storedcap) {
+        if (empty($newcapdef) || array_key_exists($storedcap->name, $newcapdef) === false) {
+            $obsoletecaps[] = $storedcap->name;
+        }
+    }
 
-                // Delete from roles.
-                if ($roles = get_roles_with_capability($cachedcap->name)) {
-                    foreach ($roles as $role) {
-                        if (!unassign_capability(
-                            capability: $cachedcap->name,
-                            roleid: $role->id,
-                            showdebug: false, // Suppress debugging messages in the get_capability_info().
-                        )) {
-                            throw new \moodle_exception('cannotunassigncap', 'error', '',
-                                (object)array('cap' => $cachedcap->name, 'role' => $role->name));
-                        }
+    if ($obsoletecaps) {
+        // Make sure the capability information used while unassigning matches the database too.
+        cache::make('core', 'capabilities')->delete('core_capabilities');
+
+        foreach ($obsoletecaps as $capname) {
+            // Delete from roles.
+            if ($roles = get_roles_with_capability($capname)) {
+                foreach ($roles as $role) {
+                    $unassigned = unassign_capability(
+                        capability: $capname,
+                        roleid: $role->id,
+                        showdebug: false, // Suppress debugging messages in the get_capability_info().
+                    );
+                    if (!$unassigned) {
+                        throw new \moodle_exception(
+                            'cannotunassigncap',
+                            'error',
+                            '',
+                            (object) ['cap' => $capname, 'role' => $role->name],
+                        );
                     }
                 }
+            }
 
-                // Remove from role_capabilities for any old ones.
-                $DB->delete_records('role_capabilities', array('capability' => $cachedcap->name));
+            // Remove from role_capabilities for any old ones.
+            $DB->delete_records('role_capabilities', ['capability' => $capname]);
 
-                // Remove from capabilities cache.
-                $DB->delete_records('capabilities', array('name' => $cachedcap->name));
-                $removedcount++;
-            } // End if.
+            // Remove from capabilities cache.
+            $DB->delete_records('capabilities', ['name' => $capname]);
+            $removedcount++;
         }
     }
     if ($removedcount) {
