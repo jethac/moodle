@@ -76,12 +76,13 @@ M.core_role.init_cap_table_filter = function(Y, tableid, contextid) {
         },
         /**
          * Sets a cookie that describes the filter value.
-         * The cookie stores the context, and the time it was created and upon
-         * retrieval is checked to ensure that the cookie is for the correct
-         * context and is no more than an hour old.
+         * The cookie stores the table, the context, and the time it was created
+         * and upon retrieval is checked to ensure that the cookie is for the
+         * correct table in the correct context and is no more than an hour old.
          */
         setFilterCookieValue : function(value) {
             var cookie = {
+                flttable: this.tableid,
                 fltcontext : this.context,
                 flttime : new Date().getTime(),
                 fltvalue : value
@@ -90,13 +91,15 @@ M.core_role.init_cap_table_filter = function(Y, tableid, contextid) {
         },
         /**
          * Gets the existing filter value if there is one.
-         * The cookie stores the context, and the time it was created and upon
-         * retrieval is checked to ensure that the cookie is for the correct
-         * context and is no more than an hour old.
+         * The cookie stores the table, the context, and the time it was created
+         * and upon retrieval is checked to ensure that the cookie is for the
+         * correct table in the correct context and is no more than an hour old.
          */
         getFilterCookieValue : function() {
             var cookie = Y.Cookie.getSubs('captblflt');
-            if (cookie!=null && cookie.fltcontext && cookie.fltcontext == this.context && parseInt(cookie.flttime) > new Date().getTime()-(60*60*1000)) {
+            if (cookie && cookie.flttable && cookie.flttable == this.tableid &&
+                    cookie.fltcontext && cookie.fltcontext == this.context &&
+                    parseInt(cookie.flttime) > new Date().getTime() - (60 * 60 * 1000)) {
                 return cookie.fltvalue;
             }
             return '';
