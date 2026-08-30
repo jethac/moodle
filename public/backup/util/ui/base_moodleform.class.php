@@ -54,6 +54,12 @@ abstract class base_moodleform extends moodleform {
     protected array $groupstack = [];
 
     /**
+     * Names of the settings that have been added to the form as fixed (not editable) elements.
+     * @var array
+     */
+    protected array $fixedsettings = [];
+
+    /**
      * Creates the form
      *
      * @param base_ui_stage $uistage
@@ -322,6 +328,7 @@ abstract class base_moodleform extends moodleform {
         }
         $this->_form->addElement('hidden', $settingui->get_name(), $settingui->get_value());
         $this->_form->setType($settingui->get_name(), $settingui->get_param_validation());
+        $this->fixedsettings[$settingui->get_name()] = true;
     }
 
     /**
@@ -376,6 +383,15 @@ abstract class base_moodleform extends moodleform {
         $mform = $this->_form;
         // Apply all dependencies for backup.
         foreach ($setting->get_my_dependency_properties() as $key => $dependency) {
+            // Fixed settings are rendered as hidden elements, which are never checked and can not be changed by
+            // the user, so a dependency on one of them would permanently disable (and therefore discard) the
+            // settings depending on it. Their value is already resolved server side.
+            if (
+                isset($this->fixedsettings[$dependency['setting']]) ||
+                isset($this->fixedsettings[$dependency['dependenton']])
+            ) {
+                continue;
+            }
             call_user_func_array(array($this->_form, 'disabledIf'), array_values($dependency));
         }
     }
