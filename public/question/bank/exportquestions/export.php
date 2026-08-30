@@ -53,7 +53,7 @@ echo $OUTPUT->header();
 // Print horizontal nav if needed.
 $renderer = $PAGE->get_renderer('core_question', 'bank');
 
-$qbankaction = new \core_question\output\qbank_action_menu($thispageurl);
+$qbankaction = new \core_question\output\qbank_action_menu($thispageurl, $contexts->lowest());
 echo $renderer->render($qbankaction);
 
 $exportform = new export_form($thispageurl,
