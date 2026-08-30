@@ -326,7 +326,7 @@ const renderInPageReplyTemplate = (additionalTemplateContext, button, postContai
         parentsubject: currentSubject,
         parentauthorname: currentAuthorName,
         canreplyprivately: button.data('can-reply-privately'),
-        postformat: InPageReply.CONTENT_FORMATS.MOODLE,
+        postformat: InPageReply.CONTENT_FORMATS.PLAIN,
         ...additionalTemplateContext
     };
 
