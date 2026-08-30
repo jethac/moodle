@@ -16,8 +16,10 @@
 
 namespace core_question\output;
 
+use context;
 use core_question\local\bank\navigation_node_base;
 use core_question\local\bank\plugin_features_base;
+use core_question\local\bank\question_edit_contexts;
 use moodle_url;
 use renderer_base;
 use templatable;
@@ -44,13 +46,18 @@ class qbank_action_menu implements templatable, renderable {
     /** @var ?string $actionlabel Label for additional action button  */
     protected ?string $actionlabel = null;
 
+    /** @var ?context $context The context the menu is displayed in. */
+    protected ?context $context = null;
+
     /**
      * qbank_actionbar constructor.
      *
      * @param moodle_url $currenturl The current URL.
+     * @param ?context $context The context to check the navigation node capabilities against. Defaults to the page context.
      */
-    public function __construct(moodle_url $currenturl) {
+    public function __construct(moodle_url $currenturl, ?context $context = null) {
         $this->currenturl = $currenturl;
+        $this->context = $context;
     }
 
     /**
@@ -72,6 +79,9 @@ class qbank_action_menu implements templatable, renderable {
      * @return array data for the template
      */
     public function export_for_template(renderer_base $output): array {
+        global $PAGE;
+
+        $contexts = new question_edit_contexts($this->context ?? $PAGE->context);
         $questionslink = new moodle_url('/question/edit.php', $this->currenturl->params());
         $menu = [
             $questionslink->out(false) => get_string('questions', 'question'),
@@ -85,6 +95,10 @@ class qbank_action_menu implements templatable, renderable {
             $pluginfeatures = new $pluginfeaturesclass();
             $navigationnode = $pluginfeatures->get_navigation_node();
             if (is_null($navigationnode)) {
+                continue;
+            }
+            $capabilities = $navigationnode->get_navigation_capabilities();
+            if (is_array($capabilities) && !$contexts->have_one_cap($capabilities)) {
                 continue;
             }
             /** @var moodle_url $url */
