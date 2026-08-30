@@ -282,7 +282,8 @@ $PAGE->set_pagelayout('standard');
 echo $OUTPUT->header();
 echo $OUTPUT->render_participants_tertiary_nav($course);
 
-echo $strfiltergroups;
+echo html_writer::start_div('d-flex flex-wrap align-items-center gap-2');
+echo html_writer::span($strfiltergroups);
 
 $options = array();
 $options[0] = get_string('all');
@@ -305,6 +306,7 @@ $select = new single_select($popupurl, 'group', $options, $groupid, array());
 $select->label = $strgroup;
 $select->formid = 'selectgroup';
 echo $OUTPUT->render($select);
+echo html_writer::end_div();
 
 /// Print table
 $printed = false;
