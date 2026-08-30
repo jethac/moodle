@@ -38,6 +38,7 @@ require_once($CFG->dirroot . '/rating/lib.php');
 #[\PHPUnit\Framework\Attributes\CoversFunction('forum_check_throttling')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('forum_count_discussions')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('forum_reset_userdata')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('forum_convert_inpage_reply_content')]
 final class lib_test extends \advanced_testcase {
 
     public function setUp(): void {
@@ -4299,5 +4300,60 @@ final class lib_test extends \advanced_testcase {
 
         $this->assertEquals($forum->duedate + (DAYSECS * 2), $instance->duedate);
         $this->assertEquals($forum->cutoffdate + (DAYSECS * 2), $instance->cutoffdate);
+    }
+
+    /**
+     * Data provider for {@see test_forum_convert_inpage_reply_content()}.
+     *
+     * @return array
+     */
+    public static function convert_inpage_reply_content_provider(): array {
+        return [
+            'empty' => ['', FORMAT_PLAIN, FORMAT_HTML, ''],
+            'plain to html' => [
+                "one a<b two\nthree",
+                FORMAT_PLAIN,
+                FORMAT_HTML,
+                "one a&lt;b two<br />\nthree",
+            ],
+            'plain to html, script' => [
+                'evil <script>alert(1)</script>',
+                FORMAT_PLAIN,
+                FORMAT_HTML,
+                'evil &lt;script&gt;alert(1)&lt;/script&gt;',
+            ],
+            'plain to moodle' => ['one a<b two', FORMAT_PLAIN, FORMAT_MOODLE, 'one a&lt;b two'],
+            'plain to plain' => ['one a<b two', FORMAT_PLAIN, FORMAT_PLAIN, 'one a<b two'],
+            'html to html is cleaned' => [
+                '<p onclick="alert(1)">one</p>',
+                FORMAT_HTML,
+                FORMAT_HTML,
+                '<p>one</p>',
+            ],
+            'html to plain' => ['<p>one</p><p>two</p>', FORMAT_HTML, FORMAT_PLAIN, "one\n\ntwo"],
+        ];
+    }
+
+    /**
+     * Test that the contents of the inpage reply form survive being loaded into the advanced reply form.
+     *
+     * @param string $content
+     * @param int|string $contentformat
+     * @param int|string $preferredformat
+     * @param string $expected
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('convert_inpage_reply_content_provider')]
+    public function test_forum_convert_inpage_reply_content(
+        string $content,
+        int|string $contentformat,
+        int|string $preferredformat,
+        string $expected
+    ): void {
+        $this->resetAfterTest();
+
+        $this->assertEquals(
+            $expected,
+            trim(forum_convert_inpage_reply_content($content, $contentformat, $preferredformat))
+        );
     }
 }

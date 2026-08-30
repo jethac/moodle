@@ -53,7 +53,8 @@ define([
       * @type {Object}
       */
     var CONTENT_FORMATS = {
-        MOODLE: 0
+        MOODLE: 0,
+        PLAIN: 2
     };
     /**
      * Show the loading icon for the submit button.
@@ -96,9 +97,10 @@ define([
             var allButtons = submitButton.parent().find(Selectors.post.inpageReplyButton);
             var form = submitButton.parents(Selectors.post.inpageReplyForm).get(0);
             var message = form.elements.post.value.trim();
-            // For now, we consider the inline reply post written using the FORMAT_MOODLE (because a textarea is displayed).
+            // The inline reply is written in a plain textarea, so its contents are plain text. Any other format would
+            // be treated as markup and everything from an unspaced '<' onwards would be lost when it is cleaned.
             // In the future, other formats should be supported, letting users to use their preferred editor and format.
-            var messageformat = CONTENT_FORMATS.MOODLE;
+            var messageformat = CONTENT_FORMATS.PLAIN;
             // The message post will be converted from messageformat to FORMAT_HTML.
             var topreferredformat = true;
             var postid = form.elements.reply.value;
