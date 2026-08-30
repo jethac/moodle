@@ -134,9 +134,6 @@ class login_signup_form extends moodleform implements renderable, templatable {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-        // Extend validation for any form extensions from plugins.
-        $errors = array_merge($errors, core_login_validate_extend_signup_form($data));
-
         if (signup_captcha_enabled()) {
             $recaptchaelement = $this->_form->getElement('recaptcha_element');
             if (!empty($this->_form->_submitValues['g-recaptcha-response'])) {
@@ -147,7 +144,17 @@ class login_signup_form extends moodleform implements renderable, templatable {
             } else {
                 $errors['recaptcha_element'] = get_string('missingrecaptchachallengefield');
             }
+
+            if (isset($errors['recaptcha_element'])) {
+                // The submitter has not been confirmed to be a human, so none of the submitted data is
+                // validated. Reporting that a username or an email address is already taken would let a
+                // bot enumerate the accounts registered on the site without ever solving the captcha.
+                return $errors;
+            }
         }
+
+        // Extend validation for any form extensions from plugins.
+        $errors = array_merge($errors, core_login_validate_extend_signup_form($data));
 
         $errors += signup_validate_data($data, $files);
 
