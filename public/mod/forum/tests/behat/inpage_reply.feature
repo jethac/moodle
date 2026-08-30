@@ -31,6 +31,23 @@ Feature: Students can reply to a discussion in page.
     And I reload the page
     And I should see "Discussion contents 1, third message"
 
+  Scenario: Characters with a meaning in HTML are kept in an inpage reply
+    Given I am on the "Course 1" course page logged in as student1
+    When I reply "Discussion 2" post from "Test forum name" forum using an inpage reply with:
+      | post | Comparing a<b and c>d |
+    Then I should see "Comparing a<b and c>d"
+    And I reload the page
+    And I should see "Comparing a<b and c>d"
+
+  Scenario: Characters with a meaning in HTML are kept when switching an inpage reply to the advanced editor
+    Given I am on the "Test forum name" "forum activity" page logged in as student1
+    And I click on "Discussion 2" "link"
+    And I click on "Reply" "link"
+    And I set the field "post" to "Comparing a<b and c>d"
+    When I press "Advanced"
+    And I press "Post to forum"
+    Then I should see "Comparing a<b and c>d"
+
   Scenario: Confirm inpage replies work - private reply
     Given I am on the "Course 1" course page logged in as teacher1
     When I reply "Discussion 2" post from "Test forum name" forum using an inpage reply with:

@@ -5276,6 +5276,38 @@ function forum_reset_course_form_defaults($course) {
 }
 
 /**
+ * Converts the contents typed in the inpage reply form to the format used by the editor of the advanced reply form.
+ *
+ * The contents arrive as a request parameter and have not been cleaned, so every returned value is either escaped
+ * or cleaned. Filters are not applied because the contents are going to be edited, not displayed.
+ *
+ * @param string $content the contents typed by the user.
+ * @param int $contentformat the FORMAT_* the contents are written in.
+ * @param int $preferredformat the FORMAT_* used by the editor the contents are going to be loaded into.
+ * @return string the contents, in $preferredformat.
+ */
+function forum_convert_inpage_reply_content(string $content, int $contentformat, int $preferredformat): string {
+    if ($content === '') {
+        return $content;
+    }
+
+    if ($contentformat == $preferredformat) {
+        return $preferredformat == FORMAT_HTML ? clean_text($content, FORMAT_HTML) : $content;
+    }
+
+    if ($preferredformat == FORMAT_HTML) {
+        // No context is needed because filters, the only thing using it, are not applied.
+        return format_text($content, $contentformat, ['filter' => false, 'context' => null]);
+    }
+
+    // The editor does not use HTML. Get the plain text and, when the target format still renders HTML
+    // (FORMAT_MOODLE, FORMAT_MARKDOWN), escape it so that characters like '<' are not read as markup.
+    $content = content_to_text($content, $contentformat);
+
+    return $preferredformat == FORMAT_PLAIN ? $content : s($content);
+}
+
+/**
  * Returns array of forum layout modes
  *
  * @param bool $useexperimentalui use experimental layout modes or not
