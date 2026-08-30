@@ -29,6 +29,7 @@ require_once(__DIR__ . '/../config.php');
 $courseid = required_param('courseid', PARAM_INT);
 
 $PAGE->set_url(new moodle_url('/report/view.php', array('courseid' => $courseid)));
+$PAGE->set_docs_path('report/view');
 
 // Basic access checks.
 if (!$course = $DB->get_record('course', array('id' => $courseid))) {
