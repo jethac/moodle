@@ -36,9 +36,11 @@ $confirm = optional_param('confirm', 0, PARAM_INT);
 $groupid = optional_param('groupid', null, PARAM_INT);
 $subject = optional_param('subject', '', PARAM_TEXT);
 
-// Values posted via the inpage reply form.
-$prefilledpost = optional_param('post', '', PARAM_TEXT);
-$prefilledpostformat = optional_param('postformat', FORMAT_MOODLE, PARAM_INT);
+// Values posted via the inpage reply form. The message is written in a plain textarea, so it must be read raw:
+// PARAM_TEXT would silently drop everything from an unspaced '<' onwards. It is converted to the format used by
+// the editor, which escapes it, below.
+$prefilledpost = optional_param('post', '', PARAM_RAW);
+$prefilledpostformat = optional_param('postformat', FORMAT_PLAIN, PARAM_INT);
 $prefilledprivatereply = optional_param('privatereply', false, PARAM_BOOL);
 
 $PAGE->set_url('/mod/forum/post.php', array(
@@ -116,6 +118,13 @@ if (!isloggedin() or isguestuser()) {
 
 require_login(0, false);   // Script is useless unless they're logged in.
 
+// We always are going to honor the preferred format. We are creating a new post.
+$preferredformat = editors_get_preferred_format();
+
+// The prefilled contents come straight from the request, so they are converted (and escaped or cleaned) before
+// being loaded into the editor.
+$prefilledpost = forum_convert_inpage_reply_content($prefilledpost, $prefilledpostformat, $preferredformat);
+
 $canreplyprivately = false;
 
 if (!empty($forum)) {
@@ -174,7 +183,7 @@ if (!empty($forum)) {
     $post->subject       = $subject;
     $post->userid        = $USER->id;
     $post->message       = $prefilledpost;
-    $post->messageformat = editors_get_preferred_format();
+    $post->messageformat = $preferredformat;
     $post->messagetrust  = 0;
     $post->groupid = $groupid;
 
@@ -254,17 +263,6 @@ if (!empty($forum)) {
 
     if ($parententity->is_private_reply()) {
         throw new \moodle_exception('cannotreplytoprivatereply', 'forum');
-    }
-
-    // We always are going to honor the preferred format. We are creating a new post.
-    $preferredformat = editors_get_preferred_format();
-
-    // Only if there are prefilled contents coming.
-    if (!empty($prefilledpost)) {
-        // If the prefilled post is not HTML and the preferred format is HTML, convert to it.
-        if ($prefilledpostformat != FORMAT_HTML and $preferredformat == FORMAT_HTML) {
-            $prefilledpost = format_text($prefilledpost, $prefilledpostformat, ['context' => $modcontext]);
-        }
     }
 
     // Load up the $post variable.
