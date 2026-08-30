@@ -72,9 +72,7 @@ Feature: User must accept policy when logging in and signing up
     And the following "users" exist:
       | username | firstname | lastname | email          |
       | s1       | John      | Doe      | s1@example.com |
-    And I am on site homepage
-    And I follow "Log in"
-    When I click on "Create new account" "link"
+    When I visit "/login/signup.php"
     And I set the following fields to these values:
       | Username      | s2      |
       | Password      | test    |
@@ -96,3 +94,27 @@ Feature: User must accept policy when logging in and signing up
       | 1              | S1@EXAMPLE.COM | S1@EXAMPLE.COM | not see | not see |
       | 1              | s1@example.com | S1@EXAMPLE.COM | not see | not see |
       | 1              | s1@example.com | s2@example.com | not see | see     |
+
+  Scenario: An unsolved captcha does not disclose that an account already exists
+    Given the following "users" exist:
+      | username | firstname | lastname | email          |
+      | s1       | John      | Doe      | s1@example.com |
+    And the following config values are set as admin:
+      | registerauth        | email      |
+      | passwordpolicy      | 0          |
+      | recaptchapublickey  | publickey  |
+      | recaptchaprivatekey | privatekey |
+    And the following config values are set as admin:
+      | recaptcha | 1 | auth_email |
+    When I visit "/login/signup.php"
+    And I set the following fields to these values:
+      | Username      | s1             |
+      | Password      | test           |
+      | Email address | s1@example.com |
+      | Email (again) | s1@example.com |
+      | First name    | Jane           |
+      | Last name     | Doe            |
+    And I press "Create my new account"
+    Then I should see "Failed reCAPTCHA challenge, try again."
+    And I should not see "This email address is already registered"
+    And I should not see "This username already exists"
