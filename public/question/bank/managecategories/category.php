@@ -99,7 +99,7 @@ $PAGE->activityheader->disable();
 $renderer = $PAGE->get_renderer('core_question', 'bank');
 
 echo $OUTPUT->header();
-$qbankaction = new \core_question\output\qbank_action_menu($thispageurl);
+$qbankaction = new \core_question\output\qbank_action_menu($thispageurl, $contexts->lowest());
 echo $renderer->render($qbankaction);
 if ($questionstomove) {
     $vars = new stdClass();
