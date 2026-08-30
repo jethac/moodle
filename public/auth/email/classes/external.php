@@ -317,7 +317,7 @@ class auth_email_external extends external_api {
             }
         }
 
-        $errors = signup_validate_data($data, array());
+        $errors = [];
 
         // Validate recaptcha.
         if (signup_captcha_enabled()) {
@@ -327,6 +327,13 @@ class auth_email_external extends external_api {
             if (!$response['isvalid']) {
                 $errors['recaptcharesponse'] = $response['error'];
             }
+        }
+
+        if (empty($errors)) {
+            // The submitted data is only validated once the caller has been confirmed to be a human.
+            // Reporting that a username or an email address is already taken would let a bot enumerate
+            // the accounts registered on the site without ever solving the captcha.
+            $errors = signup_validate_data($data, []);
         }
 
         if (!empty($errors)) {
