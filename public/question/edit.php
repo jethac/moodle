@@ -85,7 +85,7 @@ if (!\core_question\local\bank\question_bank_helper::has_bank_migration_task_com
 $renderer = $PAGE->get_renderer('core_question', 'bank');
 
 // Render the selection action.
-$qbankaction = new qbank_action_menu($actionurl);
+$qbankaction = new qbank_action_menu($actionurl, $context);
 echo $renderer->render($qbankaction);
 
 // Print the question area.

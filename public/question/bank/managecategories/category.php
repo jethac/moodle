@@ -125,7 +125,7 @@ $PAGE->set_show_navigation_footer(false);
 $renderer = $PAGE->get_renderer('core_question', 'bank');
 
 echo $OUTPUT->header();
-$qbankaction = new qbank_action_menu($thispageurl);
+$qbankaction = new qbank_action_menu($thispageurl, $contexts->lowest());
 echo $renderer->render($qbankaction);
 if ($allquestions) {
     $vars = new stdClass();
